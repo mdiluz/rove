@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/mdiluz/rove/pkg/rove"
 )
 
 func NewRouter() (router *mux.Router) {
@@ -17,14 +18,9 @@ func NewRouter() (router *mux.Router) {
 	return
 }
 
-// RouterStatus is a struct that contains information on the status of the server
-type RouterStatus struct {
-	Ready bool `json:"ready"`
-}
-
 // HandleStatus handles HTTP requests to the /status endpoint
 func HandleStatus(w http.ResponseWriter, r *http.Request) {
-	var status = RouterStatus{
+	var status = rove.ServerStatus{
 		Ready: true,
 	}
 

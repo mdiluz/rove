@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/mdiluz/rove/pkg/rove"
 )
 
 func TestHandleStatus(t *testing.T) {
@@ -13,7 +15,7 @@ func TestHandleStatus(t *testing.T) {
 
 	HandleStatus(response, request)
 
-	var status RouterStatus
+	var status rove.ServerStatus
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Ready != true {
