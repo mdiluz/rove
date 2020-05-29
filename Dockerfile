@@ -5,6 +5,6 @@ WORKDIR /app
 COPY . .
 RUN go mod download
 
-RUN go build -o rove .
+RUN go build -o rove ./...
 
 CMD "./rove"
