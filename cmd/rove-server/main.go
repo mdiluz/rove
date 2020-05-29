@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 )
+
+var port = flag.Int("port", 8080, "The port to host on")
 
 func main() {
 
@@ -29,7 +32,7 @@ func main() {
 
 	// Listen and serve the http requests
 	fmt.Println("Serving HTTP")
-	if err := http.ListenAndServe(":80", router); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), router); err != nil {
 		log.Fatal(err)
 	}
 }
