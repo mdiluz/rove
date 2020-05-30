@@ -5,6 +5,6 @@ WORKDIR /app
 COPY . .
 RUN go mod download
 
-RUN go build -o rove-server ./...
+RUN cd cmd/rove-server && go build ./...
 
-CMD "./rove-server"
+CMD "./cmd/rove-server/rove-server"
