@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -20,6 +21,8 @@ func NewRouter() (router *mux.Router) {
 
 // HandleStatus handles HTTP requests to the /status endpoint
 func HandleStatus(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("%s\t%s", r.Method, r.RequestURI)
+
 	var status = rove.ServerStatus{
 		Ready: true,
 	}
