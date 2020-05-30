@@ -7,5 +7,5 @@ This repository is a growing document as well as the source code repository for 
 
 Build Status
 ------------
-![Go And Tests](https://github.com/mdiluz/rove/workflows/Go%20And%20Tests/badge.svg) ![Docker Image](https://github.com/mdiluz/rove/workflows/Docker%20Image/badge.svg)
+![Build and Test](https://github.com/mdiluz/rove/workflows/Build%20and%20Test/badge.svg)
 
