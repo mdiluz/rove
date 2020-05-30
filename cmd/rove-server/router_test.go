@@ -15,7 +15,7 @@ func TestHandleStatus(t *testing.T) {
 
 	HandleStatus(response, request)
 
-	var status rove.ServerStatus
+	var status rove.StatusResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Ready != true {

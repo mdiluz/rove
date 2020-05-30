@@ -19,13 +19,13 @@ func NewConnection(host string) *Connection {
 	}
 }
 
-// ServerStatus is a struct that contains information on the status of the server
-type ServerStatus struct {
+// StatusResponse is a struct that contains information on the status of the server
+type StatusResponse struct {
 	Ready bool `json:"ready"`
 }
 
 // Status returns the current status of the server
-func (c *Connection) Status() (status ServerStatus, err error) {
+func (c *Connection) Status() (status StatusResponse, err error) {
 	url := url.URL{
 		Scheme: "http",
 		Host:   c.host,
@@ -33,11 +33,36 @@ func (c *Connection) Status() (status ServerStatus, err error) {
 	}
 
 	if resp, err := http.Get(url.String()); err != nil {
-		return ServerStatus{}, err
+		return StatusResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return ServerStatus{}, fmt.Errorf("Status request returned %d", resp.StatusCode)
+		return StatusResponse{}, fmt.Errorf("Status request returned %d", resp.StatusCode)
 	} else {
 		err = json.NewDecoder(resp.Body).Decode(&status)
+	}
+
+	return
+}
+
+// RegisterResponse
+type RegisterResponse struct {
+	Id      string `json:"id"`
+	Success bool   `json:"success"`
+}
+
+// Register registers a new player on the server
+func (c *Connection) Register() (register RegisterResponse, err error) {
+	url := url.URL{
+		Scheme: "http",
+		Host:   c.host,
+		Path:   "register",
+	}
+
+	if resp, err := http.Get(url.String()); err != nil {
+		return RegisterResponse{}, err
+	} else if resp.StatusCode != http.StatusOK {
+		return RegisterResponse{}, fmt.Errorf("Status request returned %d", resp.StatusCode)
+	} else {
+		err = json.NewDecoder(resp.Body).Decode(&register)
 	}
 
 	return
