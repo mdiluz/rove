@@ -27,5 +27,10 @@ func HandleStatus(w http.ResponseWriter, r *http.Request) {
 		Ready: true,
 	}
 
+	// Be a good citizen and set the header for the return
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+
+	// Reply with the current status
 	json.NewEncoder(w).Encode(status)
 }
