@@ -7,10 +7,12 @@ import (
 	"net/url"
 )
 
+// Connection is the container for a simple connection to the server
 type Connection struct {
 	host string
 }
 
+// NewConnection sets up a new connection to a server host
 func NewConnection(host string) *Connection {
 	return &Connection{
 		host: host,
@@ -22,6 +24,7 @@ type ServerStatus struct {
 	Ready bool `json:"ready"`
 }
 
+// Status returns the current status of the server
 func (c *Connection) Status() (status ServerStatus, err error) {
 	url := url.URL{
 		Scheme: "http",

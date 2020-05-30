@@ -8,8 +8,8 @@ import (
 	"github.com/mdiluz/rove/pkg/rove"
 )
 
+// NewRouter sets up the server mux
 func NewRouter() (router *mux.Router) {
-	// Create a new router
 	router = mux.NewRouter().StrictSlash(true)
 
 	// Set up the handlers
