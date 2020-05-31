@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -21,5 +22,28 @@ func TestHandleStatus(t *testing.T) {
 
 	if status.Ready != true {
 		t.Errorf("got false for /status")
+	}
+}
+
+func TestHandleRegister(t *testing.T) {
+	data := RegisterData{Name: "one"}
+	b, err := json.Marshal(data)
+	if err != nil {
+		t.Error(err)
+	}
+
+	request, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(b))
+	response := httptest.NewRecorder()
+
+	s := NewServer(8080)
+	s.Initialise()
+
+	s.HandleRegister(response, request)
+
+	var status RegisterResponse
+	json.NewDecoder(response.Body).Decode(&status)
+
+	if status.Success != true {
+		t.Errorf("got false for /register")
 	}
 }
