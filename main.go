@@ -13,11 +13,14 @@ import (
 var port = flag.Int("port", 8080, "The port to host on")
 
 func main() {
-	server := server.NewServer(*port)
+	s := server.NewServer(
+		server.OptionPort(*port),
+		server.OptionPersistentData())
 
 	fmt.Println("Initialising...")
-
-	server.Initialise()
+	if err := s.Initialise(); err != nil {
+		panic(err)
+	}
 
 	// Set up the close handler
 	c := make(chan os.Signal)
@@ -25,10 +28,15 @@ func main() {
 	go func() {
 		<-c
 		fmt.Println("SIGTERM recieved, exiting...")
+		s.Close()
 		os.Exit(0)
 	}()
 
 	fmt.Println("Initialised")
 
-	server.Run()
+	s.Run()
+
+	if err := s.Close(); err != nil {
+		panic(err)
+	}
 }

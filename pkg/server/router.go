@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/mdiluz/rove/pkg/accounts"
 )
 
 // NewRouter sets up the server mux
@@ -24,7 +25,7 @@ type StatusResponse struct {
 
 // HandleStatus handles HTTP requests to the /status endpoint
 func (s *Server) HandleStatus(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%s\t%s", r.Method, r.RequestURI)
+	fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
 
 	// Verify we're hit with a get request
 	if r.Method != http.MethodGet {
@@ -59,7 +60,12 @@ type RegisterResponse struct {
 
 // HandleRegister handles HTTP requests to the /register endpoint
 func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%s\t%s", r.Method, r.RequestURI)
+	fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
+
+	// Set up the response
+	var response = RegisterResponse{
+		Success: false,
+	}
 
 	// Verify we're hit with a get request
 	if r.Method != http.MethodPost {
@@ -69,23 +75,26 @@ func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
 
 	// Pull out the registration info
 	var data RegisterData
-	json.NewDecoder(r.Body).Decode(&data)
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		fmt.Printf("Failed to decode json: %s", err)
 
-	// Register the account with the server
-	acc := Account{Name: data.Name}
-	acc, err := s.accountant.RegisterAccount(acc)
-
-	// Set up the response
-	var response = RegisterResponse{
-		Success: false,
-	}
-
-	// If we didn't fail, respond with the account ID string
-	if err == nil {
-		response.Success = true
-		response.Id = acc.id.String()
-	} else {
 		response.Error = err.Error()
+	} else {
+		// log the data sent
+		fmt.Printf("\t%v\n", data)
+
+		// Register the account with the server
+		acc := accounts.Account{Name: data.Name}
+		acc, err := s.accountant.RegisterAccount(acc)
+
+		// If we didn't fail, respond with the account ID string
+		if err == nil {
+			response.Success = true
+			response.Id = acc.Id.String()
+		} else {
+			response.Error = err.Error()
+		}
 	}
 
 	// Be a good citizen and set the header for the return

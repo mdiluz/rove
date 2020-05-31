@@ -5,7 +5,7 @@ cd ..
 set -x
 
 # Test the build
-go build -v ./...
+go build -v .
 
 # Run unit tests
 go test -v ./... -cover

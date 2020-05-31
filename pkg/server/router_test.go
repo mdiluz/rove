@@ -12,7 +12,7 @@ func TestHandleStatus(t *testing.T) {
 	request, _ := http.NewRequest(http.MethodGet, "/status", nil)
 	response := httptest.NewRecorder()
 
-	s := NewServer(8080)
+	s := NewServer()
 	s.Initialise()
 
 	s.HandleStatus(response, request)
@@ -35,7 +35,7 @@ func TestHandleRegister(t *testing.T) {
 	request, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(b))
 	response := httptest.NewRecorder()
 
-	s := NewServer(8080)
+	s := NewServer()
 	s.Initialise()
 
 	s.HandleRegister(response, request)
