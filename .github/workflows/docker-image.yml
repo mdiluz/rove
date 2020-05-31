@@ -30,20 +30,5 @@ jobs:
             dep ensure
         fi
 
-    - name: Build with go
-      run: go build -v ./...
-
-    - name: Run go unit tests
-      run: go test -v ./... -cover
-
-    - name: Build docker
-      run: docker build . --tag rove:$(date +%s)
-
-    - name: Deploy docker-compose
-      run: docker-compose up --build --detach
-
-    - name: Run go integration tests
-      run: go test ./... -tags integration -cover
-
-    - name: Take down docker-compose
-      run: docker-compose down
+    - name: Build and Test
+      run: ./script/test.sh
