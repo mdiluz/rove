@@ -15,5 +15,8 @@ docker build .
 
 # Run the integration tests with docker-compose
 docker-compose up --build --detach
-go test -v ./... -tags integration -cover
+go test -v ./... -tags integration -cover -coverprofile=/tmp/c.out
 docker-compose down
+
+# Convert the coverage data to html
+go tool cover -html=/tmp/c.out -o /tmp/coverage.html

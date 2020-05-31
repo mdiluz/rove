@@ -32,3 +32,9 @@ jobs:
 
     - name: Build and Test
       run: ./script/test.sh
+
+    - name: Upload test coverage result
+      uses: actions/upload-artifact@v1
+      with:
+        name: Coverage
+        path: /tmp/coverage.html
