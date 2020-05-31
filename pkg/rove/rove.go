@@ -1,10 +1,13 @@
 package rove
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+
+	"github.com/mdiluz/rove/pkg/server"
 )
 
 // Connection is the container for a simple connection to the server
@@ -19,13 +22,8 @@ func NewConnection(host string) *Connection {
 	}
 }
 
-// StatusResponse is a struct that contains information on the status of the server
-type StatusResponse struct {
-	Ready bool `json:"ready"`
-}
-
 // Status returns the current status of the server
-func (c *Connection) Status() (status StatusResponse, err error) {
+func (c *Connection) Status() (status server.StatusResponse, err error) {
 	url := url.URL{
 		Scheme: "http",
 		Host:   c.host,
@@ -33,9 +31,9 @@ func (c *Connection) Status() (status StatusResponse, err error) {
 	}
 
 	if resp, err := http.Get(url.String()); err != nil {
-		return StatusResponse{}, err
+		return server.StatusResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return StatusResponse{}, fmt.Errorf("Status request returned %d", resp.StatusCode)
+		return server.StatusResponse{}, fmt.Errorf("Status request returned %d", resp.StatusCode)
 	} else {
 		err = json.NewDecoder(resp.Body).Decode(&status)
 	}
@@ -43,26 +41,36 @@ func (c *Connection) Status() (status StatusResponse, err error) {
 	return
 }
 
-// RegisterResponse
-type RegisterResponse struct {
-	Id      string `json:"id"`
-	Success bool   `json:"success"`
-}
-
-// Register registers a new player on the server
-func (c *Connection) Register() (register RegisterResponse, err error) {
+// Register registers a new account on the server
+func (c *Connection) Register(name string) (register server.RegisterResponse, err error) {
 	url := url.URL{
 		Scheme: "http",
 		Host:   c.host,
 		Path:   "register",
 	}
 
-	if resp, err := http.Get(url.String()); err != nil {
-		return RegisterResponse{}, err
-	} else if resp.StatusCode != http.StatusOK {
-		return RegisterResponse{}, fmt.Errorf("Status request returned %d", resp.StatusCode)
+	// Marshal the register data struct
+	data := server.RegisterData{Name: name}
+	marshalled, err := json.Marshal(data)
+
+	// Set up the request
+	req, err := http.NewRequest("POST", url.String(), bytes.NewReader(marshalled))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Do the request
+	client := &http.Client{}
+	if resp, err := client.Do(req); err != nil {
+		return server.RegisterResponse{}, err
 	} else {
-		err = json.NewDecoder(resp.Body).Decode(&register)
+		defer resp.Body.Close()
+
+		// Handle any errors
+		if resp.StatusCode != http.StatusOK {
+			return server.RegisterResponse{}, fmt.Errorf("Status request returned %d", resp.StatusCode)
+		} else {
+			// Decode the reply
+			err = json.NewDecoder(resp.Body).Decode(&register)
+		}
 	}
 
 	return

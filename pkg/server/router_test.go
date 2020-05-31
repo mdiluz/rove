@@ -1,21 +1,22 @@
-package main
+package server
 
 import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/mdiluz/rove/pkg/rove"
 )
 
 func TestHandleStatus(t *testing.T) {
 	request, _ := http.NewRequest(http.MethodGet, "/status", nil)
 	response := httptest.NewRecorder()
 
-	HandleStatus(response, request)
+	s := NewServer(8080)
+	s.Initialise()
 
-	var status rove.StatusResponse
+	s.HandleStatus(response, request)
+
+	var status StatusResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Ready != true {

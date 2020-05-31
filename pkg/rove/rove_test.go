@@ -10,6 +10,7 @@ var serverUrl = "localhost:8080"
 
 func TestStatus(t *testing.T) {
 	conn := NewConnection(serverUrl)
+
 	if status, err := conn.Status(); err != nil {
 		t.Errorf("Status returned error: %s", err)
 	} else if !status.Ready {
@@ -19,11 +20,28 @@ func TestStatus(t *testing.T) {
 
 func TestRegister(t *testing.T) {
 	conn := NewConnection(serverUrl)
-	if reg, err := conn.Register(); err != nil {
+
+	reg1, err := conn.Register("one")
+	if err != nil {
 		t.Errorf("Register returned error: %s", err)
-	} else if !reg.Success {
+	} else if !reg1.Success {
 		t.Error("Server did not success for Register")
-	} else if len(reg.Id) == 0 {
+	} else if len(reg1.Id) == 0 {
 		t.Error("Server returned empty registration ID")
+	}
+
+	reg2, err := conn.Register("two")
+	if err != nil {
+		t.Errorf("Register returned error: %s", err)
+	} else if !reg2.Success {
+		t.Error("Server did not success for Register")
+	} else if len(reg2.Id) == 0 {
+		t.Error("Server returned empty registration ID")
+	}
+
+	if reg2, err := conn.Register("one"); err != nil {
+		t.Errorf("Register returned error: %s", err)
+	} else if reg2.Success {
+		t.Error("Server should have failed to register duplicate name")
 	}
 }

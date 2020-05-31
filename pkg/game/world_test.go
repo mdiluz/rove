@@ -1,4 +1,4 @@
-package rovegame
+package game
 
 import (
 	"testing"
