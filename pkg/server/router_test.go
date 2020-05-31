@@ -13,8 +13,6 @@ func TestHandleStatus(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	s := NewServer()
-	s.Initialise()
-
 	s.HandleStatus(response, request)
 
 	var status StatusResponse
@@ -36,8 +34,6 @@ func TestHandleRegister(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	s := NewServer()
-	s.Initialise()
-
 	s.HandleRegister(response, request)
 
 	var status RegisterResponse

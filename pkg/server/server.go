@@ -1,9 +1,12 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/mdiluz/rove/pkg/accounts"
@@ -25,9 +28,12 @@ type Server struct {
 	accountant *accounts.Accountant
 	world      *game.World
 
+	server *http.Server
 	router *mux.Router
 
 	persistence int
+
+	sync sync.WaitGroup
 }
 
 // ServerOption defines a server creation option
@@ -50,12 +56,16 @@ func OptionPersistentData() ServerOption {
 // NewServer sets up a new server
 func NewServer(opts ...ServerOption) *Server {
 
+	router := mux.NewRouter().StrictSlash(true)
+
 	// Set up the default server
 	s := &Server{
 		port:        8080,
 		accountant:  accounts.NewAccountant(),
 		world:       game.NewWorld(),
 		persistence: EphemeralData,
+		router:      router,
+		server:      &http.Server{Addr: ":8080", Handler: router},
 	}
 
 	// Apply all options
@@ -83,20 +93,34 @@ func (s *Server) Initialise() error {
 	s.SetUpRouter()
 	fmt.Printf("Routes Created\n")
 
+	// Add to our sync
+	s.sync.Add(1)
+
 	return nil
 }
 
 // Run executes the server
 func (s *Server) Run() {
+	defer s.sync.Done()
+
 	// Listen and serve the http requests
 	fmt.Println("Serving HTTP")
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), s.router); err != nil {
+	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 }
 
 // Close closes up the server
 func (s *Server) Close() error {
+	// Try and shut down the http server
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := s.server.Shutdown(ctx); err != nil {
+		return err
+	}
+
+	// Wait until the server is shut down
+	s.sync.Wait()
 
 	// Save the accounts if requested
 	if s.persistence == PersistentData {

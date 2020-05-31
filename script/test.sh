@@ -4,18 +4,13 @@ cd "$(dirname "$0")"
 cd ..
 set -x
 
-# Test the build
-go build -v .
-
-# Run unit tests
-go test -v ./... -cover
-
-# Verify docker build
-docker build .
-
-# Run the integration tests with docker-compose
+# Build and start the service
 docker-compose up --build --detach
+
+# Run tests, including integration tests
 go test -v ./... -tags integration -cover -coverprofile=/tmp/c.out
+
+# Take down the service
 docker-compose down
 
 # Convert the coverage data to html

@@ -5,14 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/mdiluz/rove/pkg/accounts"
 )
 
 // NewRouter sets up the server mux
 func (s *Server) SetUpRouter() {
-	s.router = mux.NewRouter().StrictSlash(true)
-
 	// Set up the handlers
 	s.router.HandleFunc("/status", s.HandleStatus)
 	s.router.HandleFunc("/register", s.HandleRegister)
