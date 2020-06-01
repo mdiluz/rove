@@ -13,6 +13,8 @@ import (
 var port = flag.Int("port", 8080, "The port to host on")
 
 func main() {
+	flag.Parse()
+
 	s := server.NewServer(
 		server.OptionPort(*port),
 		server.OptionPersistentData())

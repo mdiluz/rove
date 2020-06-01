@@ -3,4 +3,5 @@ services:
   rove-server:
     build: .
     ports:
-      - "80:8080"
+      - "80:80"
+    command: ./rove-server --port 80

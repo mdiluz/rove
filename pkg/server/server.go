@@ -65,13 +65,15 @@ func NewServer(opts ...ServerOption) *Server {
 		world:       game.NewWorld(),
 		persistence: EphemeralData,
 		router:      router,
-		server:      &http.Server{Addr: ":8080", Handler: router},
 	}
 
 	// Apply all options
 	for _, o := range opts {
 		o(s)
 	}
+
+	// Set up the server object
+	s.server = &http.Server{Addr: fmt.Sprintf(":%d", s.port), Handler: router}
 
 	return s
 }
@@ -104,7 +106,7 @@ func (s *Server) Run() {
 	defer s.sync.Done()
 
 	// Listen and serve the http requests
-	fmt.Println("Serving HTTP")
+	fmt.Printf("Serving HTTP on port %d\n", s.port)
 	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
