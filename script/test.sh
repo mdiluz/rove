@@ -8,6 +8,7 @@ set -x
 docker-compose up --build --detach
 
 # Run tests, including integration tests
+go mod download
 go test -v ./... -tags integration -cover -coverprofile=/tmp/c.out
 
 # Take down the service
