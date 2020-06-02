@@ -1,11 +1,7 @@
 package accounts
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path"
 
 	"github.com/google/uuid"
 )
@@ -31,13 +27,11 @@ type accountantData struct {
 // Accountant manages a set of accounts
 type Accountant struct {
 	Accounts map[uuid.UUID]Account `json:"accounts"`
-	dataPath string
 }
 
 // NewAccountant creates a new accountant
-func NewAccountant(dataPath string) *Accountant {
+func NewAccountant() *Accountant {
 	return &Accountant{
-		dataPath: dataPath,
 		Accounts: make(map[uuid.UUID]Account),
 	}
 }
@@ -62,40 +56,6 @@ func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 	a.Accounts[acc.Id] = acc
 
 	return
-}
-
-// path returns the full path to the data file
-func (a Accountant) path() string {
-	return path.Join(a.dataPath, kAccountsFileName)
-}
-
-// Load will load the accountant from data
-func (a *Accountant) Load() error {
-	// Don't load anything if the file doesn't exist
-	_, err := os.Stat(a.path())
-	if os.IsNotExist(err) {
-		fmt.Printf("File %s didn't exist, loading with fresh accounts data\n", a.path())
-		return nil
-	}
-
-	if b, err := ioutil.ReadFile(a.path()); err != nil {
-		return err
-	} else if err := json.Unmarshal(b, &a); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Save will save the accountant data out
-func (a *Accountant) Save() error {
-	if b, err := json.MarshalIndent(a, "", "\t"); err != nil {
-		return err
-	} else {
-		if err := ioutil.WriteFile(a.path(), b, os.ModePerm); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 // AssignPrimary assigns primary ownership of an instance to an account

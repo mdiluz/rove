@@ -1,11 +1,7 @@
 package game
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path"
 
 	"github.com/google/uuid"
 )
@@ -30,45 +26,10 @@ type Instance struct {
 const kWorldFileName = "rove-world.json"
 
 // NewWorld creates a new world object
-func NewWorld(data string) *World {
+func NewWorld() *World {
 	return &World{
 		Instances: make(map[uuid.UUID]Instance),
-		dataPath:  data,
 	}
-}
-
-// path returns the full path to the data file
-func (w *World) path() string {
-	return path.Join(w.dataPath, kWorldFileName)
-}
-
-// Load will load the accountant from data
-func (w *World) Load() error {
-	// Don't load anything if the file doesn't exist
-	_, err := os.Stat(w.path())
-	if os.IsNotExist(err) {
-		fmt.Printf("File %s didn't exist, loading with fresh world data\n", w.path())
-		return nil
-	}
-
-	if b, err := ioutil.ReadFile(w.path()); err != nil {
-		return err
-	} else if err := json.Unmarshal(b, &w); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Save will save the accountant data out
-func (w *World) Save() error {
-	if b, err := json.MarshalIndent(w, "", "\t"); err != nil {
-		return err
-	} else {
-		if err := ioutil.WriteFile(w.path(), b, os.ModePerm); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 // Adds an instance to the game

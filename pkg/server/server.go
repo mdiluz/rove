@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/game"
+	"github.com/mdiluz/rove/pkg/persistence"
 )
 
 const (
@@ -48,10 +49,9 @@ func OptionPort(port int) ServerOption {
 }
 
 // OptionPersistentData sets the server data to be persistent
-func OptionPersistentData(loc string) ServerOption {
+func OptionPersistentData() ServerOption {
 	return func(s *Server) {
 		s.persistence = PersistentData
-		s.persistenceLocation = loc
 	}
 }
 
@@ -76,8 +76,8 @@ func NewServer(opts ...ServerOption) *Server {
 	s.server = &http.Server{Addr: fmt.Sprintf(":%d", s.port), Handler: router}
 
 	// Create the accountant
-	s.accountant = accounts.NewAccountant(s.persistenceLocation)
-	s.world = game.NewWorld(s.persistenceLocation)
+	s.accountant = accounts.NewAccountant()
+	s.world = game.NewWorld()
 
 	return s
 }
@@ -87,10 +87,7 @@ func (s *Server) Initialise() error {
 
 	// Load the accounts if requested
 	if s.persistence == PersistentData {
-		if err := s.accountant.Load(); err != nil {
-			return err
-		}
-		if err := s.world.Load(); err != nil {
+		if err := persistence.LoadAll("accounts", &s.accountant, "world", &s.world); err != nil {
 			return err
 		}
 	}
@@ -130,10 +127,7 @@ func (s *Server) Close() error {
 
 	// Save the accounts if requested
 	if s.persistence == PersistentData {
-		if err := s.accountant.Save(); err != nil {
-			return err
-		}
-		if err := s.world.Save(); err != nil {
+		if err := persistence.SaveAll("accounts", s.accountant, "world", s.world); err != nil {
 			return err
 		}
 	}

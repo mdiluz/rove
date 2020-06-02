@@ -1,7 +1,6 @@
 package accounts
 
 import (
-	"os"
 	"testing"
 
 	"github.com/google/uuid"
@@ -9,7 +8,7 @@ import (
 
 func TestNewAccountant(t *testing.T) {
 	// Very basic verify here for now
-	accountant := NewAccountant(os.TempDir())
+	accountant := NewAccountant()
 	if accountant == nil {
 		t.Error("Failed to create accountant")
 	}
@@ -17,7 +16,7 @@ func TestNewAccountant(t *testing.T) {
 
 func TestAccountant_RegisterAccount(t *testing.T) {
 
-	accountant := NewAccountant(os.TempDir())
+	accountant := NewAccountant()
 
 	// Start by making two accounts
 
@@ -49,50 +48,8 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 	}
 }
 
-func TestAccountant_LoadSave(t *testing.T) {
-	accountant := NewAccountant(os.TempDir())
-	if len(accountant.Accounts) != 0 {
-		t.Error("New accountant created with non-zero account number")
-	}
-
-	name := uuid.New().String()
-	a, err := accountant.RegisterAccount(name)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if len(accountant.Accounts) != 1 {
-		t.Error("No new account made")
-	} else if accountant.Accounts[a.Id].Name != name {
-		t.Error("New account created with wrong name")
-	}
-
-	// Save out the accountant
-	if err := accountant.Save(); err != nil {
-		t.Error(err)
-	}
-
-	// Re-create the accountant
-	accountant = NewAccountant(os.TempDir())
-	if len(accountant.Accounts) != 0 {
-		t.Error("New accountant created with non-zero account number")
-	}
-
-	// Load the old accountant data
-	if err := accountant.Load(); err != nil {
-		t.Error(err)
-	}
-
-	// Verify we have the same account again
-	if len(accountant.Accounts) != 1 {
-		t.Error("No account after load")
-	} else if accountant.Accounts[a.Id].Name != name {
-		t.Error("New account created with wrong name")
-	}
-}
-
 func TestAccountant_AssignPrimary(t *testing.T) {
-	accountant := NewAccountant(os.TempDir())
+	accountant := NewAccountant()
 	if len(accountant.Accounts) != 0 {
 		t.Error("New accountant created with non-zero account number")
 	}

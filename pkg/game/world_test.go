@@ -1,20 +1,19 @@
 package game
 
 import (
-	"os"
 	"testing"
 )
 
 func TestNewWorld(t *testing.T) {
 	// Very basic for now, nothing to verify
-	world := NewWorld(os.TempDir())
+	world := NewWorld()
 	if world == nil {
 		t.Error("Failed to create world")
 	}
 }
 
 func TestWorld_CreateInstance(t *testing.T) {
-	world := NewWorld(os.TempDir())
+	world := NewWorld()
 	a := world.CreateInstance()
 	b := world.CreateInstance()
 
