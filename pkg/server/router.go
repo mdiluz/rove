@@ -65,6 +65,17 @@ func (s *Server) HandleStatus(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// BasicResponse describes the minimum dataset for a response
+type BasicResponse struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
+}
+
+// BasicAccountData describes the data to be sent for an account specific post
+type BasicAccountData struct {
+	Id string `json:"id"`
+}
+
 // RegisterData describes the data to send when registering
 type RegisterData struct {
 	Name string `json:"name"`
@@ -72,10 +83,9 @@ type RegisterData struct {
 
 // RegisterResponse describes the response to a register request
 type RegisterResponse struct {
-	Id string `json:"id"`
+	BasicResponse
 
-	Success bool   `json:"success"`
-	Error   string `json:"error"`
+	Id string `json:"id"`
 }
 
 // HandleRegister handles HTTP requests to the /register endpoint
@@ -84,7 +94,9 @@ func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
 
 	// Set up the response
 	var response = RegisterResponse{
-		Success: false,
+		BasicResponse: BasicResponse{
+			Success: false,
+		},
 	}
 
 	// Verify we're hit with a get request
