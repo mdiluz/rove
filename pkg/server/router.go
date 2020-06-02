@@ -67,7 +67,7 @@ func (s *Server) HandleStatus(w http.ResponseWriter, r *http.Request) {
 
 // RegisterData describes the data to send when registering
 type RegisterData struct {
-	Name string `json:"id"`
+	Name string `json:"name"`
 }
 
 // RegisterResponse describes the response to a register request
@@ -100,6 +100,8 @@ func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Failed to decode json: %s", err)
 
 		response.Error = err.Error()
+	} else if len(data.Name) == 0 {
+		response.Error = "Cannot register empty name"
 	} else {
 		// log the data sent
 		fmt.Printf("\t%v\n", data)
