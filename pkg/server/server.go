@@ -63,7 +63,6 @@ func NewServer(opts ...ServerOption) *Server {
 	// Set up the default server
 	s := &Server{
 		port:        8080,
-		world:       game.NewWorld(),
 		persistence: EphemeralData,
 		router:      router,
 	}
@@ -78,19 +77,20 @@ func NewServer(opts ...ServerOption) *Server {
 
 	// Create the accountant
 	s.accountant = accounts.NewAccountant(s.persistenceLocation)
+	s.world = game.NewWorld(s.persistenceLocation)
 
 	return s
 }
 
 // Initialise sets up internal state ready to serve
 func (s *Server) Initialise() error {
-	// Set up the world
-	s.world = game.NewWorld()
-	fmt.Printf("World created\n\t%+v\n", s.world)
 
 	// Load the accounts if requested
 	if s.persistence == PersistentData {
 		if err := s.accountant.Load(); err != nil {
+			return err
+		}
+		if err := s.world.Load(); err != nil {
 			return err
 		}
 	}
@@ -131,6 +131,9 @@ func (s *Server) Close() error {
 	// Save the accounts if requested
 	if s.persistence == PersistentData {
 		if err := s.accountant.Save(); err != nil {
+			return err
+		}
+		if err := s.world.Save(); err != nil {
 			return err
 		}
 	}

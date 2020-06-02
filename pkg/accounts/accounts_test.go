@@ -53,7 +53,7 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 
 func TestAccountant_LoadSave(t *testing.T) {
 	accountant := NewAccountant(os.TempDir())
-	if len(accountant.data.Accounts) != 0 {
+	if len(accountant.Accounts) != 0 {
 		t.Error("New accountant created with non-zero account number")
 	}
 
@@ -64,9 +64,9 @@ func TestAccountant_LoadSave(t *testing.T) {
 		t.Error(err)
 	}
 
-	if len(accountant.data.Accounts) != 1 {
+	if len(accountant.Accounts) != 1 {
 		t.Error("No new account made")
-	} else if accountant.data.Accounts[a.Id].Name != name {
+	} else if accountant.Accounts[a.Id].Name != name {
 		t.Error("New account created with wrong name")
 	}
 
@@ -77,7 +77,7 @@ func TestAccountant_LoadSave(t *testing.T) {
 
 	// Re-create the accountant
 	accountant = NewAccountant(os.TempDir())
-	if len(accountant.data.Accounts) != 0 {
+	if len(accountant.Accounts) != 0 {
 		t.Error("New accountant created with non-zero account number")
 	}
 
@@ -87,16 +87,16 @@ func TestAccountant_LoadSave(t *testing.T) {
 	}
 
 	// Verify we have the same account again
-	if len(accountant.data.Accounts) != 1 {
+	if len(accountant.Accounts) != 1 {
 		t.Error("No account after load")
-	} else if accountant.data.Accounts[a.Id].Name != name {
+	} else if accountant.Accounts[a.Id].Name != name {
 		t.Error("New account created with wrong name")
 	}
 }
 
 func TestAccountant_AssignPrimary(t *testing.T) {
 	accountant := NewAccountant(os.TempDir())
-	if len(accountant.data.Accounts) != 0 {
+	if len(accountant.Accounts) != 0 {
 		t.Error("New accountant created with non-zero account number")
 	}
 
@@ -112,7 +112,7 @@ func TestAccountant_AssignPrimary(t *testing.T) {
 	err = accountant.AssignPrimary(a.Id, inst)
 	if err != nil {
 		t.Error("Failed to set primary for created account")
-	} else if accountant.data.Accounts[a.Id].Primary != inst {
+	} else if accountant.Accounts[a.Id].Primary != inst {
 		t.Error("Primary for assigned account is incorrect")
 	}
 }

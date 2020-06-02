@@ -26,12 +26,11 @@ type Account struct {
 
 // Represents the accountant data to store
 type accountantData struct {
-	Accounts map[uuid.UUID]Account `json:"accounts"`
 }
 
 // Accountant manages a set of accounts
 type Accountant struct {
-	data     accountantData
+	Accounts map[uuid.UUID]Account `json:"accounts"`
 	dataPath string
 }
 
@@ -39,9 +38,7 @@ type Accountant struct {
 func NewAccountant(dataPath string) *Accountant {
 	return &Accountant{
 		dataPath: dataPath,
-		data: accountantData{
-			Accounts: make(map[uuid.UUID]Account),
-		},
+		Accounts: make(map[uuid.UUID]Account),
 	}
 }
 
@@ -52,7 +49,7 @@ func (a *Accountant) RegisterAccount(acc Account) (Account, error) {
 	acc.Id = uuid.New()
 
 	// Verify this acount isn't already registered
-	for _, a := range a.data.Accounts {
+	for _, a := range a.Accounts {
 		if a.Name == acc.Name {
 			return Account{}, fmt.Errorf("Account name already registered")
 		} else if a.Id == acc.Id {
@@ -61,7 +58,7 @@ func (a *Accountant) RegisterAccount(acc Account) (Account, error) {
 	}
 
 	// Simply add the account to the map
-	a.data.Accounts[acc.Id] = acc
+	a.Accounts[acc.Id] = acc
 
 	return acc, nil
 }
@@ -82,7 +79,7 @@ func (a *Accountant) Load() error {
 
 	if b, err := ioutil.ReadFile(a.path()); err != nil {
 		return err
-	} else if err := json.Unmarshal(b, &a.data); err != nil {
+	} else if err := json.Unmarshal(b, &a); err != nil {
 		return err
 	}
 	return nil
@@ -90,7 +87,7 @@ func (a *Accountant) Load() error {
 
 // Save will save the accountant data out
 func (a *Accountant) Save() error {
-	if b, err := json.MarshalIndent(a.data, "", "\t"); err != nil {
+	if b, err := json.MarshalIndent(a, "", "\t"); err != nil {
 		return err
 	} else {
 		if err := ioutil.WriteFile(a.path(), b, os.ModePerm); err != nil {
@@ -104,9 +101,9 @@ func (a *Accountant) Save() error {
 func (a *Accountant) AssignPrimary(account uuid.UUID, instance uuid.UUID) error {
 
 	// Find the account matching the ID
-	if this, ok := a.data.Accounts[account]; ok {
+	if this, ok := a.Accounts[account]; ok {
 		this.Primary = instance
-		a.data.Accounts[account] = this
+		a.Accounts[account] = this
 	} else {
 		return fmt.Errorf("no account found for id: %s", account)
 	}
