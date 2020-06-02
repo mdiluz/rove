@@ -97,14 +97,14 @@ func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	var data RegisterData
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		fmt.Printf("Failed to decode json: %s", err)
+		fmt.Printf("Failed to decode json: %s\n", err)
 
 		response.Error = err.Error()
 	} else if len(data.Name) == 0 {
 		response.Error = "Cannot register empty name"
 	} else {
 		// log the data sent
-		fmt.Printf("\t%v\n", data)
+		fmt.Printf("\tdata: %+v\n", data)
 
 		// Register the account with the server
 		acc := accounts.Account{Name: data.Name}
