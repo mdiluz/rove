@@ -43,7 +43,7 @@ func NewAccountant(dataPath string) *Accountant {
 }
 
 // RegisterAccount adds an account to the set of internal accounts
-func (a *Accountant) RegisterAccount(acc Account) (Account, error) {
+func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 
 	// Set the account ID to a new UUID
 	acc.Id = uuid.New()
@@ -60,7 +60,7 @@ func (a *Accountant) RegisterAccount(acc Account) (Account, error) {
 	// Simply add the account to the map
 	a.Accounts[acc.Id] = acc
 
-	return acc, nil
+	return
 }
 
 // path returns the full path to the data file

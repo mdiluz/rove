@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/version"
 )
@@ -125,8 +124,7 @@ func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("\tdata: %+v\n", data)
 
 		// Register the account with the server
-		acc := accounts.Account{Name: data.Name}
-		acc, err := s.accountant.RegisterAccount(acc)
+		acc, err := s.accountant.RegisterAccount(data.Name)
 
 		// If we didn't fail, respond with the account ID string
 		if err == nil {

@@ -22,8 +22,7 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 	// Start by making two accounts
 
 	namea := "one"
-	a := Account{Name: namea}
-	acca, err := accountant.RegisterAccount(a)
+	acca, err := accountant.RegisterAccount(namea)
 	if err != nil {
 		t.Error(err)
 	} else if acca.Name != namea {
@@ -31,8 +30,7 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 	}
 
 	nameb := "two"
-	b := Account{Name: nameb}
-	accb, err := accountant.RegisterAccount(b)
+	accb, err := accountant.RegisterAccount(nameb)
 	if err != nil {
 		t.Error(err)
 	} else if accb.Name != nameb {
@@ -45,7 +43,7 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 	}
 
 	// Verify another request gets rejected
-	_, err = accountant.RegisterAccount(a)
+	_, err = accountant.RegisterAccount(namea)
 	if err == nil {
 		t.Error("Duplicate account name did not produce error")
 	}
@@ -58,8 +56,7 @@ func TestAccountant_LoadSave(t *testing.T) {
 	}
 
 	name := "one"
-	a := Account{Name: name}
-	a, err := accountant.RegisterAccount(a)
+	a, err := accountant.RegisterAccount(name)
 	if err != nil {
 		t.Error(err)
 	}
@@ -101,8 +98,7 @@ func TestAccountant_AssignPrimary(t *testing.T) {
 	}
 
 	name := "one"
-	a := Account{Name: name}
-	a, err := accountant.RegisterAccount(a)
+	a, err := accountant.RegisterAccount(name)
 	if err != nil {
 		t.Error(err)
 	}
