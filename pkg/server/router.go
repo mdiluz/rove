@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/accounts"
+	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/version"
 )
 
@@ -27,6 +29,10 @@ func (s *Server) SetUpRouter() {
 		{
 			path:    "/register",
 			handler: s.HandleRegister,
+		},
+		{
+			path:    "/spawn",
+			handler: s.HandleSpawn,
 		},
 	}
 
@@ -128,6 +134,72 @@ func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
 			response.Id = acc.Id.String()
 		} else {
 			response.Error = err.Error()
+		}
+	}
+
+	// Be a good citizen and set the header for the return
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+
+	// Reply with the current status
+	json.NewEncoder(w).Encode(response)
+}
+
+// SpawnData is the data to be sent for the spawn command
+type SpawnData struct {
+	BasicAccountData
+}
+
+// SpawnResponse is the data to respond with on a spawn command
+type SpawnResponse struct {
+	BasicResponse
+
+	Position game.Position `json:"position"`
+}
+
+// HandleSpawn will spawn the player entity for the associated account
+func (s *Server) HandleSpawn(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
+
+	// Set up the response
+	var response = SpawnResponse{
+		BasicResponse: BasicResponse{
+			Success: false,
+		},
+	}
+
+	// Verify we're hit with a get request
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Pull out the incoming info
+	var data SpawnData
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		fmt.Printf("Failed to decode json: %s\n", err)
+
+		response.Error = err.Error()
+	} else if len(data.Id) == 0 {
+		response.Error = "No account ID provided"
+	} else if id, err := uuid.Parse(data.Id); err != nil {
+		response.Error = "Provided account ID was invalid"
+	} else {
+		// log the data sent
+		fmt.Printf("\tdata: %v\n", data)
+
+		// Create a new instance
+		inst := s.world.CreateInstance()
+		if pos, err := s.world.GetPosition(inst); err != nil {
+			response.Error = fmt.Sprint("No position found for created instance")
+		} else {
+			if err := s.accountant.AssignPrimary(id, inst); err != nil {
+				response.Error = err.Error()
+			} else {
+				response.Success = true
+				response.Position = pos
+			}
 		}
 	}
 

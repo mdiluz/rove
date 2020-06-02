@@ -17,13 +17,16 @@ type Account struct {
 	// Name simply describes the account and must be unique
 	Name string `json:"name"`
 
-	// id represents a unique ID per account and is set one registered
+	// Id represents a unique ID per account and is set one registered
 	Id uuid.UUID `json:"id"`
+
+	// Primary represents the primary instance that this account owns
+	Primary uuid.UUID `json:"primary"`
 }
 
 // Represents the accountant data to store
 type accountantData struct {
-	Accounts []Account `json:"accounts"`
+	Accounts map[uuid.UUID]Account `json:"accounts"`
 }
 
 // Accountant manages a set of accounts
@@ -36,6 +39,9 @@ type Accountant struct {
 func NewAccountant(dataPath string) *Accountant {
 	return &Accountant{
 		dataPath: dataPath,
+		data: accountantData{
+			Accounts: make(map[uuid.UUID]Account),
+		},
 	}
 }
 
@@ -54,8 +60,8 @@ func (a *Accountant) RegisterAccount(acc Account) (Account, error) {
 		}
 	}
 
-	// Simply add the account to the list
-	a.data.Accounts = append(a.data.Accounts, acc)
+	// Simply add the account to the map
+	a.data.Accounts[acc.Id] = acc
 
 	return acc, nil
 }
@@ -84,12 +90,26 @@ func (a *Accountant) Load() error {
 
 // Save will save the accountant data out
 func (a *Accountant) Save() error {
-	if b, err := json.Marshal(a.data); err != nil {
+	if b, err := json.MarshalIndent(a.data, "", "\t"); err != nil {
 		return err
 	} else {
 		if err := ioutil.WriteFile(a.path(), b, os.ModePerm); err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+// AssignPrimary assigns primary ownership of an instance to an account
+func (a *Accountant) AssignPrimary(account uuid.UUID, instance uuid.UUID) error {
+
+	// Find the account matching the ID
+	if this, ok := a.data.Accounts[account]; ok {
+		this.Primary = instance
+		a.data.Accounts[account] = this
+	} else {
+		return fmt.Errorf("no account found for id: %s", account)
+	}
+
 	return nil
 }

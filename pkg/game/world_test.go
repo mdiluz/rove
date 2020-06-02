@@ -20,5 +20,7 @@ func TestWorld_CreateInstance(t *testing.T) {
 	// Basic duplicate check
 	if a == b {
 		t.Errorf("Created identical instances")
+	} else if len(world.instances) != 2 {
+		t.Errorf("Incorrect number of instances created")
 	}
 }

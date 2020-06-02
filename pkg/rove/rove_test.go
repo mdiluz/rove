@@ -15,6 +15,8 @@ func TestStatus(t *testing.T) {
 		t.Errorf("Status returned error: %s", err)
 	} else if !status.Ready {
 		t.Error("Server did not return that it was ready")
+	} else if len(status.Version) == 0 {
+		t.Error("Server returned blank version")
 	}
 }
 
