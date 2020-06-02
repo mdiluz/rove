@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var serverUrl = "localhost:8080"
+var serverUrl = "localhost:80"
 
 func TestStatus(t *testing.T) {
 	conn := NewConnection(serverUrl)
