@@ -21,6 +21,10 @@ func TestHandleStatus(t *testing.T) {
 	if status.Ready != true {
 		t.Errorf("got false for /status")
 	}
+
+	if len(status.Version) == 0 {
+		t.Errorf("got empty version info")
+	}
 }
 
 func TestHandleRegister(t *testing.T) {

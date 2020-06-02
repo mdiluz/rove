@@ -6,18 +6,40 @@ import (
 	"net/http"
 
 	"github.com/mdiluz/rove/pkg/accounts"
+	"github.com/mdiluz/rove/pkg/version"
 )
+
+// Route defines the information for a single path->function route
+type Route struct {
+	path    string
+	handler func(http.ResponseWriter, *http.Request)
+}
 
 // NewRouter sets up the server mux
 func (s *Server) SetUpRouter() {
+
+	// Array of all our routes
+	var routes = []Route{
+		{
+			path:    "/status",
+			handler: s.HandleStatus,
+		},
+		{
+			path:    "/register",
+			handler: s.HandleRegister,
+		},
+	}
+
 	// Set up the handlers
-	s.router.HandleFunc("/status", s.HandleStatus)
-	s.router.HandleFunc("/register", s.HandleRegister)
+	for _, route := range routes {
+		s.router.HandleFunc(route.path, route.handler)
+	}
 }
 
 // StatusResponse is a struct that contains information on the status of the server
 type StatusResponse struct {
-	Ready bool `json:"ready"`
+	Ready   bool   `json:"ready"`
+	Version string `json:"version"`
 }
 
 // HandleStatus handles HTTP requests to the /status endpoint
@@ -31,7 +53,8 @@ func (s *Server) HandleStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var response = StatusResponse{
-		Ready: true,
+		Ready:   true,
+		Version: version.Version,
 	}
 
 	// Be a good citizen and set the header for the return

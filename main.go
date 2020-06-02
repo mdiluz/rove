@@ -8,12 +8,19 @@ import (
 	"syscall"
 
 	"github.com/mdiluz/rove/pkg/server"
+	"github.com/mdiluz/rove/pkg/version"
 )
 
+var ver = flag.Bool("version", false, "Display version number")
 var port = flag.Int("port", 8080, "The port to host on")
 
 func main() {
 	flag.Parse()
+
+	if *ver {
+		fmt.Println(version.Version)
+		os.Exit(0)
+	}
 
 	s := server.NewServer(
 		server.OptionPort(*port),
