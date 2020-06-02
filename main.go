@@ -13,6 +13,7 @@ import (
 
 var ver = flag.Bool("version", false, "Display version number")
 var port = flag.Int("port", 8080, "The port to host on")
+var data = flag.String("data", "/tmp/", "Directory to store persistant data")
 
 func main() {
 	flag.Parse()
@@ -24,7 +25,7 @@ func main() {
 
 	s := server.NewServer(
 		server.OptionPort(*port),
-		server.OptionPersistentData())
+		server.OptionPersistentData(*data))
 
 	fmt.Println("Initialising...")
 	if err := s.Initialise(); err != nil {

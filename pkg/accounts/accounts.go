@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 
 	"github.com/google/uuid"
 )
 
-const kDefaultSavePath = "/tmp/accounts.json"
+const kAccountsFileName = "rove-accounts.json"
 
 // Account represents a registered user
 type Account struct {
@@ -27,12 +28,15 @@ type accountantData struct {
 
 // Accountant manages a set of accounts
 type Accountant struct {
-	data accountantData
+	data     accountantData
+	dataPath string
 }
 
 // NewAccountant creates a new accountant
-func NewAccountant() *Accountant {
-	return &Accountant{}
+func NewAccountant(dataPath string) *Accountant {
+	return &Accountant{
+		dataPath: dataPath,
+	}
 }
 
 // RegisterAccount adds an account to the set of internal accounts
@@ -56,16 +60,21 @@ func (a *Accountant) RegisterAccount(acc Account) (Account, error) {
 	return acc, nil
 }
 
+// path returns the full path to the data file
+func (a Accountant) path() string {
+	return path.Join(a.dataPath, kAccountsFileName)
+}
+
 // Load will load the accountant from data
 func (a *Accountant) Load() error {
 	// Don't load anything if the file doesn't exist
-	_, err := os.Stat(kDefaultSavePath)
+	_, err := os.Stat(a.path())
 	if os.IsNotExist(err) {
-		fmt.Printf("File %s didn't exist, loading with fresh accounts data\n", kDefaultSavePath)
+		fmt.Printf("File %s didn't exist, loading with fresh accounts data\n", a.path())
 		return nil
 	}
 
-	if b, err := ioutil.ReadFile(kDefaultSavePath); err != nil {
+	if b, err := ioutil.ReadFile(a.path()); err != nil {
 		return err
 	} else if err := json.Unmarshal(b, &a.data); err != nil {
 		return err
@@ -78,7 +87,7 @@ func (a *Accountant) Save() error {
 	if b, err := json.Marshal(a.data); err != nil {
 		return err
 	} else {
-		if err := ioutil.WriteFile(kDefaultSavePath, b, os.ModePerm); err != nil {
+		if err := ioutil.WriteFile(a.path(), b, os.ModePerm); err != nil {
 			return err
 		}
 	}

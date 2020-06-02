@@ -31,7 +31,8 @@ type Server struct {
 	server *http.Server
 	router *mux.Router
 
-	persistence int
+	persistence         int
+	persistenceLocation string
 
 	sync sync.WaitGroup
 }
@@ -47,9 +48,10 @@ func OptionPort(port int) ServerOption {
 }
 
 // OptionPersistentData sets the server data to be persistent
-func OptionPersistentData() ServerOption {
+func OptionPersistentData(loc string) ServerOption {
 	return func(s *Server) {
 		s.persistence = PersistentData
+		s.persistenceLocation = loc
 	}
 }
 
@@ -61,7 +63,6 @@ func NewServer(opts ...ServerOption) *Server {
 	// Set up the default server
 	s := &Server{
 		port:        8080,
-		accountant:  accounts.NewAccountant(),
 		world:       game.NewWorld(),
 		persistence: EphemeralData,
 		router:      router,
@@ -74,6 +75,9 @@ func NewServer(opts ...ServerOption) *Server {
 
 	// Set up the server object
 	s.server = &http.Server{Addr: fmt.Sprintf(":%d", s.port), Handler: router}
+
+	// Create the accountant
+	s.accountant = accounts.NewAccountant(s.persistenceLocation)
 
 	return s
 }

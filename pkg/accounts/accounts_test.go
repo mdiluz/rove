@@ -1,12 +1,13 @@
 package accounts
 
 import (
+	"os"
 	"testing"
 )
 
 func TestNewAccountant(t *testing.T) {
 	// Very basic verify here for now
-	accountant := NewAccountant()
+	accountant := NewAccountant(os.TempDir())
 	if accountant == nil {
 		t.Error("Failed to create accountant")
 	}
@@ -14,7 +15,7 @@ func TestNewAccountant(t *testing.T) {
 
 func TestAccountant_RegisterAccount(t *testing.T) {
 
-	accountant := NewAccountant()
+	accountant := NewAccountant(os.TempDir())
 
 	// Start by making two accounts
 
@@ -49,7 +50,7 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 }
 
 func TestAccountant_LoadSave(t *testing.T) {
-	accountant := NewAccountant()
+	accountant := NewAccountant(os.TempDir())
 	if len(accountant.data.Accounts) != 0 {
 		t.Error("New accountant created with non-zero account number")
 	}
@@ -73,7 +74,7 @@ func TestAccountant_LoadSave(t *testing.T) {
 	}
 
 	// Re-create the accountant
-	accountant = NewAccountant()
+	accountant = NewAccountant(os.TempDir())
 	if len(accountant.data.Accounts) != 0 {
 		t.Error("New accountant created with non-zero account number")
 	}

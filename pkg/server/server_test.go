@@ -1,6 +1,7 @@
 package server
 
 import (
+	"os"
 	"testing"
 )
 
@@ -21,11 +22,13 @@ func TestNewServer_OptionPort(t *testing.T) {
 }
 
 func TestNewServer_OptionPersistentData(t *testing.T) {
-	server := NewServer(OptionPersistentData())
+	server := NewServer(OptionPersistentData(os.TempDir()))
 	if server == nil {
 		t.Error("Failed to create server")
 	} else if server.persistence != PersistentData {
 		t.Error("Failed to set server persistent data")
+	} else if server.persistenceLocation != os.TempDir() {
+		t.Error("Failed to set server persistent data path")
 	}
 }
 
@@ -44,7 +47,7 @@ func TestServer_Run(t *testing.T) {
 }
 
 func TestServer_RunPersistentData(t *testing.T) {
-	server := NewServer(OptionPersistentData())
+	server := NewServer(OptionPersistentData(os.TempDir()))
 	if server == nil {
 		t.Error("Failed to create server")
 	} else if err := server.Initialise(); err != nil {
