@@ -47,6 +47,7 @@ func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 
 	// Set the account ID to a new UUID
 	acc.Id = uuid.New()
+	acc.Name = name
 
 	// Verify this acount isn't already registered
 	for _, a := range a.Accounts {

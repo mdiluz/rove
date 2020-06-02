@@ -4,6 +4,8 @@ package rove
 
 import (
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 var serverUrl = "localhost:80"
@@ -23,7 +25,8 @@ func TestStatus(t *testing.T) {
 func TestRegister(t *testing.T) {
 	conn := NewConnection(serverUrl)
 
-	reg1, err := conn.Register("one")
+	a := uuid.New().String()
+	reg1, err := conn.Register(a)
 	if err != nil {
 		t.Errorf("Register returned error: %s", err)
 	} else if !reg1.Success {
@@ -32,7 +35,8 @@ func TestRegister(t *testing.T) {
 		t.Error("Server returned empty registration ID")
 	}
 
-	reg2, err := conn.Register("two")
+	b := uuid.New().String()
+	reg2, err := conn.Register(b)
 	if err != nil {
 		t.Errorf("Register returned error: %s", err)
 	} else if !reg2.Success {
@@ -41,7 +45,7 @@ func TestRegister(t *testing.T) {
 		t.Error("Server returned empty registration ID")
 	}
 
-	if reg2, err := conn.Register("one"); err != nil {
+	if reg2, err := conn.Register(a); err != nil {
 		t.Errorf("Register returned error: %s", err)
 	} else if reg2.Success {
 		t.Error("Server should have failed to register duplicate name")

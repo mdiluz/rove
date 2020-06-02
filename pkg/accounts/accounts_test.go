@@ -21,7 +21,7 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 
 	// Start by making two accounts
 
-	namea := "one"
+	namea := uuid.New().String()
 	acca, err := accountant.RegisterAccount(namea)
 	if err != nil {
 		t.Error(err)
@@ -29,7 +29,7 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 		t.Errorf("Missmatched account name after register, expected: %s, actual: %s", namea, acca.Name)
 	}
 
-	nameb := "two"
+	nameb := uuid.New().String()
 	accb, err := accountant.RegisterAccount(nameb)
 	if err != nil {
 		t.Error(err)
@@ -55,7 +55,7 @@ func TestAccountant_LoadSave(t *testing.T) {
 		t.Error("New accountant created with non-zero account number")
 	}
 
-	name := "one"
+	name := uuid.New().String()
 	a, err := accountant.RegisterAccount(name)
 	if err != nil {
 		t.Error(err)
@@ -97,7 +97,7 @@ func TestAccountant_AssignPrimary(t *testing.T) {
 		t.Error("New accountant created with non-zero account number")
 	}
 
-	name := "one"
+	name := uuid.New().String()
 	a, err := accountant.RegisterAccount(name)
 	if err != nil {
 		t.Error(err)
