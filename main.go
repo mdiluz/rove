@@ -31,7 +31,7 @@ func main() {
 		server.OptionPort(*port),
 		server.OptionPersistentData())
 
-	fmt.Println("Initialising...")
+	fmt.Printf("Initialising version %s...\n", version.Version)
 	if err := s.Initialise(); err != nil {
 		panic(err)
 	}
