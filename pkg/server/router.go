@@ -33,6 +33,10 @@ func (s *Server) SetUpRouter() {
 			path:    "/spawn",
 			handler: s.HandleSpawn,
 		},
+		{
+			path:    "/commands",
+			handler: s.HandleCommands,
+		},
 	}
 
 	// Set up the handlers
@@ -192,25 +196,93 @@ func (s *Server) HandleSpawn(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("\tspawn data: %v\n", data)
 
 		// Create a new instance
-		inst := uuid.New()
-		s.world.Spawn(inst)
-		if pos, err := s.world.GetPosition(inst); err != nil {
-			response.Error = fmt.Sprint("No position found for created instance")
-
+		if pos, _, err := s.SpawnPrimary(id); err != nil {
+			response.Error = err.Error()
 		} else {
-			if err := s.accountant.AssignPrimary(id, inst); err != nil {
-				response.Error = err.Error()
+			response.Success = true
+			response.Position = pos
+		}
+	}
 
-				// Try and clear up the instance
-				if err := s.world.DestroyInstance(inst); err != nil {
-					fmt.Printf("Failed to destroy instance after failed primary assign: %s", err)
-				}
+	// Be a good citizen and set the header for the return
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 
-			} else {
-				// Reply with valid data
-				response.Success = true
-				response.Position = pos
+	// Log the response
+	fmt.Printf("\tresponse: %+v\n", response)
+
+	// Reply with the current status
+	json.NewEncoder(w).Encode(response)
+}
+
+const (
+	// CommandMove describes a single move command
+	CommandMove = "move"
+)
+
+// Command describes a single command to execute
+// it contains the type, and then any members used for each command type
+type Command struct {
+	// Command is the main command string
+	Command string `json:"command"`
+
+	// Used for CommandMove
+	Vector game.Vector `json:"vector"`
+}
+
+// CommandsData is a set of commands to execute in order
+type CommandsData struct {
+	BasicAccountData
+	Commands []Command `json:"commands"`
+}
+
+// HandleSpawn will spawn the player entity for the associated account
+func (s *Server) HandleCommands(w http.ResponseWriter, r *http.Request) {
+	// Verify we're hit with a get request
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
+
+	// Set up the response
+	var response = BasicResponse{
+		Success: false,
+	}
+
+	// Pull out the incoming info
+	var data CommandsData
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		fmt.Printf("Failed to decode json: %s\n", err)
+		response.Error = err.Error()
+
+	} else if len(data.Id) == 0 {
+		response.Error = "No account ID provided"
+
+	} else if id, err := uuid.Parse(data.Id); err != nil {
+		response.Error = fmt.Sprintf("Provided account ID was invalid: %s", err)
+
+	} else if inst, err := s.accountant.GetPrimary(id); err != nil {
+		response.Error = fmt.Sprintf("Provided account has no primary: %s", err)
+	} else {
+		// log the data sent
+		fmt.Printf("\tcommands data: %v\n", data)
+
+		// Iterate through the commands to generate all game commands
+		var cmds []game.Command
+		for _, c := range data.Commands {
+			switch c.Command {
+			case CommandMove:
+				cmds = append(cmds, s.world.CommandMove(inst, c.Vector))
 			}
+		}
+
+		// Execute the commands
+		if err := s.world.Execute(cmds...); err != nil {
+			response.Error = fmt.Sprintf("Failed to execute commands: %s", err)
+		} else {
+			response.Success = true
 		}
 	}
 

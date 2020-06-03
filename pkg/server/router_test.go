@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/mdiluz/rove/pkg/game"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -69,5 +70,47 @@ func TestHandleSpawn(t *testing.T) {
 
 	if status.Success != true {
 		t.Errorf("got false for /spawn")
+	}
+}
+
+func TestHandleCommands(t *testing.T) {
+	s := NewServer()
+	a, err := s.accountant.RegisterAccount("test")
+	assert.NoError(t, err, "Error registering account")
+
+	// Spawn the primary instance for the account
+	_, inst, err := s.SpawnPrimary(a.Id)
+
+	move := game.Vector{X: 1, Y: 2, Z: 3}
+
+	data := CommandsData{
+		BasicAccountData: BasicAccountData{Id: a.Id.String()},
+		Commands: []Command{
+			{
+				Command: CommandMove,
+				Vector:  move,
+			},
+		},
+	}
+
+	b, err := json.Marshal(data)
+	assert.NoError(t, err, "Error marshalling data")
+
+	request, _ := http.NewRequest(http.MethodPost, "/commands", bytes.NewReader(b))
+	response := httptest.NewRecorder()
+
+	s.HandleCommands(response, request)
+
+	var status BasicResponse
+	json.NewDecoder(response.Body).Decode(&status)
+
+	if status.Success != true {
+		t.Errorf("got false for /commands")
+	}
+
+	if pos, err := s.world.GetPosition(inst); err != nil {
+		t.Error("Couldn't get position for the primary instance")
+	} else if pos != move {
+		t.Error("Mismatched position after commands")
 	}
 }

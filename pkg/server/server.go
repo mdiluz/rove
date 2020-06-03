@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/game"
@@ -132,4 +133,25 @@ func (s *Server) Close() error {
 		}
 	}
 	return nil
+}
+
+// SpawnPrimary spawns the primary instance for an account
+func (s *Server) SpawnPrimary(accountid uuid.UUID) (game.Vector, uuid.UUID, error) {
+	inst := uuid.New()
+	s.world.Spawn(inst)
+	if pos, err := s.world.GetPosition(inst); err != nil {
+		return game.Vector{}, uuid.UUID{}, fmt.Errorf("No position found for created instance")
+
+	} else {
+		if err := s.accountant.AssignPrimary(accountid, inst); err != nil {
+			// Try and clear up the instance
+			if err := s.world.DestroyInstance(inst); err != nil {
+				fmt.Printf("Failed to destroy instance after failed primary assign: %s", err)
+			}
+
+			return game.Vector{}, uuid.UUID{}, err
+		} else {
+			return pos, inst, nil
+		}
+	}
 }

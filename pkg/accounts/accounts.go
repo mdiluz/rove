@@ -71,3 +71,12 @@ func (a *Accountant) AssignPrimary(account uuid.UUID, instance uuid.UUID) error 
 
 	return nil
 }
+
+// GetPrimary gets the primary instance for the account
+func (a *Accountant) GetPrimary(account uuid.UUID) (uuid.UUID, error) {
+	// Find the account matching the ID
+	if this, ok := a.Accounts[account]; ok {
+		return this.Primary, nil
+	}
+	return uuid.UUID{}, fmt.Errorf("no account found for id: %s", account)
+}

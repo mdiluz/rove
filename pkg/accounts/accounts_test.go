@@ -48,7 +48,7 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 	}
 }
 
-func TestAccountant_AssignPrimary(t *testing.T) {
+func TestAccountant_AssignGetPrimary(t *testing.T) {
 	accountant := NewAccountant()
 	if len(accountant.Accounts) != 0 {
 		t.Error("New accountant created with non-zero account number")
@@ -67,5 +67,9 @@ func TestAccountant_AssignPrimary(t *testing.T) {
 		t.Error("Failed to set primary for created account")
 	} else if accountant.Accounts[a.Id].Primary != inst {
 		t.Error("Primary for assigned account is incorrect")
+	} else if id, err := accountant.GetPrimary(a.Id); err != nil {
+		t.Error("Failed to get primary for account")
+	} else if id != inst {
+		t.Error("Fetched primary is incorrect for account")
 	}
 }
