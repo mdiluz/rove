@@ -47,6 +47,16 @@ func (w *World) CreateInstance() uuid.UUID {
 	return id
 }
 
+// Removes an instance from the game
+func (w *World) DestroyInstance(id uuid.UUID) error {
+	if _, ok := w.Instances[id]; ok {
+		delete(w.Instances, id)
+	} else {
+		return fmt.Errorf("no instance matching id")
+	}
+	return nil
+}
+
 // GetPosition returns the position of a given instance
 func (w World) GetPosition(id uuid.UUID) (Position, error) {
 	if i, ok := w.Instances[id]; ok {
