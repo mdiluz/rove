@@ -52,8 +52,10 @@ func Load(name string, data interface{}) error {
 	// Read and unmarshal the json
 	if b, err := ioutil.ReadFile(path); err != nil {
 		return err
+	} else if len(b) == 0 {
+		fmt.Printf("File %s was empty, loading with fresh data\n", path)
 	} else if err := json.Unmarshal(b, data); err != nil {
-		return err
+		return fmt.Errorf("failed to load file %s error: %s", path, err)
 	}
 	return nil
 }
