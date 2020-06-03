@@ -19,19 +19,23 @@ var data = flag.String("data", os.TempDir(), "Directory to store persistant data
 func main() {
 	flag.Parse()
 
+	// Print the version if requested
 	if *ver {
 		fmt.Println(version.Version)
 		os.Exit(0)
 	}
 
+	fmt.Printf("Initialising version %s...\n", version.Version)
+
 	// Set the persistence path
 	persistence.SetPath(*data)
 
+	// Create the server data
 	s := server.NewServer(
 		server.OptionPort(*port),
 		server.OptionPersistentData())
 
-	fmt.Printf("Initialising version %s...\n", version.Version)
+	// Initialise the server
 	if err := s.Initialise(); err != nil {
 		panic(err)
 	}
@@ -42,14 +46,18 @@ func main() {
 	go func() {
 		<-c
 		fmt.Println("SIGTERM recieved, exiting...")
-		s.Close()
+		if err := s.Close(); err != nil {
+			panic(err)
+		}
 		os.Exit(0)
 	}()
 
-	fmt.Println("Initialised")
+	fmt.Println("Running...")
 
+	// Run the server
 	s.Run()
 
+	// Close the server
 	if err := s.Close(); err != nil {
 		panic(err)
 	}
