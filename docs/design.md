@@ -30,7 +30,7 @@ Enough collected resources allow you to create and fire a new rover a significan
 
 Finding a dormant rover gives you a choice - scrap it to gain minor resources, or fire it a distance just like a new rover, taking control of it.
 
-“Dying” triggers a self destruct and fires a new basic robot in a random direction towards the equator
+“Dying” triggers a self destruct and fires a new basic rover in a random direction towards the equator
 
 ## Multiplayer
 
