@@ -3,6 +3,7 @@ package game
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,8 +17,10 @@ func TestNewWorld(t *testing.T) {
 
 func TestWorld_CreateInstance(t *testing.T) {
 	world := NewWorld()
-	a := world.CreateInstance()
-	b := world.CreateInstance()
+	a := uuid.New()
+	b := uuid.New()
+	assert.NoError(t, world.Spawn(a), "Failed to spawn")
+	assert.NoError(t, world.Spawn(b), "Failed to spawn")
 
 	// Basic duplicate check
 	if a == b {
@@ -29,8 +32,10 @@ func TestWorld_CreateInstance(t *testing.T) {
 
 func TestWorld_DestroyInstance(t *testing.T) {
 	world := NewWorld()
-	a := world.CreateInstance()
-	b := world.CreateInstance()
+	a := uuid.New()
+	b := uuid.New()
+	assert.NoError(t, world.Spawn(a), "Failed to spawn")
+	assert.NoError(t, world.Spawn(b), "Failed to spawn")
 
 	err := world.DestroyInstance(a)
 	assert.NoError(t, err, "Error returned from instance destroy")
@@ -41,4 +46,28 @@ func TestWorld_DestroyInstance(t *testing.T) {
 	} else if _, ok := world.Instances[b]; !ok {
 		t.Error("Remaining instance is incorrect")
 	}
+}
+
+func TestWorld_GetSetMovePosition(t *testing.T) {
+	world := NewWorld()
+	a := uuid.New()
+	assert.NoError(t, world.Spawn(a), "Failed to spawn")
+
+	pos := Vector{
+		X: 1.0,
+		Y: 2.0,
+		Z: 3.0,
+	}
+
+	err := world.SetPosition(a, pos)
+	assert.NoError(t, err, "Failed to set position for instance")
+
+	newpos, err := world.GetPosition(a)
+	assert.NoError(t, err, "Failed to set position for instance")
+	assert.Equal(t, pos, newpos, "Failed to correctly set position for instance")
+
+	newpos, err = world.MovePosition(a, pos)
+	assert.NoError(t, err, "Failed to set position for instance")
+	pos.Add(pos)
+	assert.Equal(t, pos, newpos, "Failed to correctly move position for instance")
 }

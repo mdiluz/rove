@@ -155,7 +155,7 @@ type SpawnData struct {
 type SpawnResponse struct {
 	BasicResponse
 
-	Position game.Position `json:"position"`
+	Position game.Vector `json:"position"`
 }
 
 // HandleSpawn will spawn the player entity for the associated account
@@ -192,7 +192,8 @@ func (s *Server) HandleSpawn(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("\tspawn data: %v\n", data)
 
 		// Create a new instance
-		inst := s.world.CreateInstance()
+		inst := uuid.New()
+		s.world.Spawn(inst)
 		if pos, err := s.world.GetPosition(inst); err != nil {
 			response.Error = fmt.Sprint("No position found for created instance")
 
