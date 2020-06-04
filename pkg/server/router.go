@@ -37,6 +37,10 @@ func (s *Server) SetUpRouter() {
 			path:    "/commands",
 			handler: s.HandleCommands,
 		},
+		{
+			path:    "/view",
+			handler: s.HandleView,
+		},
 	}
 
 	// Set up the handlers
@@ -284,6 +288,64 @@ func (s *Server) HandleCommands(w http.ResponseWriter, r *http.Request) {
 		} else {
 			response.Success = true
 		}
+	}
+
+	// Be a good citizen and set the header for the return
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+
+	// Log the response
+	fmt.Printf("\tresponse: %+v\n", response)
+
+	// Reply with the current status
+	json.NewEncoder(w).Encode(response)
+}
+
+// ViewData describes the input data to request an accounts current view
+type ViewData struct {
+	BasicAccountData
+}
+
+// ViewResponse describes the response to a /view call
+type ViewResponse struct {
+	BasicResponse
+}
+
+// HandleView handles the view request
+func (s *Server) HandleView(w http.ResponseWriter, r *http.Request) {
+	// Verify we're hit with a get request
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
+
+	// Set up the response
+	var response = ViewResponse{
+		BasicResponse: BasicResponse{
+			Success: false,
+		},
+	}
+
+	// Pull out the incoming info
+	var data CommandsData
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		fmt.Printf("Failed to decode json: %s\n", err)
+		response.Error = err.Error()
+
+	} else if len(data.Id) == 0 {
+		response.Error = "No account ID provided"
+
+	} else if id, err := uuid.Parse(data.Id); err != nil {
+		response.Error = fmt.Sprintf("Provided account ID was invalid: %s", err)
+
+	} else {
+		// log the data sent
+		fmt.Printf("\tcommands data: %v\n", data)
+
+		// TODO: Query the view for this account
+		fmt.Println(id)
 	}
 
 	// Be a good citizen and set the header for the return
