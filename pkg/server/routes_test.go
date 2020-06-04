@@ -118,3 +118,33 @@ func TestHandleCommands(t *testing.T) {
 	pos.Add(game.Vector{X: 0.0, Y: attrib.Speed * 1}) // Should have moved north by the speed and duration
 	assert.Equal(t, pos, pos2, "Rover should have moved by bearing")
 }
+
+func TestHandleView(t *testing.T) {
+	s := NewServer()
+	a, err := s.accountant.RegisterAccount("test")
+	assert.NoError(t, err, "Error registering account")
+
+	// Spawn the rover rover for the account
+	_, _, err = s.SpawnRoverForAccount(a.Id)
+
+	data := ViewData{
+		Id: a.Id.String(),
+	}
+
+	b, err := json.Marshal(data)
+	assert.NoError(t, err, "Error marshalling data")
+
+	request, _ := http.NewRequest(http.MethodPost, "/view", bytes.NewReader(b))
+	response := httptest.NewRecorder()
+
+	s.wrapHandler(http.MethodPost, HandleView)(response, request)
+
+	var status ViewResponse
+	json.NewDecoder(response.Body).Decode(&status)
+
+	if status.Success != true {
+		t.Errorf("got false for /view")
+	}
+
+	// TODO: Verify the view information
+}
