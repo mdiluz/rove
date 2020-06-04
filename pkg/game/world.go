@@ -14,14 +14,18 @@ type World struct {
 
 // Instance describes a single entity or instance of an entity in the world
 type Instance struct {
-	// id is a unique ID for this instance
-	id uuid.UUID
+	// Id is a unique ID for this instance
+	Id uuid.UUID `json:"id"`
 
-	// pos represents where this instance is in the world
-	pos Vector
+	// Pos represents where this instance is in the world
+	Pos Vector `json:"pos"`
+
+	// Speed represents the Speed that the instance will move per second
+	Speed float64 `json:"speed"`
+
+	// Sight represents the distance the unit can see
+	Sight float64 `json:"sight"`
 }
-
-const kWorldFileName = "rove-world.json"
 
 // NewWorld creates a new world object
 func NewWorld() *World {
@@ -38,7 +42,7 @@ func (w *World) Spawn(id uuid.UUID) error {
 
 	// Initialise the instance
 	instance := Instance{
-		id: id,
+		Id: id,
 	}
 
 	// Append the instance to the list
@@ -60,7 +64,7 @@ func (w *World) DestroyInstance(id uuid.UUID) error {
 // GetPosition returns the position of a given instance
 func (w World) GetPosition(id uuid.UUID) (Vector, error) {
 	if i, ok := w.Instances[id]; ok {
-		return i.pos, nil
+		return i.Pos, nil
 	} else {
 		return Vector{}, fmt.Errorf("no instance matching id")
 	}
@@ -69,7 +73,7 @@ func (w World) GetPosition(id uuid.UUID) (Vector, error) {
 // SetPosition sets an instances position
 func (w *World) SetPosition(id uuid.UUID, pos Vector) error {
 	if i, ok := w.Instances[id]; ok {
-		i.pos = pos
+		i.Pos = pos
 		w.Instances[id] = i
 		return nil
 	} else {
@@ -80,9 +84,9 @@ func (w *World) SetPosition(id uuid.UUID, pos Vector) error {
 // SetPosition sets an instances position
 func (w *World) MovePosition(id uuid.UUID, vec Vector) (Vector, error) {
 	if i, ok := w.Instances[id]; ok {
-		i.pos.Add(vec)
+		i.Pos.Add(vec)
 		w.Instances[id] = i
-		return i.pos, nil
+		return i.Pos, nil
 	} else {
 		return Vector{}, fmt.Errorf("no instance matching id")
 	}

@@ -56,7 +56,6 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	pos := Vector{
 		X: 1.0,
 		Y: 2.0,
-		Z: 3.0,
 	}
 
 	err := world.SetPosition(a, pos)

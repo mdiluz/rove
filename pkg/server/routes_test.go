@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mdiluz/rove/pkg/game"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -81,14 +80,13 @@ func TestHandleCommands(t *testing.T) {
 	// Spawn the primary instance for the account
 	_, inst, err := s.SpawnPrimaryForAccount(a.Id)
 
-	move := game.Vector{X: 1, Y: 2, Z: 3}
-
 	data := CommandsData{
 		Id: a.Id.String(),
 		Commands: []Command{
 			{
-				Command: CommandMove,
-				Vector:  move,
+				Command:  CommandMove,
+				Bearing:  0.0,
+				Duration: 1,
 			},
 		},
 	}
@@ -108,9 +106,9 @@ func TestHandleCommands(t *testing.T) {
 		t.Errorf("got false for /commands")
 	}
 
-	if pos, err := s.world.GetPosition(inst); err != nil {
+	if _, err := s.world.GetPosition(inst); err != nil {
 		t.Error("Couldn't get position for the primary instance")
-	} else if pos != move {
-		t.Error("Mismatched position after commands")
 	}
+
+	// TODO: Check position is correct
 }

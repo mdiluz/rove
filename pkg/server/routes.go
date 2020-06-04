@@ -135,7 +135,8 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) error {
 			response.Error = err.Error()
 		} else {
 			response.Success = true
-			response.Position = pos
+			response.X = pos.X
+			response.Y = pos.Y
 		}
 	}
 
@@ -179,7 +180,7 @@ func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
 		for _, c := range data.Commands {
 			switch c.Command {
 			case CommandMove:
-				cmds = append(cmds, s.world.CommandMove(inst, c.Vector))
+				cmds = append(cmds, s.world.CommandMove(inst, c.Bearing, c.Duration))
 			}
 		}
 

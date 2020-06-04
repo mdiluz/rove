@@ -6,11 +6,12 @@ import "github.com/google/uuid"
 type Command func() error
 
 // CommandMove will move the instance in question
-func (w *World) CommandMove(id uuid.UUID, vec Vector) Command {
+func (w *World) CommandMove(id uuid.UUID, bearing float64, duration int64) Command {
 	return func() error {
-		// Move the instance
-		_, err := w.MovePosition(id, vec)
-		return err
+		// TODO: Calculate the move itself
+
+		//_, err := w.MovePosition(id, vec)
+		return nil
 	}
 }
 

@@ -1,7 +1,5 @@
 package server
 
-import "github.com/mdiluz/rove/pkg/game"
-
 // ==============================
 // API: /status method: GET
 // Queries the status of the server
@@ -45,7 +43,9 @@ type SpawnResponse struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error"`
 
-	Position game.Vector `json:"position"`
+	// The location of the spawned entity
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
 }
 
 // ==============================
@@ -76,7 +76,8 @@ type Command struct {
 	Command string `json:"command"`
 
 	// Used for CommandMove
-	Vector game.Vector `json:"vector"`
+	Bearing  float64 `json:"bearing"`  // The direction to move in degrees
+	Duration int64   `json:"duration"` // The duration of the move in seconds
 }
 
 // ================

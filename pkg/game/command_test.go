@@ -16,7 +16,7 @@ func TestCommand_Spawn(t *testing.T) {
 
 	instance, ok := world.Instances[a]
 	assert.True(t, ok, "No new instance in world")
-	assert.Equal(t, a, instance.id, "New instance has incorrect id")
+	assert.Equal(t, a, instance.Id, "New instance has incorrect id")
 }
 
 func TestCommand_Move(t *testing.T) {
@@ -27,24 +27,20 @@ func TestCommand_Move(t *testing.T) {
 	pos := Vector{
 		X: 1.0,
 		Y: 2.0,
-		Z: 3.0,
 	}
 
 	err := world.SetPosition(a, pos)
 	assert.NoError(t, err, "Failed to set position for instance")
 
-	move := Vector{
-		X: 3.0,
-		Y: 2.0,
-		Z: 1.0,
-	}
+	// TODO: Test the bearing/duration movement
+	/*
+		// Try the move command
+		moveCommand := world.CommandMove(a, move)
+		assert.NoError(t, world.Execute(moveCommand), "Failed to execute move command")
 
-	// Try the move command
-	moveCommand := world.CommandMove(a, move)
-	assert.NoError(t, world.Execute(moveCommand), "Failed to execute move command")
-
-	newpos, err := world.GetPosition(a)
-	assert.NoError(t, err, "Failed to set position for instance")
-	pos.Add(move)
-	assert.Equal(t, pos, newpos, "Failed to correctly set position for instance")
+		newpos, err := world.GetPosition(a)
+		assert.NoError(t, err, "Failed to set position for instance")
+		pos.Add(move)
+		assert.Equal(t, pos, newpos, "Failed to correctly set position for instance")
+	*/
 }
