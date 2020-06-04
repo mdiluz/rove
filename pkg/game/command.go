@@ -6,19 +6,9 @@ import "github.com/google/uuid"
 type Command func() error
 
 // CommandMove will move the rover in question
-func (w *World) CommandMove(id uuid.UUID, bearing float64, duration int64) Command {
+func (w *World) CommandMove(id uuid.UUID, bearing float64, duration float64) Command {
 	return func() error {
-		// TODO: Calculate the move itself
-
-		//_, err := w.MovePosition(id, vec)
-		return nil
-	}
-}
-
-// CommandSpawn
-// TODO: Two spawn commands with the same id could trigger a fail later on, we should prevent that somehow
-func (w *World) CommandSpawn(id uuid.UUID) Command {
-	return func() error {
-		return w.SpawnRover(id)
+		_, err := w.MoveRover(id, bearing, duration)
+		return err
 	}
 }

@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/google/uuid"
 )
@@ -12,6 +13,15 @@ type World struct {
 	Rovers map[uuid.UUID]Rover `json:"rovers"`
 }
 
+// RoverAttributes contains attributes of a rover
+type RoverAttributes struct {
+	// Speed represents the Speed that the rover will move per second
+	Speed float64 `json:"speed"`
+
+	// Sight represents the distance the unit can see
+	Sight float64 `json:"sight"`
+}
+
 // Rover describes a single rover in the world
 type Rover struct {
 	// Id is a unique ID for this rover
@@ -20,11 +30,8 @@ type Rover struct {
 	// Pos represents where this rover is in the world
 	Pos Vector `json:"pos"`
 
-	// Speed represents the Speed that the rover will move per second
-	Speed float64 `json:"speed"`
-
-	// Sight represents the distance the unit can see
-	Sight float64 `json:"sight"`
+	// Attributes represents the physical attributes of the rover
+	Attributes RoverAttributes `json:"attributes"`
 }
 
 // NewWorld creates a new world object
@@ -35,20 +42,25 @@ func NewWorld() *World {
 }
 
 // SpawnRover adds an rover to the game
-func (w *World) SpawnRover(id uuid.UUID) error {
-	if _, ok := w.Rovers[id]; ok {
-		return fmt.Errorf("rover with id %s already exists in world", id)
-	}
-
+func (w *World) SpawnRover() uuid.UUID {
 	// Initialise the rover
 	rover := Rover{
-		Id: id,
+		Id: uuid.New(),
+
+		// TODO: Set this somehow
+		Pos: Vector{},
+
+		// TODO: Stop these being random numbers
+		Attributes: RoverAttributes{
+			Speed: 1.0,
+			Sight: 20.0,
+		},
 	}
 
 	// Append the rover to the list
-	w.Rovers[id] = rover
+	w.Rovers[rover.Id] = rover
 
-	return nil
+	return rover.Id
 }
 
 // Removes an rover from the game
@@ -61,8 +73,17 @@ func (w *World) DestroyRover(id uuid.UUID) error {
 	return nil
 }
 
-// GetPosition returns the position of a given rover
-func (w World) GetPosition(id uuid.UUID) (Vector, error) {
+// RoverAttributes returns the attributes of a requested rover
+func (w World) RoverAttributes(id uuid.UUID) (RoverAttributes, error) {
+	if i, ok := w.Rovers[id]; ok {
+		return i.Attributes, nil
+	} else {
+		return RoverAttributes{}, fmt.Errorf("no rover matching id")
+	}
+}
+
+// RoverPosition returns the position of a given rover
+func (w World) RoverPosition(id uuid.UUID) (Vector, error) {
 	if i, ok := w.Rovers[id]; ok {
 		return i.Pos, nil
 	} else {
@@ -70,8 +91,8 @@ func (w World) GetPosition(id uuid.UUID) (Vector, error) {
 	}
 }
 
-// SetPosition sets an rovers position
-func (w *World) SetPosition(id uuid.UUID, pos Vector) error {
+// WarpRover sets an rovers position
+func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
 	if i, ok := w.Rovers[id]; ok {
 		i.Pos = pos
 		w.Rovers[id] = i
@@ -82,9 +103,21 @@ func (w *World) SetPosition(id uuid.UUID, pos Vector) error {
 }
 
 // SetPosition sets an rovers position
-func (w *World) MovePosition(id uuid.UUID, vec Vector) (Vector, error) {
+func (w *World) MoveRover(id uuid.UUID, bearing float64, duration float64) (Vector, error) {
 	if i, ok := w.Rovers[id]; ok {
-		i.Pos.Add(vec)
+		// Calculate the distance
+		distance := i.Attributes.Speed * float64(duration)
+
+		// Calculate the full movement based on the bearing
+		move := Vector{
+			X: math.Sin(bearing) * distance,
+			Y: math.Cos(bearing) * distance,
+		}
+
+		// Increment the position by the movement
+		i.Pos.Add(move)
+
+		// Set the rover values to the new ones
 		w.Rovers[id] = i
 		return i.Pos, nil
 	} else {

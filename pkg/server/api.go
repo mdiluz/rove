@@ -77,7 +77,7 @@ type Command struct {
 
 	// Used for CommandMove
 	Bearing  float64 `json:"bearing"`  // The direction to move in degrees
-	Duration int64   `json:"duration"` // The duration of the move in seconds
+	Duration float64 `json:"duration"` // The duration of the move in seconds
 }
 
 // ================

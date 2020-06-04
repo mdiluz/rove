@@ -163,9 +163,8 @@ func (s *Server) wrapHandler(method string, handler Handler) func(w http.Respons
 
 // SpawnRoverForAccount spawns the rover rover for an account
 func (s *Server) SpawnRoverForAccount(accountid uuid.UUID) (game.Vector, uuid.UUID, error) {
-	inst := uuid.New()
-	s.world.SpawnRover(inst)
-	if pos, err := s.world.GetPosition(inst); err != nil {
+	inst := s.world.SpawnRover()
+	if pos, err := s.world.RoverPosition(inst); err != nil {
 		return game.Vector{}, uuid.UUID{}, fmt.Errorf("No position found for created rover")
 
 	} else {

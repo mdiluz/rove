@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/mdiluz/rove/pkg/game"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -80,6 +81,9 @@ func TestHandleCommands(t *testing.T) {
 	// Spawn the rover rover for the account
 	_, inst, err := s.SpawnRoverForAccount(a.Id)
 
+	pos, err := s.world.RoverPosition(inst)
+	assert.NoError(t, err, "Couldn't get rover position")
+
 	data := CommandsData{
 		Id: a.Id.String(),
 		Commands: []Command{
@@ -106,9 +110,11 @@ func TestHandleCommands(t *testing.T) {
 		t.Errorf("got false for /commands")
 	}
 
-	if _, err := s.world.GetPosition(inst); err != nil {
-		t.Error("Couldn't get position for the rover rover")
-	}
+	attrib, err := s.world.RoverAttributes(inst)
+	assert.NoError(t, err, "Couldn't get rover attribs")
 
-	// TODO: Check position is correct
+	pos2, err := s.world.RoverPosition(inst)
+	assert.NoError(t, err, "Couldn't get rover position")
+	pos.Add(game.Vector{X: 0.0, Y: attrib.Speed * 1}) // Should have moved north by the speed and duration
+	assert.Equal(t, pos, pos2, "Rover should have moved by bearing")
 }
