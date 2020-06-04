@@ -55,7 +55,7 @@ func TestHandleSpawn(t *testing.T) {
 	s := NewServer()
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
-	data := SpawnData{BasicAccountData: BasicAccountData{Id: a.Id.String()}}
+	data := SpawnData{Id: a.Id.String()}
 
 	b, err := json.Marshal(data)
 	assert.NoError(t, err, "Error marshalling data")
@@ -84,7 +84,7 @@ func TestHandleCommands(t *testing.T) {
 	move := game.Vector{X: 1, Y: 2, Z: 3}
 
 	data := CommandsData{
-		BasicAccountData: BasicAccountData{Id: a.Id.String()},
+		Id: a.Id.String(),
 		Commands: []Command{
 			{
 				Command: CommandMove,
@@ -101,7 +101,7 @@ func TestHandleCommands(t *testing.T) {
 
 	s.wrapHandler(http.MethodPost, HandleCommands)(response, request)
 
-	var status BasicResponse
+	var status CommandsResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Success != true {

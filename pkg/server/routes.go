@@ -50,12 +50,6 @@ var Routes = []Route{
 	},
 }
 
-// StatusResponse is a struct that contains information on the status of the server
-type StatusResponse struct {
-	Ready   bool   `json:"ready"`
-	Version string `json:"version"`
-}
-
 // HandleStatus handles the /status request
 func HandleStatus(s *Server, b io.ReadCloser, w io.Writer) error {
 
@@ -71,37 +65,12 @@ func HandleStatus(s *Server, b io.ReadCloser, w io.Writer) error {
 	return nil
 }
 
-// BasicResponse describes the minimum dataset for a response
-type BasicResponse struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error"`
-}
-
-// BasicAccountData describes the data to be sent for an account specific post
-type BasicAccountData struct {
-	Id string `json:"id"`
-}
-
-// RegisterData describes the data to send when registering
-type RegisterData struct {
-	Name string `json:"name"`
-}
-
-// RegisterResponse describes the response to a register request
-type RegisterResponse struct {
-	BasicResponse
-
-	Id string `json:"id"`
-}
-
 // HandleRegister handles /register endpoint
 func HandleRegister(s *Server, b io.ReadCloser, w io.Writer) error {
 
 	// Set up the response
 	var response = RegisterResponse{
-		BasicResponse: BasicResponse{
-			Success: false,
-		},
+		Success: false,
 	}
 
 	// Pull out the registration info
@@ -138,25 +107,11 @@ func HandleRegister(s *Server, b io.ReadCloser, w io.Writer) error {
 	return nil
 }
 
-// SpawnData is the data to be sent for the spawn command
-type SpawnData struct {
-	BasicAccountData
-}
-
-// SpawnResponse is the data to respond with on a spawn command
-type SpawnResponse struct {
-	BasicResponse
-
-	Position game.Vector `json:"position"`
-}
-
 // HandleSpawn will spawn the player entity for the associated account
 func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) error {
 	// Set up the response
 	var response = SpawnResponse{
-		BasicResponse: BasicResponse{
-			Success: false,
-		},
+		Success: false,
 	}
 
 	// Pull out the incoming info
@@ -193,31 +148,10 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) error {
 	return nil
 }
 
-const (
-	// CommandMove describes a single move command
-	CommandMove = "move"
-)
-
-// Command describes a single command to execute
-// it contains the type, and then any members used for each command type
-type Command struct {
-	// Command is the main command string
-	Command string `json:"command"`
-
-	// Used for CommandMove
-	Vector game.Vector `json:"vector"`
-}
-
-// CommandsData is a set of commands to execute in order
-type CommandsData struct {
-	BasicAccountData
-	Commands []Command `json:"commands"`
-}
-
 // HandleSpawn will spawn the player entity for the associated account
 func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
 	// Set up the response
-	var response = BasicResponse{
+	var response = CommandsResponse{
 		Success: false,
 	}
 
@@ -266,23 +200,11 @@ func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
 	return nil
 }
 
-// ViewData describes the input data to request an accounts current view
-type ViewData struct {
-	BasicAccountData
-}
-
-// ViewResponse describes the response to a /view call
-type ViewResponse struct {
-	BasicResponse
-}
-
 // HandleView handles the view request
 func HandleView(s *Server, b io.ReadCloser, w io.Writer) error {
 	// Set up the response
 	var response = ViewResponse{
-		BasicResponse: BasicResponse{
-			Success: false,
-		},
+		Success: false,
 	}
 
 	// Pull out the incoming info
