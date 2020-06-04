@@ -18,8 +18,8 @@ type RoverAttributes struct {
 	// Speed represents the Speed that the rover will move per second
 	Speed float64 `json:"speed"`
 
-	// Sight represents the distance the unit can see
-	Sight float64 `json:"sight"`
+	// Range represents the distance the unit's radar can see
+	Range float64 `json:"range"`
 }
 
 // Rover describes a single rover in the world
@@ -53,7 +53,7 @@ func (w *World) SpawnRover() uuid.UUID {
 		// TODO: Stop these being random numbers
 		Attributes: RoverAttributes{
 			Speed: 1.0,
-			Sight: 20.0,
+			Range: 20.0,
 		},
 	}
 
@@ -122,6 +122,24 @@ func (w *World) MoveRover(id uuid.UUID, bearing float64, duration float64) (Vect
 		return i.Pos, nil
 	} else {
 		return Vector{}, fmt.Errorf("no rover matching id")
+	}
+}
+
+// RadarDescription describes what a rover can see
+type RadarDescription struct {
+	// Rovers is the set of rovers that this radar can see
+	Rovers []Vector `json:"rovers"`
+}
+
+// RadarFromRover can be used to query what a rover can currently see
+func (w World) RadarFromRover(id uuid.UUID) (RadarDescription, error) {
+	if _, ok := w.Rovers[id]; ok {
+
+		// TODO: Gather nearby rovers within the range
+
+		return RadarDescription{}, nil
+	} else {
+		return RadarDescription{}, fmt.Errorf("no rover matching id")
 	}
 }
 

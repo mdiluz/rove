@@ -44,9 +44,9 @@ var Routes = []Route{
 		handler: HandleCommands,
 	},
 	{
-		path:    "/view",
+		path:    "/radar",
 		method:  http.MethodPost,
-		handler: HandleView,
+		handler: HandleRadar,
 	},
 }
 
@@ -135,8 +135,7 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) error {
 			response.Error = err.Error()
 		} else {
 			response.Success = true
-			response.X = pos.X
-			response.Y = pos.Y
+			response.Position = pos
 		}
 	}
 
@@ -201,10 +200,10 @@ func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
 	return nil
 }
 
-// HandleView handles the view request
-func HandleView(s *Server, b io.ReadCloser, w io.Writer) error {
+// HandleRadar handles the radar request
+func HandleRadar(s *Server, b io.ReadCloser, w io.Writer) error {
 	// Set up the response
-	var response = ViewResponse{
+	var response = RadarResponse{
 		Success: false,
 	}
 
@@ -220,12 +219,16 @@ func HandleView(s *Server, b io.ReadCloser, w io.Writer) error {
 	} else if id, err := uuid.Parse(data.Id); err != nil {
 		response.Error = fmt.Sprintf("Provided account ID was invalid: %s", err)
 
-	} else {
-		// log the data sent
-		fmt.Printf("\tcommands data: %v\n", data)
+	} else if inst, err := s.accountant.GetRover(id); err != nil {
+		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
-		// TODO: Query the view for this account
-		fmt.Println(id)
+	} else if radar, err := s.world.RadarFromRover(inst); err != nil {
+		response.Error = fmt.Sprintf("Error getting radar from rover: %s", err)
+
+	} else {
+		// Fill in the response
+		response.Rovers = radar.Rovers
+		response.Success = true
 	}
 
 	// Log the response

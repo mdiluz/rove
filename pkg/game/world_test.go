@@ -33,7 +33,7 @@ func TestWorld_RoverAttributes(t *testing.T) {
 
 	attribs, err := world.RoverAttributes(a)
 	assert.NoError(t, err, "Failed to get rover attribs")
-	assert.NotZero(t, attribs.Sight, "Rover should not be spawned blind")
+	assert.NotZero(t, attribs.Range, "Rover should not be spawned blind")
 	assert.NotZero(t, attribs.Speed, "Rover should not be spawned unable to move")
 }
 

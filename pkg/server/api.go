@@ -1,5 +1,7 @@
 package server
 
+import "github.com/mdiluz/rove/pkg/game"
+
 // ==============================
 // API: /status method: GET
 // Queries the status of the server
@@ -44,8 +46,7 @@ type SpawnResponse struct {
 	Error   string `json:"error"`
 
 	// The location of the spawned entity
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
+	Position game.Vector `json:"position"`
 }
 
 // ==============================
@@ -81,16 +82,19 @@ type Command struct {
 }
 
 // ================
-// API: /view POST
-// Queries the current view for the user
+// API: /radar POST
+// Queries the current radar for the user
 
-// ViewData describes the input data to request an accounts current view
-type ViewData struct {
+// RadarData describes the input data to request an accounts current radar
+type RadarData struct {
 	Id string `json:"id"`
 }
 
-// ViewResponse describes the response to a /view call
-type ViewResponse struct {
+// RadarResponse describes the response to a /radar call
+type RadarResponse struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error"`
+
+	// The set of positions for nearby rovers
+	Rovers []game.Vector `json:"rovers"`
 }

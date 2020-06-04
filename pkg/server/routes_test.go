@@ -119,7 +119,7 @@ func TestHandleCommands(t *testing.T) {
 	assert.Equal(t, pos, pos2, "Rover should have moved by bearing")
 }
 
-func TestHandleView(t *testing.T) {
+func TestHandleRadar(t *testing.T) {
 	s := NewServer()
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
@@ -127,24 +127,24 @@ func TestHandleView(t *testing.T) {
 	// Spawn the rover rover for the account
 	_, _, err = s.SpawnRoverForAccount(a.Id)
 
-	data := ViewData{
+	data := RadarData{
 		Id: a.Id.String(),
 	}
 
 	b, err := json.Marshal(data)
 	assert.NoError(t, err, "Error marshalling data")
 
-	request, _ := http.NewRequest(http.MethodPost, "/view", bytes.NewReader(b))
+	request, _ := http.NewRequest(http.MethodPost, "/radar", bytes.NewReader(b))
 	response := httptest.NewRecorder()
 
-	s.wrapHandler(http.MethodPost, HandleView)(response, request)
+	s.wrapHandler(http.MethodPost, HandleRadar)(response, request)
 
-	var status ViewResponse
+	var status RadarResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Success != true {
-		t.Errorf("got false for /view")
+		t.Errorf("got false for /radar")
 	}
 
-	// TODO: Verify the view information
+	// TODO: Verify the radar information
 }
