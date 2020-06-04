@@ -79,7 +79,7 @@ func TestHandleCommands(t *testing.T) {
 	assert.NoError(t, err, "Error registering account")
 
 	// Spawn the primary instance for the account
-	_, inst, err := s.SpawnPrimary(a.Id)
+	_, inst, err := s.SpawnPrimaryForAccount(a.Id)
 
 	move := game.Vector{X: 1, Y: 2, Z: 3}
 
