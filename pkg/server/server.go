@@ -33,8 +33,7 @@ type Server struct {
 	server *http.Server
 	router *mux.Router
 
-	persistence         int
-	persistenceLocation string
+	persistence int
 
 	sync sync.WaitGroup
 }

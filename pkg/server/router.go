@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -10,10 +11,40 @@ import (
 	"github.com/mdiluz/rove/pkg/version"
 )
 
+// RequestHandler describes a function that handles any incoming request and can respond
+type RequestHandler func(io.ReadCloser, io.Writer) error
+
 // Route defines the information for a single path->function route
 type Route struct {
 	path    string
-	handler func(http.ResponseWriter, *http.Request)
+	method  string
+	handler RequestHandler
+}
+
+// RequestHandlerHTTP wraps a request handler in http checks
+func RequestHandlerHTTP(method string, handler RequestHandler) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Log the request
+		fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
+
+		// Verify we're hit with the right method
+		if r.Method != method {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+
+		} else if err := handler(r.Body, w); err != nil {
+			// Log the error
+			fmt.Printf("Failed to handle http request: %s", err)
+
+			// Respond that we've had an error
+			w.WriteHeader(http.StatusInternalServerError)
+
+		} else {
+			// Be a good citizen and set the header for the return
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+			w.WriteHeader(http.StatusOK)
+
+		}
+	}
 }
 
 // NewRouter sets up the server mux
@@ -23,29 +54,34 @@ func (s *Server) SetUpRouter() {
 	var routes = []Route{
 		{
 			path:    "/status",
+			method:  http.MethodGet,
 			handler: s.HandleStatus,
 		},
 		{
 			path:    "/register",
+			method:  http.MethodPost,
 			handler: s.HandleRegister,
 		},
 		{
 			path:    "/spawn",
+			method:  http.MethodPost,
 			handler: s.HandleSpawn,
 		},
 		{
 			path:    "/commands",
+			method:  http.MethodPost,
 			handler: s.HandleCommands,
 		},
 		{
 			path:    "/view",
+			method:  http.MethodPost,
 			handler: s.HandleView,
 		},
 	}
 
 	// Set up the handlers
 	for _, route := range routes {
-		s.router.HandleFunc(route.path, route.handler)
+		s.router.HandleFunc(route.path, RequestHandlerHTTP(route.method, route.handler))
 	}
 }
 
@@ -55,27 +91,19 @@ type StatusResponse struct {
 	Version string `json:"version"`
 }
 
-// HandleStatus handles HTTP requests to the /status endpoint
-func (s *Server) HandleStatus(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
+// HandleStatus handles the /status request
+func (s *Server) HandleStatus(b io.ReadCloser, w io.Writer) error {
 
-	// Verify we're hit with a get request
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
+	// Simply encode the current status
 	var response = StatusResponse{
 		Ready:   true,
 		Version: version.Version,
 	}
 
-	// Be a good citizen and set the header for the return
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-
 	// Reply with the current status
 	json.NewEncoder(w).Encode(response)
+
+	return nil
 }
 
 // BasicResponse describes the minimum dataset for a response
@@ -101,9 +129,8 @@ type RegisterResponse struct {
 	Id string `json:"id"`
 }
 
-// HandleRegister handles HTTP requests to the /register endpoint
-func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
+// HandleRegister handles /register endpoint
+func (s *Server) HandleRegister(b io.ReadCloser, w io.Writer) error {
 
 	// Set up the response
 	var response = RegisterResponse{
@@ -112,15 +139,9 @@ func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	// Verify we're hit with a get request
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
 	// Pull out the registration info
 	var data RegisterData
-	err := json.NewDecoder(r.Body).Decode(&data)
+	err := json.NewDecoder(b).Decode(&data)
 	if err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
 
@@ -143,15 +164,13 @@ func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Be a good citizen and set the header for the return
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-
 	// Log the response
 	fmt.Printf("\tresponse: %+v\n", response)
 
 	// Reply with the current status
 	json.NewEncoder(w).Encode(response)
+
+	return nil
 }
 
 // SpawnData is the data to be sent for the spawn command
@@ -167,15 +186,7 @@ type SpawnResponse struct {
 }
 
 // HandleSpawn will spawn the player entity for the associated account
-func (s *Server) HandleSpawn(w http.ResponseWriter, r *http.Request) {
-	// Verify we're hit with a get request
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
-
+func (s *Server) HandleSpawn(b io.ReadCloser, w io.Writer) error {
 	// Set up the response
 	var response = SpawnResponse{
 		BasicResponse: BasicResponse{
@@ -185,7 +196,7 @@ func (s *Server) HandleSpawn(w http.ResponseWriter, r *http.Request) {
 
 	// Pull out the incoming info
 	var data SpawnData
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
 
@@ -208,15 +219,13 @@ func (s *Server) HandleSpawn(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Be a good citizen and set the header for the return
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-
 	// Log the response
 	fmt.Printf("\tresponse: %+v\n", response)
 
 	// Reply with the current status
 	json.NewEncoder(w).Encode(response)
+
+	return nil
 }
 
 const (
@@ -241,15 +250,7 @@ type CommandsData struct {
 }
 
 // HandleSpawn will spawn the player entity for the associated account
-func (s *Server) HandleCommands(w http.ResponseWriter, r *http.Request) {
-	// Verify we're hit with a get request
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
-
+func (s *Server) HandleCommands(b io.ReadCloser, w io.Writer) error {
 	// Set up the response
 	var response = BasicResponse{
 		Success: false,
@@ -257,7 +258,7 @@ func (s *Server) HandleCommands(w http.ResponseWriter, r *http.Request) {
 
 	// Pull out the incoming info
 	var data CommandsData
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
 
@@ -269,6 +270,7 @@ func (s *Server) HandleCommands(w http.ResponseWriter, r *http.Request) {
 
 	} else if inst, err := s.accountant.GetPrimary(id); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no primary: %s", err)
+
 	} else {
 		// log the data sent
 		fmt.Printf("\tcommands data: %v\n", data)
@@ -290,15 +292,13 @@ func (s *Server) HandleCommands(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Be a good citizen and set the header for the return
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-
 	// Log the response
 	fmt.Printf("\tresponse: %+v\n", response)
 
 	// Reply with the current status
 	json.NewEncoder(w).Encode(response)
+
+	return nil
 }
 
 // ViewData describes the input data to request an accounts current view
@@ -312,15 +312,7 @@ type ViewResponse struct {
 }
 
 // HandleView handles the view request
-func (s *Server) HandleView(w http.ResponseWriter, r *http.Request) {
-	// Verify we're hit with a get request
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
-
+func (s *Server) HandleView(b io.ReadCloser, w io.Writer) error {
 	// Set up the response
 	var response = ViewResponse{
 		BasicResponse: BasicResponse{
@@ -330,7 +322,7 @@ func (s *Server) HandleView(w http.ResponseWriter, r *http.Request) {
 
 	// Pull out the incoming info
 	var data CommandsData
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
 
@@ -348,13 +340,11 @@ func (s *Server) HandleView(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(id)
 	}
 
-	// Be a good citizen and set the header for the return
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-
 	// Log the response
 	fmt.Printf("\tresponse: %+v\n", response)
 
 	// Reply with the current status
 	json.NewEncoder(w).Encode(response)
+
+	return nil
 }

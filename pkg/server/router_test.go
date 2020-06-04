@@ -16,7 +16,7 @@ func TestHandleStatus(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	s := NewServer()
-	s.HandleStatus(response, request)
+	RequestHandlerHTTP(http.MethodGet, s.HandleStatus)(response, request)
 
 	var status StatusResponse
 	json.NewDecoder(response.Body).Decode(&status)
@@ -41,7 +41,7 @@ func TestHandleRegister(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	s := NewServer()
-	s.HandleRegister(response, request)
+	RequestHandlerHTTP(http.MethodPost, s.HandleRegister)(response, request)
 
 	var status RegisterResponse
 	json.NewDecoder(response.Body).Decode(&status)
@@ -63,7 +63,7 @@ func TestHandleSpawn(t *testing.T) {
 	request, _ := http.NewRequest(http.MethodPost, "/spawn", bytes.NewReader(b))
 	response := httptest.NewRecorder()
 
-	s.HandleSpawn(response, request)
+	RequestHandlerHTTP(http.MethodPost, s.HandleSpawn)(response, request)
 
 	var status SpawnResponse
 	json.NewDecoder(response.Body).Decode(&status)
@@ -99,7 +99,7 @@ func TestHandleCommands(t *testing.T) {
 	request, _ := http.NewRequest(http.MethodPost, "/commands", bytes.NewReader(b))
 	response := httptest.NewRecorder()
 
-	s.HandleCommands(response, request)
+	RequestHandlerHTTP(http.MethodPost, s.HandleCommands)(response, request)
 
 	var status BasicResponse
 	json.NewDecoder(response.Body).Decode(&status)
