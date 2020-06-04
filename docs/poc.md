@@ -5,11 +5,12 @@ For a proof of concept we'll implement a very small subset of the final features
 
 ### Core Features
 
-* Create an account
-* Control an entity in a 2D map
+* Create an account (done)
+* Control an entity in a 2D map (done)
 * Query for what the entity can see
-* Persistent accounts and world
-* Multiple users
+* Persistent accounts and world (done)
+* Multiple users (done)
+* Populate map with locations/objects
 
 ### Stretch goals
 
