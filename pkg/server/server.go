@@ -161,18 +161,18 @@ func (s *Server) wrapHandler(method string, handler Handler) func(w http.Respons
 	}
 }
 
-// SpawnPrimaryForAccount spawns the primary instance for an account
-func (s *Server) SpawnPrimaryForAccount(accountid uuid.UUID) (game.Vector, uuid.UUID, error) {
+// SpawnRoverForAccount spawns the rover rover for an account
+func (s *Server) SpawnRoverForAccount(accountid uuid.UUID) (game.Vector, uuid.UUID, error) {
 	inst := uuid.New()
-	s.world.Spawn(inst)
+	s.world.SpawnRover(inst)
 	if pos, err := s.world.GetPosition(inst); err != nil {
-		return game.Vector{}, uuid.UUID{}, fmt.Errorf("No position found for created instance")
+		return game.Vector{}, uuid.UUID{}, fmt.Errorf("No position found for created rover")
 
 	} else {
-		if err := s.accountant.AssignPrimary(accountid, inst); err != nil {
-			// Try and clear up the instance
-			if err := s.world.DestroyInstance(inst); err != nil {
-				fmt.Printf("Failed to destroy instance after failed primary assign: %s", err)
+		if err := s.accountant.AssignRover(accountid, inst); err != nil {
+			// Try and clear up the rover
+			if err := s.world.DestroyRover(inst); err != nil {
+				fmt.Printf("Failed to destroy rover after failed rover assign: %s", err)
 			}
 
 			return game.Vector{}, uuid.UUID{}, err

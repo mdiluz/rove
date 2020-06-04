@@ -77,8 +77,8 @@ func TestHandleCommands(t *testing.T) {
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
 
-	// Spawn the primary instance for the account
-	_, inst, err := s.SpawnPrimaryForAccount(a.Id)
+	// Spawn the rover rover for the account
+	_, inst, err := s.SpawnRoverForAccount(a.Id)
 
 	data := CommandsData{
 		Id: a.Id.String(),
@@ -107,7 +107,7 @@ func TestHandleCommands(t *testing.T) {
 	}
 
 	if _, err := s.world.GetPosition(inst); err != nil {
-		t.Error("Couldn't get position for the primary instance")
+		t.Error("Couldn't get position for the rover rover")
 	}
 
 	// TODO: Check position is correct

@@ -130,8 +130,8 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) error {
 		// log the data sent
 		fmt.Printf("\tspawn data: %v\n", data)
 
-		// Create a new instance
-		if pos, _, err := s.SpawnPrimaryForAccount(id); err != nil {
+		// Create a new rover
+		if pos, _, err := s.SpawnRoverForAccount(id); err != nil {
 			response.Error = err.Error()
 		} else {
 			response.Success = true
@@ -168,8 +168,8 @@ func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
 	} else if id, err := uuid.Parse(data.Id); err != nil {
 		response.Error = fmt.Sprintf("Provided account ID was invalid: %s", err)
 
-	} else if inst, err := s.accountant.GetPrimary(id); err != nil {
-		response.Error = fmt.Sprintf("Provided account has no primary: %s", err)
+	} else if inst, err := s.accountant.GetRover(id); err != nil {
+		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
 	} else {
 		// log the data sent

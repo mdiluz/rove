@@ -48,7 +48,7 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 	}
 }
 
-func TestAccountant_AssignGetPrimary(t *testing.T) {
+func TestAccountant_AssignGetRover(t *testing.T) {
 	accountant := NewAccountant()
 	if len(accountant.Accounts) != 0 {
 		t.Error("New accountant created with non-zero account number")
@@ -62,14 +62,14 @@ func TestAccountant_AssignGetPrimary(t *testing.T) {
 
 	inst := uuid.New()
 
-	err = accountant.AssignPrimary(a.Id, inst)
+	err = accountant.AssignRover(a.Id, inst)
 	if err != nil {
-		t.Error("Failed to set primary for created account")
-	} else if accountant.Accounts[a.Id].Primary != inst {
-		t.Error("Primary for assigned account is incorrect")
-	} else if id, err := accountant.GetPrimary(a.Id); err != nil {
-		t.Error("Failed to get primary for account")
+		t.Error("Failed to set rover for created account")
+	} else if accountant.Accounts[a.Id].Rover != inst {
+		t.Error("Rover for assigned account is incorrect")
+	} else if id, err := accountant.GetRover(a.Id); err != nil {
+		t.Error("Failed to get rover for account")
 	} else if id != inst {
-		t.Error("Fetched primary is incorrect for account")
+		t.Error("Fetched rover is incorrect for account")
 	}
 }

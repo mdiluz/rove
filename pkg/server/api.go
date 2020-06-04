@@ -30,8 +30,8 @@ type RegisterResponse struct {
 
 // ==============================
 // API: /spawn method: POST
-// Spawns the primary entity for an account
-// Responds with the position of said entity
+// Spawns the rover for an account
+// Responds with the position of said rover
 
 // SpawnData is the data to be sent for the spawn command
 type SpawnData struct {

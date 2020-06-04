@@ -16,8 +16,8 @@ type Account struct {
 	// Id represents a unique ID per account and is set one registered
 	Id uuid.UUID `json:"id"`
 
-	// Primary represents the primary instance that this account owns
-	Primary uuid.UUID `json:"primary"`
+	// Rover represents the rover that this account owns
+	Rover uuid.UUID `json:"rover"`
 }
 
 // Represents the accountant data to store
@@ -58,12 +58,12 @@ func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 	return
 }
 
-// AssignPrimary assigns primary ownership of an instance to an account
-func (a *Accountant) AssignPrimary(account uuid.UUID, instance uuid.UUID) error {
+// AssignRover assigns rover ownership of an rover to an account
+func (a *Accountant) AssignRover(account uuid.UUID, rover uuid.UUID) error {
 
 	// Find the account matching the ID
 	if this, ok := a.Accounts[account]; ok {
-		this.Primary = instance
+		this.Rover = rover
 		a.Accounts[account] = this
 	} else {
 		return fmt.Errorf("no account found for id: %s", account)
@@ -72,11 +72,11 @@ func (a *Accountant) AssignPrimary(account uuid.UUID, instance uuid.UUID) error 
 	return nil
 }
 
-// GetPrimary gets the primary instance for the account
-func (a *Accountant) GetPrimary(account uuid.UUID) (uuid.UUID, error) {
+// GetRover gets the rover rover for the account
+func (a *Accountant) GetRover(account uuid.UUID) (uuid.UUID, error) {
 	// Find the account matching the ID
 	if this, ok := a.Accounts[account]; ok {
-		return this.Primary, nil
+		return this.Rover, nil
 	}
 	return uuid.UUID{}, fmt.Errorf("no account found for id: %s", account)
 }

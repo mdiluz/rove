@@ -8,19 +8,19 @@ import (
 
 // World describes a self contained universe and everything in it
 type World struct {
-	// Instances is a map of all the instances in the game
-	Instances map[uuid.UUID]Instance `json:"instances"`
+	// Rovers is a id->data map of all the rovers in the game
+	Rovers map[uuid.UUID]Rover `json:"rovers"`
 }
 
-// Instance describes a single entity or instance of an entity in the world
-type Instance struct {
-	// Id is a unique ID for this instance
+// Rover describes a single rover in the world
+type Rover struct {
+	// Id is a unique ID for this rover
 	Id uuid.UUID `json:"id"`
 
-	// Pos represents where this instance is in the world
+	// Pos represents where this rover is in the world
 	Pos Vector `json:"pos"`
 
-	// Speed represents the Speed that the instance will move per second
+	// Speed represents the Speed that the rover will move per second
 	Speed float64 `json:"speed"`
 
 	// Sight represents the distance the unit can see
@@ -30,65 +30,65 @@ type Instance struct {
 // NewWorld creates a new world object
 func NewWorld() *World {
 	return &World{
-		Instances: make(map[uuid.UUID]Instance),
+		Rovers: make(map[uuid.UUID]Rover),
 	}
 }
 
-// Spawn adds an instance to the game
-func (w *World) Spawn(id uuid.UUID) error {
-	if _, ok := w.Instances[id]; ok {
-		return fmt.Errorf("instance with id %s already exists in world", id)
+// SpawnRover adds an rover to the game
+func (w *World) SpawnRover(id uuid.UUID) error {
+	if _, ok := w.Rovers[id]; ok {
+		return fmt.Errorf("rover with id %s already exists in world", id)
 	}
 
-	// Initialise the instance
-	instance := Instance{
+	// Initialise the rover
+	rover := Rover{
 		Id: id,
 	}
 
-	// Append the instance to the list
-	w.Instances[id] = instance
+	// Append the rover to the list
+	w.Rovers[id] = rover
 
 	return nil
 }
 
-// Removes an instance from the game
-func (w *World) DestroyInstance(id uuid.UUID) error {
-	if _, ok := w.Instances[id]; ok {
-		delete(w.Instances, id)
+// Removes an rover from the game
+func (w *World) DestroyRover(id uuid.UUID) error {
+	if _, ok := w.Rovers[id]; ok {
+		delete(w.Rovers, id)
 	} else {
-		return fmt.Errorf("no instance matching id")
+		return fmt.Errorf("no rover matching id")
 	}
 	return nil
 }
 
-// GetPosition returns the position of a given instance
+// GetPosition returns the position of a given rover
 func (w World) GetPosition(id uuid.UUID) (Vector, error) {
-	if i, ok := w.Instances[id]; ok {
+	if i, ok := w.Rovers[id]; ok {
 		return i.Pos, nil
 	} else {
-		return Vector{}, fmt.Errorf("no instance matching id")
+		return Vector{}, fmt.Errorf("no rover matching id")
 	}
 }
 
-// SetPosition sets an instances position
+// SetPosition sets an rovers position
 func (w *World) SetPosition(id uuid.UUID, pos Vector) error {
-	if i, ok := w.Instances[id]; ok {
+	if i, ok := w.Rovers[id]; ok {
 		i.Pos = pos
-		w.Instances[id] = i
+		w.Rovers[id] = i
 		return nil
 	} else {
-		return fmt.Errorf("no instance matching id")
+		return fmt.Errorf("no rover matching id")
 	}
 }
 
-// SetPosition sets an instances position
+// SetPosition sets an rovers position
 func (w *World) MovePosition(id uuid.UUID, vec Vector) (Vector, error) {
-	if i, ok := w.Instances[id]; ok {
+	if i, ok := w.Rovers[id]; ok {
 		i.Pos.Add(vec)
-		w.Instances[id] = i
+		w.Rovers[id] = i
 		return i.Pos, nil
 	} else {
-		return Vector{}, fmt.Errorf("no instance matching id")
+		return Vector{}, fmt.Errorf("no rover matching id")
 	}
 }
 
