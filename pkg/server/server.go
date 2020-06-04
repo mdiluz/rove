@@ -92,9 +92,10 @@ func (s *Server) Initialise() error {
 		}
 	}
 
-	// Create a new router
-	s.CreateRoutes()
-	fmt.Printf("Routes Created\n")
+	// Set up the handlers
+	for _, route := range Routes {
+		s.router.HandleFunc(route.path, s.wrapHandler(route.method, route.handler))
+	}
 
 	// Add to our sync
 	s.sync.Add(1)
@@ -160,16 +161,8 @@ func (s *Server) wrapHandler(method string, handler Handler) func(w http.Respons
 	}
 }
 
-// CreateRoutes sets up the server mux
-func (s *Server) CreateRoutes() {
-	// Set up the handlers
-	for _, route := range Routes {
-		s.router.HandleFunc(route.path, s.wrapHandler(route.method, route.handler))
-	}
-}
-
-// SpawnPrimary spawns the primary instance for an account
-func (s *Server) SpawnPrimary(accountid uuid.UUID) (game.Vector, uuid.UUID, error) {
+// SpawnPrimaryForAccount spawns the primary instance for an account
+func (s *Server) SpawnPrimaryForAccount(accountid uuid.UUID) (game.Vector, uuid.UUID, error) {
 	inst := uuid.New()
 	s.world.Spawn(inst)
 	if pos, err := s.world.GetPosition(inst); err != nil {

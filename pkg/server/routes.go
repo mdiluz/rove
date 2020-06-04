@@ -176,7 +176,7 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) error {
 		fmt.Printf("\tspawn data: %v\n", data)
 
 		// Create a new instance
-		if pos, _, err := s.SpawnPrimary(id); err != nil {
+		if pos, _, err := s.SpawnPrimaryForAccount(id); err != nil {
 			response.Error = err.Error()
 		} else {
 			response.Success = true
