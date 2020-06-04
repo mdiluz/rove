@@ -2,8 +2,9 @@ package server
 
 import "github.com/mdiluz/rove/pkg/game"
 
-// ================
-// API: /status
+// ==============================
+// API: /status method: GET
+// Queries the status of the server
 
 // StatusResponse is a struct that contains information on the status of the server
 type StatusResponse struct {
@@ -11,8 +12,10 @@ type StatusResponse struct {
 	Version string `json:"version"`
 }
 
-// ================
-// API: /register
+// ==============================
+// API: /register method: POST
+// Registers a user account by name
+// Responds with a unique ID for that account to be used in future requests
 
 // RegisterData describes the data to send when registering
 type RegisterData struct {
@@ -27,8 +30,10 @@ type RegisterResponse struct {
 	Id string `json:"id"`
 }
 
-// ================
-// API: /spawn
+// ==============================
+// API: /spawn method: POST
+// Spawns the primary entity for an account
+// Responds with the position of said entity
 
 // SpawnData is the data to be sent for the spawn command
 type SpawnData struct {
@@ -43,8 +48,9 @@ type SpawnResponse struct {
 	Position game.Vector `json:"position"`
 }
 
-// ================
-// API: /commands
+// ==============================
+// API: /commands method: POST
+// Issues a set of commands from the user
 
 // CommandsData is a set of commands to execute in order
 type CommandsData struct {
@@ -74,7 +80,8 @@ type Command struct {
 }
 
 // ================
-// API: /view
+// API: /view POST
+// Queries the current view for the user
 
 // ViewData describes the input data to request an accounts current view
 type ViewData struct {
