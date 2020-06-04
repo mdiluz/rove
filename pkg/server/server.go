@@ -93,7 +93,7 @@ func (s *Server) Initialise() error {
 	}
 
 	// Create a new router
-	s.SetUpRouter()
+	s.CreateRoutes()
 	fmt.Printf("Routes Created\n")
 
 	// Add to our sync
@@ -132,6 +132,40 @@ func (s *Server) Close() error {
 		}
 	}
 	return nil
+}
+
+// wrapHandler wraps a request handler in http checks
+func (s *Server) wrapHandler(method string, handler Handler) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Log the request
+		fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
+
+		// Verify we're hit with the right method
+		if r.Method != method {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+
+		} else if err := handler(s, r.Body, w); err != nil {
+			// Log the error
+			fmt.Printf("Failed to handle http request: %s", err)
+
+			// Respond that we've had an error
+			w.WriteHeader(http.StatusInternalServerError)
+
+		} else {
+			// Be a good citizen and set the header for the return
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+			w.WriteHeader(http.StatusOK)
+
+		}
+	}
+}
+
+// CreateRoutes sets up the server mux
+func (s *Server) CreateRoutes() {
+	// Set up the handlers
+	for _, route := range Routes {
+		s.router.HandleFunc(route.path, s.wrapHandler(route.method, route.handler))
+	}
 }
 
 // SpawnPrimary spawns the primary instance for an account

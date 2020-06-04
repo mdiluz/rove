@@ -4,11 +4,51 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/version"
 )
+
+// Handler describes a function that handles any incoming request and can respond
+type Handler func(*Server, io.ReadCloser, io.Writer) error
+
+// Route defines the information for a single path->function route
+type Route struct {
+	path    string
+	method  string
+	handler Handler
+}
+
+// Routes is an array of all the Routes
+var Routes = []Route{
+	{
+		path:    "/status",
+		method:  http.MethodGet,
+		handler: HandleStatus,
+	},
+	{
+		path:    "/register",
+		method:  http.MethodPost,
+		handler: HandleRegister,
+	},
+	{
+		path:    "/spawn",
+		method:  http.MethodPost,
+		handler: HandleSpawn,
+	},
+	{
+		path:    "/commands",
+		method:  http.MethodPost,
+		handler: HandleCommands,
+	},
+	{
+		path:    "/view",
+		method:  http.MethodPost,
+		handler: HandleView,
+	},
+}
 
 // StatusResponse is a struct that contains information on the status of the server
 type StatusResponse struct {
@@ -17,7 +57,7 @@ type StatusResponse struct {
 }
 
 // HandleStatus handles the /status request
-func (s *Server) HandleStatus(b io.ReadCloser, w io.Writer) error {
+func HandleStatus(s *Server, b io.ReadCloser, w io.Writer) error {
 
 	// Simply encode the current status
 	var response = StatusResponse{
@@ -55,7 +95,7 @@ type RegisterResponse struct {
 }
 
 // HandleRegister handles /register endpoint
-func (s *Server) HandleRegister(b io.ReadCloser, w io.Writer) error {
+func HandleRegister(s *Server, b io.ReadCloser, w io.Writer) error {
 
 	// Set up the response
 	var response = RegisterResponse{
@@ -111,7 +151,7 @@ type SpawnResponse struct {
 }
 
 // HandleSpawn will spawn the player entity for the associated account
-func (s *Server) HandleSpawn(b io.ReadCloser, w io.Writer) error {
+func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) error {
 	// Set up the response
 	var response = SpawnResponse{
 		BasicResponse: BasicResponse{
@@ -175,7 +215,7 @@ type CommandsData struct {
 }
 
 // HandleSpawn will spawn the player entity for the associated account
-func (s *Server) HandleCommands(b io.ReadCloser, w io.Writer) error {
+func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
 	// Set up the response
 	var response = BasicResponse{
 		Success: false,
@@ -237,7 +277,7 @@ type ViewResponse struct {
 }
 
 // HandleView handles the view request
-func (s *Server) HandleView(b io.ReadCloser, w io.Writer) error {
+func HandleView(s *Server, b io.ReadCloser, w io.Writer) error {
 	// Set up the response
 	var response = ViewResponse{
 		BasicResponse: BasicResponse{
