@@ -11,46 +11,35 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
 var serverUrl = "localhost:80"
 
-// Connection is the container for a simple connection to the server
-type Connection struct {
-	host string
-}
-
-// NewConnection sets up a new connection to a server host
-func NewConnection(host string) *Connection {
-	return &Connection{
-		host: host,
-	}
-}
-
-// Status returns the current status of the server
-func (c *Connection) Status() (status StatusResponse, err error) {
+func TestStatus(t *testing.T) {
 	url := url.URL{
 		Scheme: "http",
-		Host:   c.host,
+		Host:   serverUrl,
 		Path:   "status",
 	}
+	resp, err := http.Get(url.String())
+	assert.NoError(t, err, "http.Get must not return error")
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "http.Get must return StatusOK")
 
-	if resp, err := http.Get(url.String()); err != nil {
-		return StatusResponse{}, err
-	} else if resp.StatusCode != http.StatusOK {
-		return StatusResponse{}, fmt.Errorf("Status request returned %d", resp.StatusCode)
-	} else {
-		err = json.NewDecoder(resp.Body).Decode(&status)
-	}
+	var status StatusResponse
+	err = json.NewDecoder(resp.Body).Decode(&status)
+	assert.NoError(t, err, "json decode must not return error")
 
-	return
+	assert.NoError(t, err, "Status must not return error")
+	assert.True(t, status.Ready, "Server must return ready")
+	assert.NotZero(t, len(status.Version), "Version must not be empty")
 }
 
-// Register registers a new account on the server
-func (c *Connection) Register(name string) (register RegisterResponse, err error) {
+// helper for register test
+func register(name string) (register RegisterResponse, err error) {
 	url := url.URL{
 		Scheme: "http",
-		Host:   c.host,
+		Host:   serverUrl,
 		Path:   "register",
 	}
 
@@ -81,44 +70,20 @@ func (c *Connection) Register(name string) (register RegisterResponse, err error
 	return
 }
 
-func TestStatus(t *testing.T) {
-	conn := NewConnection(serverUrl)
-
-	if status, err := conn.Status(); err != nil {
-		t.Errorf("Status returned error: %s", err)
-	} else if !status.Ready {
-		t.Error("Server did not return that it was ready")
-	} else if len(status.Version) == 0 {
-		t.Error("Server returned blank version")
-	}
-}
-
 func TestRegister(t *testing.T) {
-	conn := NewConnection(serverUrl)
-
 	a := uuid.New().String()
-	reg1, err := conn.Register(a)
-	if err != nil {
-		t.Errorf("Register returned error: %s", err)
-	} else if !reg1.Success {
-		t.Error("Server did not success for Register")
-	} else if len(reg1.Id) == 0 {
-		t.Error("Server returned empty registration ID")
-	}
+	reg1, err := register(a)
+	assert.NoError(t, err, "Register must not return error")
+	assert.True(t, reg1.Success, "Register must return success")
+	assert.NotZero(t, len(reg1.Id), "Register must return registration ID")
 
 	b := uuid.New().String()
-	reg2, err := conn.Register(b)
-	if err != nil {
-		t.Errorf("Register returned error: %s", err)
-	} else if !reg2.Success {
-		t.Error("Server did not success for Register")
-	} else if len(reg2.Id) == 0 {
-		t.Error("Server returned empty registration ID")
-	}
+	reg2, err := register(b)
+	assert.NoError(t, err, "Register must not return error")
+	assert.True(t, reg2.Success, "Register must return success")
+	assert.NotZero(t, len(reg2.Id), "Register must return registration ID")
 
-	if reg2, err := conn.Register(a); err != nil {
-		t.Errorf("Register returned error: %s", err)
-	} else if reg2.Success {
-		t.Error("Server should have failed to register duplicate name")
-	}
+	reg2, err = register(a)
+	assert.NoError(t, err, "Register must not return error")
+	assert.False(t, reg2.Success, "Register must return fail for duplicate registration")
 }
