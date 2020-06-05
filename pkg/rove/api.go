@@ -1,10 +1,17 @@
-package server
+package rove
 
-import "github.com/mdiluz/rove/pkg/game"
+import (
+	"github.com/mdiluz/rove/pkg/game"
+)
 
 // ==============================
 // API: /status method: GET
-// Queries the status of the server
+
+// Status queries the status of the server
+func (s Server) Status() (r StatusResponse, err error) {
+	s.GET("status", &r)
+	return
+}
 
 // StatusResponse is a struct that contains information on the status of the server
 type StatusResponse struct {
@@ -14,8 +21,13 @@ type StatusResponse struct {
 
 // ==============================
 // API: /register method: POST
-// Registers a user account by name
+
+// Register registers a user account by name
 // Responds with a unique ID for that account to be used in future requests
+func (s Server) Register(d RegisterData) (r RegisterResponse, err error) {
+	err = s.POST("register", d, &r)
+	return
+}
 
 // RegisterData describes the data to send when registering
 type RegisterData struct {
@@ -32,8 +44,13 @@ type RegisterResponse struct {
 
 // ==============================
 // API: /spawn method: POST
-// Spawns the rover for an account
+
+// Spawn spawns the rover for an account
 // Responds with the position of said rover
+func (s Server) Spawn(d SpawnData) (r SpawnResponse, err error) {
+	err = s.POST("spawn", d, &r)
+	return
+}
 
 // SpawnData is the data to be sent for the spawn command
 type SpawnData struct {
@@ -51,7 +68,12 @@ type SpawnResponse struct {
 
 // ==============================
 // API: /commands method: POST
-// Issues a set of commands from the user
+
+// Commands issues a set of commands from the user
+func (s Server) Commands(d CommandsData) (r CommandsResponse, err error) {
+	err = s.POST("commands", d, &r)
+	return
+}
 
 // CommandsData is a set of commands to execute in order
 type CommandsData struct {
@@ -70,17 +92,6 @@ const (
 	CommandMove = "move"
 )
 
-const (
-	BearingNorth = "North"
-	BearingNorthEast
-	BearingEast
-	BearingSouthEast
-	BearingSouth
-	BearingSouthWest
-	BearingWest
-	BearingNorthWest
-)
-
 // Command describes a single command to execute
 // it contains the type, and then any members used for each command type
 type Command struct {
@@ -94,7 +105,13 @@ type Command struct {
 
 // ================
 // API: /radar POST
-// Queries the current radar for the user
+
+// Radar queries the current radar for the user
+// Commands issues a set of commands from the user
+func (s Server) Radar(d RadarData) (r RadarResponse, err error) {
+	err = s.POST("radar", d, &r)
+	return
+}
 
 // RadarData describes the input data to request an accounts current radar
 type RadarData struct {
