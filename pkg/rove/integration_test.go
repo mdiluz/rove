@@ -11,9 +11,9 @@ var server Server = "localhost:80"
 
 func TestServer_Status(t *testing.T) {
 	status, err := server.Status()
-	assert.NoError(t, err, "Status must not return error")
-	assert.True(t, status.Ready, "Server must return ready")
-	assert.NotZero(t, len(status.Version), "Version must not be empty")
+	assert.NoError(t, err)
+	assert.True(t, status.Ready)
+	assert.NotZero(t, len(status.Version))
 }
 
 func TestServer_Register(t *testing.T) {
@@ -21,21 +21,21 @@ func TestServer_Register(t *testing.T) {
 		Name: uuid.New().String(),
 	}
 	r1, err := server.Register(d1)
-	assert.NoError(t, err, "Register must not return error")
-	assert.True(t, r1.Success, "Register must return success")
-	assert.NotZero(t, len(r1.Id), "Register must return registration ID")
+	assert.NoError(t, err)
+	assert.True(t, r1.Success)
+	assert.NotZero(t, len(r1.Id))
 
 	d2 := RegisterData{
 		Name: uuid.New().String(),
 	}
 	r2, err := server.Register(d2)
-	assert.NoError(t, err, "Register must not return error")
-	assert.True(t, r2.Success, "Register must return success")
-	assert.NotZero(t, len(r2.Id), "Register must return registration ID")
+	assert.NoError(t, err)
+	assert.True(t, r2.Success)
+	assert.NotZero(t, len(r2.Id))
 
 	r3, err := server.Register(d1)
-	assert.NoError(t, err, "Register must not return error")
-	assert.False(t, r3.Success, "Register must return fail for duplicate registration")
+	assert.NoError(t, err)
+	assert.False(t, r3.Success)
 }
 
 func TestServer_Spawn(t *testing.T) {
@@ -43,16 +43,16 @@ func TestServer_Spawn(t *testing.T) {
 		Name: uuid.New().String(),
 	}
 	r1, err := server.Register(d1)
-	assert.NoError(t, err, "Register must not return error")
-	assert.True(t, r1.Success, "Register must return success")
-	assert.NotZero(t, len(r1.Id), "Register must return registration ID")
+	assert.NoError(t, err)
+	assert.True(t, r1.Success)
+	assert.NotZero(t, len(r1.Id))
 
 	s := SpawnData{
 		Id: r1.Id,
 	}
 	r2, err := server.Spawn(s)
-	assert.NoError(t, err, "Register must not return error")
-	assert.True(t, r2.Success, "Register must return success")
+	assert.NoError(t, err)
+	assert.True(t, r2.Success)
 }
 
 func TestServer_Commands(t *testing.T) {
@@ -60,16 +60,16 @@ func TestServer_Commands(t *testing.T) {
 		Name: uuid.New().String(),
 	}
 	r1, err := server.Register(d1)
-	assert.NoError(t, err, "Register must not return error")
-	assert.True(t, r1.Success, "Register must return success")
-	assert.NotZero(t, len(r1.Id), "Register must return registration ID")
+	assert.NoError(t, err)
+	assert.True(t, r1.Success)
+	assert.NotZero(t, len(r1.Id))
 
 	s := SpawnData{
 		Id: r1.Id,
 	}
 	r2, err := server.Spawn(s)
-	assert.NoError(t, err, "Register must not return error")
-	assert.True(t, r2.Success, "Register must return success")
+	assert.NoError(t, err)
+	assert.True(t, r2.Success)
 
 	c := CommandsData{
 		Id: r1.Id,
@@ -82,8 +82,8 @@ func TestServer_Commands(t *testing.T) {
 		},
 	}
 	r3, err := server.Commands(c)
-	assert.NoError(t, err, "Register must not return error")
-	assert.True(t, r3.Success, "Register must return success")
+	assert.NoError(t, err)
+	assert.True(t, r3.Success)
 }
 
 func TestServer_Radar(t *testing.T) {
@@ -91,21 +91,21 @@ func TestServer_Radar(t *testing.T) {
 		Name: uuid.New().String(),
 	}
 	r1, err := server.Register(d1)
-	assert.NoError(t, err, "Register must not return error")
-	assert.True(t, r1.Success, "Register must return success")
-	assert.NotZero(t, len(r1.Id), "Register must return registration ID")
+	assert.NoError(t, err)
+	assert.True(t, r1.Success)
+	assert.NotZero(t, len(r1.Id))
 
 	s := SpawnData{
 		Id: r1.Id,
 	}
 	r2, err := server.Spawn(s)
-	assert.NoError(t, err, "Register must not return error")
-	assert.True(t, r2.Success, "Register must return success")
+	assert.NoError(t, err)
+	assert.True(t, r2.Success)
 
 	r := RadarData{
 		Id: r1.Id,
 	}
 	r3, err := server.Radar(r)
-	assert.NoError(t, err, "Register must not return error")
-	assert.True(t, r3.Success, "Register must return success")
+	assert.NoError(t, err)
+	assert.True(t, r3.Success)
 }
