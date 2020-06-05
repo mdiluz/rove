@@ -62,7 +62,6 @@ func main() {
 	var data = Data{}
 	_, err := os.Stat(*dataPath)
 	if !os.IsNotExist(err) {
-		// Read and unmarshal the json
 		if b, err := ioutil.ReadFile(*dataPath); err != nil {
 			fmt.Fprintf(os.Stderr, "failed to read file %s error: %s\n", *dataPath, err)
 			os.Exit(1)
@@ -88,6 +87,7 @@ func main() {
 			fmt.Printf("Ready: %t\n", response.Ready)
 			fmt.Printf("Version: %s\n", response.Version)
 		}
+
 	case "register":
 		d := rove.RegisterData{
 			Name: *name,
@@ -118,10 +118,13 @@ func main() {
 		} else {
 			fmt.Printf("Spawned at position %+v\n", response.Position)
 		}
+
 	case "commands":
 		verifyId(data)
 		d := rove.CommandsData{Id: data.Account}
+
 		// TODO: Send real commands in
+
 		if response, err := server.Commands(d); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -134,6 +137,7 @@ func main() {
 			// TODO: Pretify the response
 			fmt.Printf("%+v\n", response)
 		}
+
 	case "radar":
 		verifyId(data)
 		d := rove.RadarData{Id: data.Account}
@@ -149,6 +153,10 @@ func main() {
 			// TODO: Pretify the response
 			fmt.Printf("%+v\n", response)
 		}
+
+	default:
+		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
+		os.Exit(1)
 	}
 
 	// Save out the persistent file
