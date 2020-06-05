@@ -5,6 +5,9 @@ volumes:
 
 services:
   rove-server:
+    build:
+      context: .
+      dockerfile: cmd/rove-server/Dockerfile
     image: rove-server:latest
     ports:
       - "80:80"
