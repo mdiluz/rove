@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/mdiluz/rove/pkg/game"
+	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +19,7 @@ func TestHandleStatus(t *testing.T) {
 	s := NewServer()
 	s.wrapHandler(http.MethodGet, HandleStatus)(response, request)
 
-	var status StatusResponse
+	var status rove.StatusResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Ready != true {
@@ -31,7 +32,7 @@ func TestHandleStatus(t *testing.T) {
 }
 
 func TestHandleRegister(t *testing.T) {
-	data := RegisterData{Name: "one"}
+	data := rove.RegisterData{Name: "one"}
 	b, err := json.Marshal(data)
 	if err != nil {
 		t.Error(err)
@@ -43,7 +44,7 @@ func TestHandleRegister(t *testing.T) {
 	s := NewServer()
 	s.wrapHandler(http.MethodPost, HandleRegister)(response, request)
 
-	var status RegisterResponse
+	var status rove.RegisterResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Success != true {
@@ -55,7 +56,7 @@ func TestHandleSpawn(t *testing.T) {
 	s := NewServer()
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
-	data := SpawnData{Id: a.Id.String()}
+	data := rove.SpawnData{Id: a.Id.String()}
 
 	b, err := json.Marshal(data)
 	assert.NoError(t, err, "Error marshalling data")
@@ -65,7 +66,7 @@ func TestHandleSpawn(t *testing.T) {
 
 	s.wrapHandler(http.MethodPost, HandleSpawn)(response, request)
 
-	var status SpawnResponse
+	var status rove.SpawnResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Success != true {
@@ -84,11 +85,11 @@ func TestHandleCommands(t *testing.T) {
 	pos, err := s.world.RoverPosition(inst)
 	assert.NoError(t, err, "Couldn't get rover position")
 
-	data := CommandsData{
+	data := rove.CommandsData{
 		Id: a.Id.String(),
-		Commands: []Command{
+		Commands: []rove.Command{
 			{
-				Command:  CommandMove,
+				Command:  rove.CommandMove,
 				Bearing:  "N",
 				Duration: 1,
 			},
@@ -103,7 +104,7 @@ func TestHandleCommands(t *testing.T) {
 
 	s.wrapHandler(http.MethodPost, HandleCommands)(response, request)
 
-	var status CommandsResponse
+	var status rove.CommandsResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Success != true {
@@ -127,7 +128,7 @@ func TestHandleRadar(t *testing.T) {
 	// Spawn the rover rover for the account
 	_, _, err = s.SpawnRoverForAccount(a.Id)
 
-	data := RadarData{
+	data := rove.RadarData{
 		Id: a.Id.String(),
 	}
 
@@ -139,7 +140,7 @@ func TestHandleRadar(t *testing.T) {
 
 	s.wrapHandler(http.MethodPost, HandleRadar)(response, request)
 
-	var status RadarResponse
+	var status rove.RadarResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Success != true {

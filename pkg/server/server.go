@@ -14,6 +14,7 @@ import (
 	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/persistence"
+	"github.com/mdiluz/rove/pkg/rove"
 )
 
 const (
@@ -182,11 +183,11 @@ func (s *Server) SpawnRoverForAccount(accountid uuid.UUID) (game.Vector, uuid.UU
 }
 
 // ConvertCommands converts server commands to game commands
-func (s *Server) ConvertCommands(commands []Command, inst uuid.UUID) ([]game.Command, error) {
+func (s *Server) ConvertCommands(commands []rove.Command, inst uuid.UUID) ([]game.Command, error) {
 	var cmds []game.Command
 	for _, c := range commands {
 		switch c.Command {
-		case CommandMove:
+		case rove.CommandMove:
 			if bearing, err := game.DirectionFromString(c.Bearing); err != nil {
 				return nil, err
 			} else {

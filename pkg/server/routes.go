@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
 )
 
@@ -53,7 +54,7 @@ var Routes = []Route{
 func HandleStatus(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 
 	// Simply return the current server status
-	return StatusResponse{
+	return rove.StatusResponse{
 		Ready:   true,
 		Version: version.Version,
 	}, nil
@@ -61,12 +62,12 @@ func HandleStatus(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) 
 
 // HandleRegister handles /register endpoint
 func HandleRegister(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
-	var response = RegisterResponse{
+	var response = rove.RegisterResponse{
 		Success: false,
 	}
 
 	// Decode the registration info, verify it and register the account
-	var data RegisterData
+	var data rove.RegisterData
 	err := json.NewDecoder(b).Decode(&data)
 	if err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
@@ -88,12 +89,12 @@ func HandleRegister(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error
 
 // HandleSpawn will spawn the player entity for the associated account
 func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
-	var response = SpawnResponse{
+	var response = rove.SpawnResponse{
 		Success: false,
 	}
 
 	// Decode the spawn info, verify it and spawn the rover for this account
-	var data SpawnData
+	var data rove.SpawnData
 	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
@@ -117,12 +118,12 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 
 // HandleSpawn will spawn the player entity for the associated account
 func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
-	var response = CommandsResponse{
+	var response = rove.CommandsResponse{
 		Success: false,
 	}
 
 	// Decode the commands, verify them and the account, and execute the commands
-	var data CommandsData
+	var data rove.CommandsData
 	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
@@ -151,12 +152,12 @@ func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error
 
 // HandleRadar handles the radar request
 func HandleRadar(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
-	var response = RadarResponse{
+	var response = rove.RadarResponse{
 		Success: false,
 	}
 
 	// Decode the radar message, verify it, and respond with the radar info
-	var data CommandsData
+	var data rove.CommandsData
 	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
