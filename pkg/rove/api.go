@@ -67,22 +67,22 @@ type SpawnResponse struct {
 }
 
 // ==============================
-// API: /commands method: POST
+// API: /command method: POST
 
-// Commands issues a set of commands from the user
-func (s Server) Commands(d CommandsData) (r CommandsResponse, err error) {
-	err = s.POST("commands", d, &r)
+// Command issues a set of commands from the user
+func (s Server) Command(d CommandData) (r CommandResponse, err error) {
+	err = s.POST("command", d, &r)
 	return
 }
 
-// CommandsData is a set of commands to execute in order
-type CommandsData struct {
+// CommandData is a set of commands to execute in order
+type CommandData struct {
 	Id       string    `json:"id"`
 	Commands []Command `json:"commands"`
 }
 
-// CommandsResponse is the response to be sent back
-type CommandsResponse struct {
+// CommandResponse is the response to be sent back
+type CommandResponse struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error,omitempty"`
 }

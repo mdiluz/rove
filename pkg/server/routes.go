@@ -39,9 +39,9 @@ var Routes = []Route{
 		handler: HandleSpawn,
 	},
 	{
-		path:    "/commands",
+		path:    "/command",
 		method:  http.MethodPost,
-		handler: HandleCommands,
+		handler: HandleCommand,
 	},
 	{
 		path:    "/radar",
@@ -122,13 +122,13 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 }
 
 // HandleSpawn will spawn the player entity for the associated account
-func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
-	var response = rove.CommandsResponse{
+func HandleCommand(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
+	var response = rove.CommandResponse{
 		Success: false,
 	}
 
 	// Decode the commands, verify them and the account, and execute the commands
-	var data rove.CommandsData
+	var data rove.CommandData
 	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
@@ -162,7 +162,7 @@ func HandleRadar(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 	}
 
 	// Decode the radar message, verify it, and respond with the radar info
-	var data rove.CommandsData
+	var data rove.CommandData
 	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()

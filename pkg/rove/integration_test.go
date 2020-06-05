@@ -55,7 +55,7 @@ func TestServer_Spawn(t *testing.T) {
 	assert.True(t, r2.Success)
 }
 
-func TestServer_Commands(t *testing.T) {
+func TestServer_Command(t *testing.T) {
 	d1 := RegisterData{
 		Name: uuid.New().String(),
 	}
@@ -71,7 +71,7 @@ func TestServer_Commands(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, r2.Success)
 
-	c := CommandsData{
+	c := CommandData{
 		Id: r1.Id,
 		Commands: []Command{
 			{
@@ -81,7 +81,7 @@ func TestServer_Commands(t *testing.T) {
 			},
 		},
 	}
-	r3, err := server.Commands(c)
+	r3, err := server.Command(c)
 	assert.NoError(t, err)
 	assert.True(t, r3.Success)
 }

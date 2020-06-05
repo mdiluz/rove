@@ -20,7 +20,7 @@ func Usage() {
 	fmt.Println("\tstatus  \tprints the server status")
 	fmt.Println("\tregister\tregisters an account and stores it (use with -name)")
 	fmt.Println("\tspawn   \tspawns a rover for the current account")
-	fmt.Println("\tcommands\tissues commands to the rover")
+	fmt.Println("\tcommand \tissues commands to the rover")
 	fmt.Println("\tradar   \tgathers radar data for the current rover")
 	fmt.Println("\trover   \tgets data for current rover")
 	fmt.Println("\nOptions:")
@@ -136,13 +136,13 @@ func main() {
 			fmt.Printf("Spawned at position %+v\n", response.Position)
 		}
 
-	case "commands":
+	case "command":
 		verifyId(config)
-		d := rove.CommandsData{Id: config.Account}
+		d := rove.CommandData{Id: config.Account}
 
 		// TODO: Send real commands in
 
-		if response, err := server.Commands(d); err != nil {
+		if response, err := server.Command(d); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 

@@ -74,7 +74,7 @@ func TestHandleSpawn(t *testing.T) {
 	}
 }
 
-func TestHandleCommands(t *testing.T) {
+func TestHandleCommand(t *testing.T) {
 	s := NewServer()
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
@@ -85,7 +85,7 @@ func TestHandleCommands(t *testing.T) {
 	pos, err := s.world.RoverPosition(inst)
 	assert.NoError(t, err, "Couldn't get rover position")
 
-	data := rove.CommandsData{
+	data := rove.CommandData{
 		Id: a.Id.String(),
 		Commands: []rove.Command{
 			{
@@ -99,16 +99,16 @@ func TestHandleCommands(t *testing.T) {
 	b, err := json.Marshal(data)
 	assert.NoError(t, err, "Error marshalling data")
 
-	request, _ := http.NewRequest(http.MethodPost, "/commands", bytes.NewReader(b))
+	request, _ := http.NewRequest(http.MethodPost, "/command", bytes.NewReader(b))
 	response := httptest.NewRecorder()
 
-	s.wrapHandler(http.MethodPost, HandleCommands)(response, request)
+	s.wrapHandler(http.MethodPost, HandleCommand)(response, request)
 
-	var status rove.CommandsResponse
+	var status rove.CommandResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Success != true {
-		t.Errorf("got false for /commands")
+		t.Errorf("got false for /command")
 	}
 
 	attrib, err := s.world.RoverAttributes(inst)
