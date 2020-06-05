@@ -41,7 +41,7 @@ func Test_InnerMain(t *testing.T) {
 	assert.NoError(t, InnerMain("register"))
 
 	// We've not spawned a rover yet so these should fail
-	// assert.Error(t, InnerMain("command")) // Currently not erroring, needs investigation
+	assert.Error(t, InnerMain("command")) // Currently not erroring, needs investigation
 	assert.Error(t, InnerMain("radar"))
 	assert.Error(t, InnerMain("rover"))
 

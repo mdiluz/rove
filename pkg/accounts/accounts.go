@@ -75,8 +75,11 @@ func (a *Accountant) AssignRover(account uuid.UUID, rover uuid.UUID) error {
 // GetRover gets the rover rover for the account
 func (a *Accountant) GetRover(account uuid.UUID) (uuid.UUID, error) {
 	// Find the account matching the ID
-	if this, ok := a.Accounts[account]; ok {
+	if this, ok := a.Accounts[account]; !ok {
+		return uuid.UUID{}, fmt.Errorf("no account found for id: %s", account)
+	} else if this.Rover == uuid.Nil {
+		return uuid.UUID{}, fmt.Errorf("no rover spawned for account %s", account)
+	} else {
 		return this.Rover, nil
 	}
-	return uuid.UUID{}, fmt.Errorf("no account found for id: %s", account)
 }
