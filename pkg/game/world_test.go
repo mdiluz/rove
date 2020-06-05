@@ -78,3 +78,25 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	pos.Add(Vector{0, attribs.Speed * float64(duration)}) // We should have move one unit of the speed north
 	assert.Equal(t, pos, newpos, "Failed to correctly move position for rover")
 }
+
+func TestWorld_RadarFromRover(t *testing.T) {
+	world := NewWorld()
+	a := world.SpawnRover()
+	b := world.SpawnRover()
+	c := world.SpawnRover()
+
+	// Get a's attributes
+	attrib, err := world.RoverAttributes(a)
+	assert.NoError(t, err, "Failed to get rover attribs")
+
+	// Warp the rovers so a can see b but not c
+	assert.NoError(t, world.WarpRover(a, Vector{0, 0}), "Failed to warp rover")
+	assert.NoError(t, world.WarpRover(b, Vector{attrib.Range - 1, 0}), "Failed to warp rover")
+	assert.NoError(t, world.WarpRover(c, Vector{attrib.Range + 1, 0}), "Failed to warp rover")
+
+	radar, err := world.RadarFromRover(a)
+	assert.NoError(t, err, "Failed to get radar from rover")
+	assert.Equal(t, 1, len(radar.Rovers), "Radar returned wrong number of rovers")
+	assert.Equal(t, Vector{attrib.Range - 1, 0}, radar.Rovers[0], "Rover on radar in wrong position")
+
+}

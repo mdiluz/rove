@@ -133,11 +133,17 @@ type RadarDescription struct {
 
 // RadarFromRover can be used to query what a rover can currently see
 func (w World) RadarFromRover(id uuid.UUID) (RadarDescription, error) {
-	if _, ok := w.Rovers[id]; ok {
+	if r1, ok := w.Rovers[id]; ok {
+		var desc RadarDescription
 
-		// TODO: Gather nearby rovers within the range
+		// Gather nearby rovers within the range
+		for _, r2 := range w.Rovers {
+			if r1.Id != r2.Id && r1.Pos.Distance(r2.Pos) < r1.Attributes.Range {
+				desc.Rovers = append(desc.Rovers, r2.Pos)
+			}
+		}
 
-		return RadarDescription{}, nil
+		return desc, nil
 	} else {
 		return RadarDescription{}, fmt.Errorf("no rover matching id")
 	}
