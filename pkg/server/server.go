@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -141,22 +142,21 @@ func (s *Server) wrapHandler(method string, handler Handler) func(w http.Respons
 		// Log the request
 		fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
 
-		// Verify we're hit with the right method
+		// Verify the method, call the handler, and encode the return
 		if r.Method != method {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 
-		} else if err := handler(s, r.Body, w); err != nil {
-			// Log the error
+		} else if val, err := handler(s, r.Body, w); err != nil {
 			fmt.Printf("Failed to handle http request: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
 
-			// Respond that we've had an error
+		} else if err := json.NewEncoder(w).Encode(val); err != nil {
+			fmt.Printf("Failed to encode return to json: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 
 		} else {
-			// Be a good citizen and set the header for the return
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(http.StatusOK)
-
 		}
 	}
 }
@@ -179,4 +179,20 @@ func (s *Server) SpawnRoverForAccount(accountid uuid.UUID) (game.Vector, uuid.UU
 			return pos, inst, nil
 		}
 	}
+}
+
+// ConvertCommands converts server commands to game commands
+func (s *Server) ConvertCommands(commands []Command, inst uuid.UUID) ([]game.Command, error) {
+	var cmds []game.Command
+	for _, c := range commands {
+		switch c.Command {
+		case CommandMove:
+			if bearing, err := game.DirectionFromString(c.Bearing); err != nil {
+				return nil, err
+			} else {
+				cmds = append(cmds, s.world.CommandMove(inst, bearing, c.Duration))
+			}
+		}
+	}
+	return cmds, nil
 }

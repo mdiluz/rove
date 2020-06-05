@@ -7,12 +7,11 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/version"
 )
 
 // Handler describes a function that handles any incoming request and can respond
-type Handler func(*Server, io.ReadCloser, io.Writer) error
+type Handler func(*Server, io.ReadCloser, io.Writer) (interface{}, error)
 
 // Route defines the information for a single path->function route
 type Route struct {
@@ -51,29 +50,22 @@ var Routes = []Route{
 }
 
 // HandleStatus handles the /status request
-func HandleStatus(s *Server, b io.ReadCloser, w io.Writer) error {
+func HandleStatus(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 
-	// Simply encode the current status
-	var response = StatusResponse{
+	// Simply return the current server status
+	return StatusResponse{
 		Ready:   true,
 		Version: version.Version,
-	}
-
-	// Reply with the current status
-	json.NewEncoder(w).Encode(response)
-
-	return nil
+	}, nil
 }
 
 // HandleRegister handles /register endpoint
-func HandleRegister(s *Server, b io.ReadCloser, w io.Writer) error {
-
-	// Set up the response
+func HandleRegister(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 	var response = RegisterResponse{
 		Success: false,
 	}
 
-	// Pull out the registration info
+	// Decode the registration info, verify it and register the account
 	var data RegisterData
 	err := json.NewDecoder(b).Decode(&data)
 	if err != nil {
@@ -87,31 +79,20 @@ func HandleRegister(s *Server, b io.ReadCloser, w io.Writer) error {
 		response.Error = err.Error()
 
 	} else {
-		// log the data sent
-		fmt.Printf("\tdata: %+v\n", data)
-
-		// If we didn't fail, respond with the account ID string
 		response.Id = acc.Id.String()
 		response.Success = true
 	}
 
-	// Log the response
-	fmt.Printf("\tresponse: %+v\n", response)
-
-	// Reply with the current status
-	json.NewEncoder(w).Encode(response)
-
-	return nil
+	return response, nil
 }
 
 // HandleSpawn will spawn the player entity for the associated account
-func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) error {
-	// Set up the response
+func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 	var response = SpawnResponse{
 		Success: false,
 	}
 
-	// Pull out the incoming info
+	// Decode the spawn info, verify it and spawn the rover for this account
 	var data SpawnData
 	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
@@ -127,46 +108,20 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) error {
 		response.Error = err.Error()
 
 	} else {
-
-		// Create a new rover
 		response.Success = true
 		response.Position = pos
-
 	}
 
-	// Log the response
-	fmt.Printf("\tresponse: %+v\n", response)
-
-	// Reply with the current status
-	json.NewEncoder(w).Encode(response)
-
-	return nil
-}
-
-// ConvertCommands converts server commands to game commands
-func (s *Server) ConvertCommands(commands []Command, inst uuid.UUID) ([]game.Command, error) {
-	var cmds []game.Command
-	for _, c := range commands {
-		switch c.Command {
-		case CommandMove:
-			if bearing, err := game.DirectionFromString(c.Bearing); err != nil {
-				return nil, err
-			} else {
-				cmds = append(cmds, s.world.CommandMove(inst, bearing, c.Duration))
-			}
-		}
-	}
-	return cmds, nil
+	return response, nil
 }
 
 // HandleSpawn will spawn the player entity for the associated account
-func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
-	// Set up the response
+func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 	var response = CommandsResponse{
 		Success: false,
 	}
 
-	// Go through each possible validation step for the data
+	// Decode the commands, verify them and the account, and execute the commands
 	var data CommandsData
 	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
@@ -191,23 +146,16 @@ func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
 		response.Success = true
 	}
 
-	// Log the response
-	fmt.Printf("\tresponse: %+v\n", response)
-
-	// Reply with the current status
-	json.NewEncoder(w).Encode(response)
-
-	return nil
+	return response, nil
 }
 
 // HandleRadar handles the radar request
-func HandleRadar(s *Server, b io.ReadCloser, w io.Writer) error {
-	// Set up the response
+func HandleRadar(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 	var response = RadarResponse{
 		Success: false,
 	}
 
-	// Pull out the incoming info
+	// Decode the radar message, verify it, and respond with the radar info
 	var data CommandsData
 	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
@@ -226,16 +174,9 @@ func HandleRadar(s *Server, b io.ReadCloser, w io.Writer) error {
 		response.Error = fmt.Sprintf("Error getting radar from rover: %s", err)
 
 	} else {
-		// Fill in the response
 		response.Rovers = radar.Rovers
 		response.Success = true
 	}
 
-	// Log the response
-	fmt.Printf("\tresponse: %+v\n", response)
-
-	// Reply with the current status
-	json.NewEncoder(w).Encode(response)
-
-	return nil
+	return response, nil
 }
