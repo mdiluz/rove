@@ -78,24 +78,21 @@ func HandleRegister(s *Server, b io.ReadCloser, w io.Writer) error {
 	err := json.NewDecoder(b).Decode(&data)
 	if err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
-
 		response.Error = err.Error()
+
 	} else if len(data.Name) == 0 {
 		response.Error = "Cannot register empty name"
+
+	} else if acc, err := s.accountant.RegisterAccount(data.Name); err != nil {
+		response.Error = err.Error()
+
 	} else {
 		// log the data sent
 		fmt.Printf("\tdata: %+v\n", data)
 
-		// Register the account with the server
-		acc, err := s.accountant.RegisterAccount(data.Name)
-
 		// If we didn't fail, respond with the account ID string
-		if err == nil {
-			response.Success = true
-			response.Id = acc.Id.String()
-		} else {
-			response.Error = err.Error()
-		}
+		response.Id = acc.Id.String()
+		response.Success = true
 	}
 
 	// Log the response
@@ -126,17 +123,15 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) error {
 	} else if id, err := uuid.Parse(data.Id); err != nil {
 		response.Error = "Provided account ID was invalid"
 
+	} else if pos, _, err := s.SpawnRoverForAccount(id); err != nil {
+		response.Error = err.Error()
+
 	} else {
-		// log the data sent
-		fmt.Printf("\tspawn data: %v\n", data)
 
 		// Create a new rover
-		if pos, _, err := s.SpawnRoverForAccount(id); err != nil {
-			response.Error = err.Error()
-		} else {
-			response.Success = true
-			response.Position = pos
-		}
+		response.Success = true
+		response.Position = pos
+
 	}
 
 	// Log the response
@@ -171,7 +166,7 @@ func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
 		Success: false,
 	}
 
-	// Pull out the incoming info
+	// Go through each possible validation step for the data
 	var data CommandsData
 	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		fmt.Printf("Failed to decode json: %s\n", err)
@@ -189,16 +184,11 @@ func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
 	} else if cmds, err := s.ConvertCommands(data.Commands, inst); err != nil {
 		response.Error = fmt.Sprintf("Couldn't convert commands: %s", err)
 
-	} else {
-		// log the data sent
-		fmt.Printf("\tcommands data: %v\n", data)
+	} else if err := s.world.Execute(cmds...); err != nil {
+		response.Error = fmt.Sprintf("Failed to execute commands: %s", err)
 
-		// Execute the commands
-		if err := s.world.Execute(cmds...); err != nil {
-			response.Error = fmt.Sprintf("Failed to execute commands: %s", err)
-		} else {
-			response.Success = true
-		}
+	} else {
+		response.Success = true
 	}
 
 	// Log the response
