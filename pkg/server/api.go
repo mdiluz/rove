@@ -25,7 +25,7 @@ type RegisterData struct {
 // RegisterResponse describes the response to a register request
 type RegisterResponse struct {
 	Success bool   `json:"success"`
-	Error   string `json:"error"`
+	Error   string `json:"error,omitempty"`
 
 	Id string `json:"id"`
 }
@@ -43,7 +43,7 @@ type SpawnData struct {
 // SpawnResponse is the data to respond with on a spawn command
 type SpawnResponse struct {
 	Success bool   `json:"success"`
-	Error   string `json:"error"`
+	Error   string `json:"error,omitempty"`
 
 	// The location of the spawned entity
 	Position game.Vector `json:"position"`
@@ -62,7 +62,7 @@ type CommandsData struct {
 // CommandsResponse is the response to be sent back
 type CommandsResponse struct {
 	Success bool   `json:"success"`
-	Error   string `json:"error"`
+	Error   string `json:"error,omitempty"`
 }
 
 const (
@@ -104,7 +104,7 @@ type RadarData struct {
 // RadarResponse describes the response to a /radar call
 type RadarResponse struct {
 	Success bool   `json:"success"`
-	Error   string `json:"error"`
+	Error   string `json:"error,omitempty"`
 
 	// The set of positions for nearby rovers
 	Rovers []game.Vector `json:"rovers"`
