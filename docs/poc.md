@@ -11,6 +11,7 @@ For a proof of concept we'll implement a very small subset of the final features
 * Persistent accounts and world (done)
 * Multiple users (done)
 * Populate map with locations/objects
+* Commands happen in "real time"
 
 ### Stretch goals
 
