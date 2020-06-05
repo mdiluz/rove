@@ -143,11 +143,13 @@ func (s *Server) wrapHandler(method string, handler Handler) func(w http.Respons
 		// Log the request
 		fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
 
+		vars := mux.Vars(r)
+
 		// Verify the method, call the handler, and encode the return
 		if r.Method != method {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 
-		} else if val, err := handler(s, r.Body, w); err != nil {
+		} else if val, err := handler(s, vars, r.Body, w); err != nil {
 			fmt.Printf("Failed to handle http request: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 

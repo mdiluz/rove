@@ -47,10 +47,8 @@ func TestServer_Spawn(t *testing.T) {
 	assert.True(t, r1.Success)
 	assert.NotZero(t, len(r1.Id))
 
-	s := SpawnData{
-		Id: r1.Id,
-	}
-	r2, err := server.Spawn(s)
+	s := SpawnData{}
+	r2, err := server.Spawn(r1.Id, s)
 	assert.NoError(t, err)
 	assert.True(t, r2.Success)
 }
@@ -64,15 +62,12 @@ func TestServer_Command(t *testing.T) {
 	assert.True(t, r1.Success)
 	assert.NotZero(t, len(r1.Id))
 
-	s := SpawnData{
-		Id: r1.Id,
-	}
-	r2, err := server.Spawn(s)
+	s := SpawnData{}
+	r2, err := server.Spawn(r1.Id, s)
 	assert.NoError(t, err)
 	assert.True(t, r2.Success)
 
 	c := CommandData{
-		Id: r1.Id,
 		Commands: []Command{
 			{
 				Command:  CommandMove,
@@ -81,7 +76,7 @@ func TestServer_Command(t *testing.T) {
 			},
 		},
 	}
-	r3, err := server.Command(c)
+	r3, err := server.Command(r1.Id, c)
 	assert.NoError(t, err)
 	assert.True(t, r3.Success)
 }
@@ -95,17 +90,12 @@ func TestServer_Radar(t *testing.T) {
 	assert.True(t, r1.Success)
 	assert.NotZero(t, len(r1.Id))
 
-	s := SpawnData{
-		Id: r1.Id,
-	}
-	r2, err := server.Spawn(s)
+	s := SpawnData{}
+	r2, err := server.Spawn(r1.Id, s)
 	assert.NoError(t, err)
 	assert.True(t, r2.Success)
 
-	r := RadarData{
-		Id: r1.Id,
-	}
-	r3, err := server.Radar(r)
+	r3, err := server.Radar(r1.Id)
 	assert.NoError(t, err)
 	assert.True(t, r3.Success)
 }
@@ -119,17 +109,12 @@ func TestServer_Rover(t *testing.T) {
 	assert.True(t, r1.Success)
 	assert.NotZero(t, len(r1.Id))
 
-	s := SpawnData{
-		Id: r1.Id,
-	}
-	r2, err := server.Spawn(s)
+	s := SpawnData{}
+	r2, err := server.Spawn(r1.Id, s)
 	assert.NoError(t, err)
 	assert.True(t, r2.Success)
 
-	r := RoverData{
-		Id: r1.Id,
-	}
-	r3, err := server.Rover(r)
+	r3, err := server.Rover(r1.Id)
 	assert.NoError(t, err)
 	assert.True(t, r3.Success)
 }

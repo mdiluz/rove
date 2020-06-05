@@ -12,7 +12,7 @@ import (
 )
 
 // Handler describes a function that handles any incoming request and can respond
-type Handler func(*Server, io.ReadCloser, io.Writer) (interface{}, error)
+type Handler func(*Server, map[string]string, io.ReadCloser, io.Writer) (interface{}, error)
 
 // Route defines the information for a single path->function route
 type Route struct {
@@ -34,29 +34,29 @@ var Routes = []Route{
 		handler: HandleRegister,
 	},
 	{
-		path:    "/spawn",
+		path:    "/{account}/spawn",
 		method:  http.MethodPost,
 		handler: HandleSpawn,
 	},
 	{
-		path:    "/command",
+		path:    "/{account}/command",
 		method:  http.MethodPost,
 		handler: HandleCommand,
 	},
 	{
-		path:    "/radar",
-		method:  http.MethodPost,
+		path:    "/{account}/radar",
+		method:  http.MethodGet,
 		handler: HandleRadar,
 	},
 	{
-		path:    "/rover",
-		method:  http.MethodPost,
+		path:    "/{account}/rover",
+		method:  http.MethodGet,
 		handler: HandleRover,
 	},
 }
 
 // HandleStatus handles the /status request
-func HandleStatus(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
+func HandleStatus(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
 
 	// Simply return the current server status
 	return rove.StatusResponse{
@@ -66,7 +66,7 @@ func HandleStatus(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) 
 }
 
 // HandleRegister handles /register endpoint
-func HandleRegister(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
+func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
 	var response = rove.RegisterResponse{
 		Success: false,
 	}
@@ -93,10 +93,12 @@ func HandleRegister(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error
 }
 
 // HandleSpawn will spawn the player entity for the associated account
-func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
+func HandleSpawn(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
 	var response = rove.SpawnResponse{
 		Success: false,
 	}
+
+	id := vars["account"]
 
 	// Decode the spawn info, verify it and spawn the rover for this account
 	var data rove.SpawnData
@@ -104,10 +106,10 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 		fmt.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
 
-	} else if len(data.Id) == 0 {
+	} else if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if id, err := uuid.Parse(data.Id); err != nil {
+	} else if id, err := uuid.Parse(id); err != nil {
 		response.Error = "Provided account ID was invalid"
 
 	} else if pos, _, err := s.SpawnRoverForAccount(id); err != nil {
@@ -122,10 +124,12 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 }
 
 // HandleSpawn will spawn the player entity for the associated account
-func HandleCommand(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
+func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
 	var response = rove.CommandResponse{
 		Success: false,
 	}
+
+	id := vars["account"]
 
 	// Decode the commands, verify them and the account, and execute the commands
 	var data rove.CommandData
@@ -133,10 +137,10 @@ func HandleCommand(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error)
 		fmt.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
 
-	} else if len(data.Id) == 0 {
+	} else if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if id, err := uuid.Parse(data.Id); err != nil {
+	} else if id, err := uuid.Parse(id); err != nil {
 		response.Error = fmt.Sprintf("Provided account ID was invalid: %s", err)
 
 	} else if inst, err := s.accountant.GetRover(id); err != nil {
@@ -156,21 +160,16 @@ func HandleCommand(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error)
 }
 
 // HandleRadar handles the radar request
-func HandleRadar(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
+func HandleRadar(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
 	var response = rove.RadarResponse{
 		Success: false,
 	}
 
-	// Decode the radar message, verify it, and respond with the radar info
-	var data rove.CommandData
-	if err := json.NewDecoder(b).Decode(&data); err != nil {
-		fmt.Printf("Failed to decode json: %s\n", err)
-		response.Error = err.Error()
-
-	} else if len(data.Id) == 0 {
+	id := vars["account"]
+	if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if id, err := uuid.Parse(data.Id); err != nil {
+	} else if id, err := uuid.Parse(id); err != nil {
 		response.Error = fmt.Sprintf("Provided account ID was invalid: %s", err)
 
 	} else if inst, err := s.accountant.GetRover(id); err != nil {
@@ -188,20 +187,16 @@ func HandleRadar(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 }
 
 // HandleRover handles the rover request
-func HandleRover(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
+func HandleRover(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
 	var response = rove.RoverResponse{
 		Success: false,
 	}
 
-	var data rove.RoverData
-	if err := json.NewDecoder(b).Decode(&data); err != nil {
-		fmt.Printf("Failed to decode json: %s\n", err)
-		response.Error = err.Error()
-
-	} else if len(data.Id) == 0 {
+	id := vars["account"]
+	if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if id, err := uuid.Parse(data.Id); err != nil {
+	} else if id, err := uuid.Parse(id); err != nil {
 		response.Error = fmt.Sprintf("Provided account ID was invalid: %s", err)
 
 	} else if inst, err := s.accountant.GetRover(id); err != nil {

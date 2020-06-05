@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"path"
 	"testing"
 
 	"github.com/mdiluz/rove/pkg/game"
@@ -13,11 +14,14 @@ import (
 )
 
 func TestHandleStatus(t *testing.T) {
+
 	request, _ := http.NewRequest(http.MethodGet, "/status", nil)
 	response := httptest.NewRecorder()
 
 	s := NewServer()
-	s.wrapHandler(http.MethodGet, HandleStatus)(response, request)
+	s.Initialise()
+	s.router.ServeHTTP(response, request)
+	assert.Equal(t, http.StatusOK, response.Code)
 
 	var status rove.StatusResponse
 	json.NewDecoder(response.Body).Decode(&status)
@@ -42,7 +46,9 @@ func TestHandleRegister(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	s := NewServer()
-	s.wrapHandler(http.MethodPost, HandleRegister)(response, request)
+	s.Initialise()
+	s.router.ServeHTTP(response, request)
+	assert.Equal(t, http.StatusOK, response.Code)
 
 	var status rove.RegisterResponse
 	json.NewDecoder(response.Body).Decode(&status)
@@ -54,28 +60,32 @@ func TestHandleRegister(t *testing.T) {
 
 func TestHandleSpawn(t *testing.T) {
 	s := NewServer()
+	s.Initialise()
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
-	data := rove.SpawnData{Id: a.Id.String()}
+	data := rove.SpawnData{}
 
 	b, err := json.Marshal(data)
 	assert.NoError(t, err, "Error marshalling data")
 
-	request, _ := http.NewRequest(http.MethodPost, "/spawn", bytes.NewReader(b))
+	request, _ := http.NewRequest(http.MethodPost, path.Join("/", a.Id.String(), "/spawn"), bytes.NewReader(b))
 	response := httptest.NewRecorder()
 
-	s.wrapHandler(http.MethodPost, HandleSpawn)(response, request)
+	s.router.ServeHTTP(response, request)
+	assert.Equal(t, http.StatusOK, response.Code)
 
 	var status rove.SpawnResponse
 	json.NewDecoder(response.Body).Decode(&status)
+	assert.Equal(t, http.StatusOK, response.Code)
 
 	if status.Success != true {
-		t.Errorf("got false for /spawn")
+		t.Errorf("got false for /spawn: %s", status.Error)
 	}
 }
 
 func TestHandleCommand(t *testing.T) {
 	s := NewServer()
+	s.Initialise()
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
 
@@ -86,7 +96,6 @@ func TestHandleCommand(t *testing.T) {
 	assert.NoError(t, err, "Couldn't get rover position")
 
 	data := rove.CommandData{
-		Id: a.Id.String(),
 		Commands: []rove.Command{
 			{
 				Command:  rove.CommandMove,
@@ -99,16 +108,17 @@ func TestHandleCommand(t *testing.T) {
 	b, err := json.Marshal(data)
 	assert.NoError(t, err, "Error marshalling data")
 
-	request, _ := http.NewRequest(http.MethodPost, "/command", bytes.NewReader(b))
+	request, _ := http.NewRequest(http.MethodPost, path.Join("/", a.Id.String(), "/command"), bytes.NewReader(b))
 	response := httptest.NewRecorder()
 
-	s.wrapHandler(http.MethodPost, HandleCommand)(response, request)
+	s.router.ServeHTTP(response, request)
+	assert.Equal(t, http.StatusOK, response.Code)
 
 	var status rove.CommandResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Success != true {
-		t.Errorf("got false for /command")
+		t.Errorf("got false for /command: %s", status.Error)
 	}
 
 	attrib, err := s.world.RoverAttributes(inst)
@@ -122,29 +132,24 @@ func TestHandleCommand(t *testing.T) {
 
 func TestHandleRadar(t *testing.T) {
 	s := NewServer()
+	s.Initialise()
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
 
 	// Spawn the rover rover for the account
 	_, _, err = s.SpawnRoverForAccount(a.Id)
 
-	data := rove.RadarData{
-		Id: a.Id.String(),
-	}
-
-	b, err := json.Marshal(data)
-	assert.NoError(t, err, "Error marshalling data")
-
-	request, _ := http.NewRequest(http.MethodPost, "/radar", bytes.NewReader(b))
+	request, _ := http.NewRequest(http.MethodGet, path.Join("/", a.Id.String(), "/radar"), nil)
 	response := httptest.NewRecorder()
 
-	s.wrapHandler(http.MethodPost, HandleRadar)(response, request)
+	s.router.ServeHTTP(response, request)
+	assert.Equal(t, http.StatusOK, response.Code)
 
 	var status rove.RadarResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Success != true {
-		t.Errorf("got false for /radar")
+		t.Errorf("got false for /radar: %s", status.Error)
 	}
 
 	// TODO: Verify the radar information
@@ -152,29 +157,24 @@ func TestHandleRadar(t *testing.T) {
 
 func TestHandleRover(t *testing.T) {
 	s := NewServer()
+	s.Initialise()
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
 
 	// Spawn the rover rover for the account
 	_, _, err = s.SpawnRoverForAccount(a.Id)
 
-	data := rove.RoverData{
-		Id: a.Id.String(),
-	}
-
-	b, err := json.Marshal(data)
-	assert.NoError(t, err, "Error marshalling data")
-
-	request, _ := http.NewRequest(http.MethodPost, "/rover", bytes.NewReader(b))
+	request, _ := http.NewRequest(http.MethodGet, path.Join("/", a.Id.String(), "/rover"), nil)
 	response := httptest.NewRecorder()
 
-	s.wrapHandler(http.MethodPost, HandleRover)(response, request)
+	s.router.ServeHTTP(response, request)
+	assert.Equal(t, http.StatusOK, response.Code)
 
 	var status rove.RoverResponse
 	json.NewDecoder(response.Body).Decode(&status)
 
 	if status.Success != true {
-		t.Errorf("got false for /rover")
+		t.Errorf("got false for /rover: %s", status.Error)
 	}
 
 	// TODO: Verify the radar information

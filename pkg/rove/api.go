@@ -1,6 +1,8 @@
 package rove
 
 import (
+	"path"
+
 	"github.com/mdiluz/rove/pkg/game"
 )
 
@@ -43,18 +45,18 @@ type RegisterResponse struct {
 }
 
 // ==============================
-// API: /spawn method: POST
+// API: /{account}/spawn method: POST
 
 // Spawn spawns the rover for an account
 // Responds with the position of said rover
-func (s Server) Spawn(d SpawnData) (r SpawnResponse, err error) {
-	err = s.POST("spawn", d, &r)
+func (s Server) Spawn(account string, d SpawnData) (r SpawnResponse, err error) {
+	err = s.POST(path.Join(account, "spawn"), d, &r)
 	return
 }
 
 // SpawnData is the data to be sent for the spawn command
 type SpawnData struct {
-	Id string `json:"id"`
+	// Empty for now, reserved for data
 }
 
 // SpawnResponse is the data to respond with on a spawn command
@@ -67,17 +69,16 @@ type SpawnResponse struct {
 }
 
 // ==============================
-// API: /command method: POST
+// API: /{account}/command method: POST
 
 // Command issues a set of commands from the user
-func (s Server) Command(d CommandData) (r CommandResponse, err error) {
-	err = s.POST("command", d, &r)
+func (s Server) Command(account string, d CommandData) (r CommandResponse, err error) {
+	err = s.POST(path.Join(account, "command"), d, &r)
 	return
 }
 
 // CommandData is a set of commands to execute in order
 type CommandData struct {
-	Id       string    `json:"id"`
 	Commands []Command `json:"commands"`
 }
 
@@ -104,17 +105,12 @@ type Command struct {
 }
 
 // ================
-// API: /radar POST
+// API: /{account}/radar method: GET
 
 // Radar queries the current radar for the user
-func (s Server) Radar(d RadarData) (r RadarResponse, err error) {
-	err = s.POST("radar", d, &r)
+func (s Server) Radar(account string) (r RadarResponse, err error) {
+	err = s.GET(path.Join(account, "radar"), &r)
 	return
-}
-
-// RadarData describes the input data to request an accounts current radar
-type RadarData struct {
-	Id string `json:"id"`
 }
 
 // RadarResponse describes the response to a /radar call
@@ -127,17 +123,12 @@ type RadarResponse struct {
 }
 
 // ================
-// API: /rover POST
+// API: /{account}/rover method: GET
 
 // Rover queries the current state of the rover
-func (s Server) Rover(d RoverData) (r RoverResponse, err error) {
-	err = s.POST("rover", d, &r)
+func (s Server) Rover(account string) (r RoverResponse, err error) {
+	err = s.GET(path.Join(account, "rover"), &r)
 	return
-}
-
-// RoverData describes the input data to request rover status
-type RoverData struct {
-	Id string `json:"id"`
 }
 
 // RoverResponse includes information about the rover in question

@@ -123,8 +123,8 @@ func main() {
 		}
 	case "spawn":
 		verifyId(config)
-		d := rove.SpawnData{Id: config.Account}
-		if response, err := server.Spawn(d); err != nil {
+		d := rove.SpawnData{}
+		if response, err := server.Spawn(config.Account, d); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 
@@ -138,11 +138,11 @@ func main() {
 
 	case "command":
 		verifyId(config)
-		d := rove.CommandData{Id: config.Account}
+		d := rove.CommandData{}
 
 		// TODO: Send real commands in
 
-		if response, err := server.Command(d); err != nil {
+		if response, err := server.Command(config.Account, d); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 
@@ -157,8 +157,7 @@ func main() {
 
 	case "radar":
 		verifyId(config)
-		d := rove.RadarData{Id: config.Account}
-		if response, err := server.Radar(d); err != nil {
+		if response, err := server.Radar(config.Account); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 
@@ -173,8 +172,7 @@ func main() {
 
 	case "rover":
 		verifyId(config)
-		d := rove.RoverData{Id: config.Account}
-		if response, err := server.Rover(d); err != nil {
+		if response, err := server.Rover(config.Account); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 
