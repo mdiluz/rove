@@ -30,19 +30,19 @@ var home = os.Getenv("HOME")
 var filepath = path.Join(home, ".local/share/rove.json")
 
 var host = flag.String("host", "api.rove-game.com", "path to game host server")
-var dataPath = flag.String("data", filepath, "data file for storage")
+var data = flag.String("data", filepath, "data file for storage")
 
-// Data is used to store internal data
-type Data struct {
+// Config is used to store internal data
+type Config struct {
 	Account string `json:"account,omitempty"`
 	Host    string `json:"host,omitempty"`
 }
 
 var name = flag.String("name", "", "used with status command for the account name")
 
-func verifyId(d Data) {
+func verifyId(d Config) {
 	if len(d.Account) == 0 {
-		fmt.Fprintf(os.Stderr, "No account ID set, must register first or set \"account\" value in %s\n", *dataPath)
+		fmt.Fprintf(os.Stderr, "No account ID set, must register first or set \"account\" value in %s\n", *data)
 		os.Exit(1)
 	}
 }
@@ -58,24 +58,31 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Set up the config
+	var config = Config{
+		Host: *host,
+	}
+	var server = rove.Server(*host)
+
 	// Load in the persistent file
-	var data = Data{}
-	_, err := os.Stat(*dataPath)
+	_, err := os.Stat(*data)
 	if !os.IsNotExist(err) {
-		if b, err := ioutil.ReadFile(*dataPath); err != nil {
-			fmt.Fprintf(os.Stderr, "failed to read file %s error: %s\n", *dataPath, err)
+		if b, err := ioutil.ReadFile(*data); err != nil {
+			fmt.Fprintf(os.Stderr, "failed to read file %s error: %s\n", *data, err)
 			os.Exit(1)
 		} else if len(b) == 0 {
-			fmt.Fprintf(os.Stderr, "file %s was empty, assumin fresh data\n", *dataPath)
+			fmt.Fprintf(os.Stderr, "file %s was empty, assumin fresh data\n", *data)
 
-		} else if err := json.Unmarshal(b, &data); err != nil {
-			fmt.Fprintf(os.Stderr, "failed to unmarshal file %s error: %s\n", *dataPath, err)
+		} else if err := json.Unmarshal(b, &config); err != nil {
+			fmt.Fprintf(os.Stderr, "failed to unmarshal file %s error: %s\n", *data, err)
 			os.Exit(1)
 		}
 	}
 
-	var server = rove.Server(*host)
+	// Print the config info
+	fmt.Printf("host: %s\taccount: %s\n", config.Host, config.Account)
 
+	// Handle all the commands
 	command := args[0]
 	switch command {
 	case "status":
@@ -102,11 +109,11 @@ func main() {
 
 		} else {
 			fmt.Printf("Registered account with id: %s\n", response.Id)
-			data.Account = response.Id
+			config.Account = response.Id
 		}
 	case "spawn":
-		verifyId(data)
-		d := rove.SpawnData{Id: data.Account}
+		verifyId(config)
+		d := rove.SpawnData{Id: config.Account}
 		if response, err := server.Spawn(d); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -120,8 +127,8 @@ func main() {
 		}
 
 	case "commands":
-		verifyId(data)
-		d := rove.CommandsData{Id: data.Account}
+		verifyId(config)
+		d := rove.CommandsData{Id: config.Account}
 
 		// TODO: Send real commands in
 
@@ -139,8 +146,8 @@ func main() {
 		}
 
 	case "radar":
-		verifyId(data)
-		d := rove.RadarData{Id: data.Account}
+		verifyId(config)
+		d := rove.RadarData{Id: config.Account}
 		if response, err := server.Radar(d); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -160,12 +167,12 @@ func main() {
 	}
 
 	// Save out the persistent file
-	if b, err := json.MarshalIndent(data, "", "\t"); err != nil {
+	if b, err := json.MarshalIndent(config, "", "\t"); err != nil {
 		fmt.Fprintf(os.Stderr, "failed to marshal data error: %s\n", err)
 		os.Exit(1)
 	} else {
-		if err := ioutil.WriteFile(*dataPath, b, os.ModePerm); err != nil {
-			fmt.Fprintf(os.Stderr, "failed to save file %s error: %s\n", *dataPath, err)
+		if err := ioutil.WriteFile(*data, b, os.ModePerm); err != nil {
+			fmt.Fprintf(os.Stderr, "failed to save file %s error: %s\n", *data, err)
 			os.Exit(1)
 		}
 	}
