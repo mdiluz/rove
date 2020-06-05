@@ -109,3 +109,27 @@ func TestServer_Radar(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, r3.Success)
 }
+
+func TestServer_Rover(t *testing.T) {
+	d1 := RegisterData{
+		Name: uuid.New().String(),
+	}
+	r1, err := server.Register(d1)
+	assert.NoError(t, err)
+	assert.True(t, r1.Success)
+	assert.NotZero(t, len(r1.Id))
+
+	s := SpawnData{
+		Id: r1.Id,
+	}
+	r2, err := server.Spawn(s)
+	assert.NoError(t, err)
+	assert.True(t, r2.Success)
+
+	r := RoverData{
+		Id: r1.Id,
+	}
+	r3, err := server.Rover(r)
+	assert.NoError(t, err)
+	assert.True(t, r3.Success)
+}

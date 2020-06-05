@@ -149,3 +149,33 @@ func TestHandleRadar(t *testing.T) {
 
 	// TODO: Verify the radar information
 }
+
+func TestHandleRover(t *testing.T) {
+	s := NewServer()
+	a, err := s.accountant.RegisterAccount("test")
+	assert.NoError(t, err, "Error registering account")
+
+	// Spawn the rover rover for the account
+	_, _, err = s.SpawnRoverForAccount(a.Id)
+
+	data := rove.RoverData{
+		Id: a.Id.String(),
+	}
+
+	b, err := json.Marshal(data)
+	assert.NoError(t, err, "Error marshalling data")
+
+	request, _ := http.NewRequest(http.MethodPost, "/rover", bytes.NewReader(b))
+	response := httptest.NewRecorder()
+
+	s.wrapHandler(http.MethodPost, HandleRover)(response, request)
+
+	var status rove.RoverResponse
+	json.NewDecoder(response.Body).Decode(&status)
+
+	if status.Success != true {
+		t.Errorf("got false for /rover")
+	}
+
+	// TODO: Verify the radar information
+}

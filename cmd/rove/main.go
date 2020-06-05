@@ -22,6 +22,7 @@ func Usage() {
 	fmt.Println("\tspawn   \tspawns a rover for the current account")
 	fmt.Println("\tcommands\tissues commands to the rover")
 	fmt.Println("\tradar   \tgathers radar data for the current rover")
+	fmt.Println("\trover   \tgets data for current rover")
 	fmt.Println("\nOptions:")
 	flag.PrintDefaults()
 }
@@ -29,7 +30,7 @@ func Usage() {
 var home = os.Getenv("HOME")
 var filepath = path.Join(home, ".local/share/rove.json")
 
-var host = flag.String("host", "api.rove-game.com", "path to game host server")
+var host = flag.String("host", "", "path to game host server")
 var data = flag.String("data", filepath, "data file for storage")
 
 // Config is used to store internal data
@@ -58,13 +59,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Set up the config
-	var config = Config{
-		Host: *host,
-	}
-	var server = rove.Server(*host)
-
 	// Load in the persistent file
+	var config = Config{}
 	_, err := os.Stat(*data)
 	if !os.IsNotExist(err) {
 		if b, err := ioutil.ReadFile(*data); err != nil {
@@ -78,6 +74,20 @@ func main() {
 			os.Exit(1)
 		}
 	}
+
+	// If there's a host set on the command line, override the one in the config
+	if len(*host) != 0 {
+		config.Host = *host
+	}
+
+	// If there's still no host, bail
+	if len(config.Host) == 0 {
+		fmt.Fprintln(os.Stderr, "no host set, please set one with -host")
+		os.Exit(1)
+	}
+
+	// Set up the server
+	var server = rove.Server(config.Host)
 
 	// Print the config info
 	fmt.Printf("host: %s\taccount: %s\n", config.Host, config.Account)
@@ -159,6 +169,21 @@ func main() {
 		} else {
 			// TODO: Pretify the response
 			fmt.Printf("%+v\n", response)
+		}
+
+	case "rover":
+		verifyId(config)
+		d := rove.RoverData{Id: config.Account}
+		if response, err := server.Rover(d); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+
+		} else if !response.Success {
+			fmt.Fprintf(os.Stderr, "Server returned failure: %s\n", response.Error)
+			os.Exit(1)
+
+		} else {
+			fmt.Printf("position: %v\n", response.Position)
 		}
 
 	default:

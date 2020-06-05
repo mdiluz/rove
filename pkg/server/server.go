@@ -157,7 +157,6 @@ func (s *Server) wrapHandler(method string, handler Handler) func(w http.Respons
 
 		} else {
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-			w.WriteHeader(http.StatusOK)
 		}
 	}
 }

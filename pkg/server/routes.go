@@ -48,6 +48,11 @@ var Routes = []Route{
 		method:  http.MethodPost,
 		handler: HandleRadar,
 	},
+	{
+		path:    "/rover",
+		method:  http.MethodPost,
+		handler: HandleRover,
+	},
 }
 
 // HandleStatus handles the /status request
@@ -176,6 +181,37 @@ func HandleRadar(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
 
 	} else {
 		response.Rovers = radar.Rovers
+		response.Success = true
+	}
+
+	return response, nil
+}
+
+// HandleRover handles the rover request
+func HandleRover(s *Server, b io.ReadCloser, w io.Writer) (interface{}, error) {
+	var response = rove.RoverResponse{
+		Success: false,
+	}
+
+	var data rove.RoverData
+	if err := json.NewDecoder(b).Decode(&data); err != nil {
+		fmt.Printf("Failed to decode json: %s\n", err)
+		response.Error = err.Error()
+
+	} else if len(data.Id) == 0 {
+		response.Error = "No account ID provided"
+
+	} else if id, err := uuid.Parse(data.Id); err != nil {
+		response.Error = fmt.Sprintf("Provided account ID was invalid: %s", err)
+
+	} else if inst, err := s.accountant.GetRover(id); err != nil {
+		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
+
+	} else if pos, err := s.world.RoverPosition(inst); err != nil {
+		response.Error = fmt.Sprintf("Error getting radar from rover: %s", err)
+
+	} else {
+		response.Position = pos
 		response.Success = true
 	}
 

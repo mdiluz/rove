@@ -107,7 +107,6 @@ type Command struct {
 // API: /radar POST
 
 // Radar queries the current radar for the user
-// Commands issues a set of commands from the user
 func (s Server) Radar(d RadarData) (r RadarResponse, err error) {
 	err = s.POST("radar", d, &r)
 	return
@@ -125,4 +124,27 @@ type RadarResponse struct {
 
 	// The set of positions for nearby rovers
 	Rovers []game.Vector `json:"rovers"`
+}
+
+// ================
+// API: /rover POST
+
+// Rover queries the current state of the rover
+func (s Server) Rover(d RoverData) (r RoverResponse, err error) {
+	err = s.POST("rover", d, &r)
+	return
+}
+
+// RoverData describes the input data to request rover status
+type RoverData struct {
+	Id string `json:"id"`
+}
+
+// RoverResponse includes information about the rover in question
+type RoverResponse struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error,omitempty"`
+
+	// The set of positions for nearby rovers
+	Position game.Vector `json:"position"`
 }
