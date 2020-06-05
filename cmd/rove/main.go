@@ -166,8 +166,7 @@ func main() {
 			os.Exit(1)
 
 		} else {
-			// TODO: Pretify the response
-			fmt.Printf("%+v\n", response)
+			fmt.Printf("nearby rovers: %+v\n", response.Rovers)
 		}
 
 	case "rover":
