@@ -1,4 +1,4 @@
-package integration
+package server
 
 import (
 	"os"
@@ -6,14 +6,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/rove"
-	"github.com/mdiluz/rove/pkg/server"
 	"github.com/stretchr/testify/assert"
 )
 
 var serv rove.Server = "localhost:8080"
 
 func TestMain(m *testing.M) {
-	s := server.NewServer(server.OptionPort(8080))
+	s := NewServer(OptionPort(8080))
 	s.Initialise()
 	go s.Run()
 

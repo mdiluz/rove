@@ -1,5 +1,3 @@
-// +build integration
-
 package main
 
 import (
@@ -9,8 +7,21 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/mdiluz/rove/pkg/server"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	s := server.NewServer(server.OptionPort(8080))
+	s.Initialise()
+	go s.Run()
+
+	code := m.Run()
+
+	s.Close()
+
+	os.Exit(code)
+}
 
 func Test_InnerMain(t *testing.T) {
 	// Set up the flags to act locally and use a temporary file
@@ -20,7 +31,7 @@ func Test_InnerMain(t *testing.T) {
 	assert.Error(t, InnerMain("status"))
 
 	// Now set the host
-	flag.Set("host", "localhost:80")
+	flag.Set("host", "localhost:8080")
 
 	// No error now as we have a host
 	assert.NoError(t, InnerMain("status"))

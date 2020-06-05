@@ -4,18 +4,16 @@ cd "$(dirname "$0")"
 cd ..
 set -x
 
-# Check that the cmdline client builds
-docker build -f "cmd/rove/Dockerfile" .
-
-# Build and start rove-server
-docker-compose -f docker-compose-test.yml up --detach --build
-
-# Run tests, including integration tests
+# Check we can build everything
 go mod download
-go test -v ./... -tags integration -cover -coverprofile=/tmp/c.out
+go build ./...
 
-# Take down the service
+# Run the server and shut it down again to ensure our docker-compose works
+docker-compose up --detach --build
 docker-compose down
+
+# Run tests with coverage
+go test -v ./... -cover -coverprofile=/tmp/c.out
 
 # Convert the coverage data to html
 go tool cover -html=/tmp/c.out -o /tmp/coverage.html
