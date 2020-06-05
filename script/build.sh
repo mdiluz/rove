@@ -8,4 +8,5 @@ set -x
 export VERSION=$(git describe --always --long --dirty --tags)
 
 # Build and tag as latest and version
+docker build -t "rove:latest" -t "rove:${VERSION}" -f "cmd/rove/Dockerfile" .
 docker build -t "rove-server:latest" -t "rove-server:${VERSION}" -f "cmd/rove-server/Dockerfile" .
