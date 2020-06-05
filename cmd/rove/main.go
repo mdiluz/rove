@@ -35,43 +35,38 @@ var data = flag.String("data", filepath, "data file for storage")
 
 // Config is used to store internal data
 type Config struct {
-	Account string `json:"account,omitempty"`
-	Host    string `json:"host,omitempty"`
+	Host     string            `json:"host,omitempty"`
+	Accounts map[string]string `json:"accounts,omitempty"`
 }
 
 var name = flag.String("name", "", "used with status command for the account name")
 
-func verifyId(d Config) {
-	if len(d.Account) == 0 {
-		fmt.Fprintf(os.Stderr, "No account ID set, must register first or set \"account\" value in %s\n", *data)
-		os.Exit(1)
+// verifyId will verify an account ID
+func verifyId(id string) error {
+	if len(id) == 0 {
+		return fmt.Errorf("no account ID set, must register first")
 	}
+	return nil
 }
 
-func main() {
-	flag.Usage = Usage
-	flag.Parse()
-
-	// Verify we have a single command line arg
-	args := flag.Args()
-	if len(args) != 1 {
-		Usage()
-		os.Exit(1)
-	}
+// InnerMain wraps the main function so we can test it
+func InnerMain(command string) error {
 
 	// Load in the persistent file
-	var config = Config{}
+	var config = Config{
+		Accounts: make(map[string]string),
+	}
 	_, err := os.Stat(*data)
 	if !os.IsNotExist(err) {
 		if b, err := ioutil.ReadFile(*data); err != nil {
-			fmt.Fprintf(os.Stderr, "failed to read file %s error: %s\n", *data, err)
-			os.Exit(1)
+			return fmt.Errorf("failed to read file %s error: %s", *data, err)
+
 		} else if len(b) == 0 {
-			fmt.Fprintf(os.Stderr, "file %s was empty, assumin fresh data\n", *data)
+			return fmt.Errorf("file %s was empty, assumin fresh data", *data)
 
 		} else if err := json.Unmarshal(b, &config); err != nil {
-			fmt.Fprintf(os.Stderr, "failed to unmarshal file %s error: %s\n", *data, err)
-			os.Exit(1)
+			return fmt.Errorf("failed to unmarshal file %s error: %s", *data, err)
+
 		}
 	}
 
@@ -82,23 +77,23 @@ func main() {
 
 	// If there's still no host, bail
 	if len(config.Host) == 0 {
-		fmt.Fprintln(os.Stderr, "no host set, please set one with -host")
-		os.Exit(1)
+		return fmt.Errorf("no host set, please set one with -host")
 	}
 
 	// Set up the server
 	var server = rove.Server(config.Host)
 
+	// Grab the account
+	var account = config.Accounts[config.Host]
+
 	// Print the config info
-	fmt.Printf("host: %s\taccount: %s\n", config.Host, config.Account)
+	fmt.Printf("host: %s\taccount: %s\n", config.Host, account)
 
 	// Handle all the commands
-	command := args[0]
 	switch command {
 	case "status":
 		if response, err := server.Status(); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+			return err
 
 		} else {
 			fmt.Printf("Ready: %t\n", response.Ready)
@@ -110,45 +105,40 @@ func main() {
 			Name: *name,
 		}
 		if response, err := server.Register(d); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+			return err
 
 		} else if !response.Success {
-			fmt.Fprintf(os.Stderr, "Server returned failure: %s\n", response.Error)
-			os.Exit(1)
+			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
 			fmt.Printf("Registered account with id: %s\n", response.Id)
-			config.Account = response.Id
+			config.Accounts[config.Host] = response.Id
 		}
 	case "spawn":
-		verifyId(config)
 		d := rove.SpawnData{}
-		if response, err := server.Spawn(config.Account, d); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+		if err := verifyId(account); err != nil {
+			return err
+		} else if response, err := server.Spawn(account, d); err != nil {
+			return err
 
 		} else if !response.Success {
-			fmt.Fprintf(os.Stderr, "Server returned failure: %s\n", response.Error)
-			os.Exit(1)
+			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
 			fmt.Printf("Spawned at position %+v\n", response.Position)
 		}
 
 	case "command":
-		verifyId(config)
+		// TODO: Actually assemble requested commands
 		d := rove.CommandData{}
 
-		// TODO: Send real commands in
-
-		if response, err := server.Command(config.Account, d); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+		if err := verifyId(account); err != nil {
+			return err
+		} else if response, err := server.Command(account, d); err != nil {
+			return err
 
 		} else if !response.Success {
-			fmt.Fprintf(os.Stderr, "Server returned failure: %s\n", response.Error)
-			os.Exit(1)
+			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
 			// TODO: Pretify the response
@@ -156,46 +146,62 @@ func main() {
 		}
 
 	case "radar":
-		verifyId(config)
-		if response, err := server.Radar(config.Account); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+		if err := verifyId(account); err != nil {
+			return err
+		} else if response, err := server.Radar(account); err != nil {
+			return err
 
 		} else if !response.Success {
-			fmt.Fprintf(os.Stderr, "Server returned failure: %s\n", response.Error)
-			os.Exit(1)
+			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
 			fmt.Printf("nearby rovers: %+v\n", response.Rovers)
 		}
 
 	case "rover":
-		verifyId(config)
-		if response, err := server.Rover(config.Account); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+		if err := verifyId(account); err != nil {
+			return err
+		} else if response, err := server.Rover(account); err != nil {
+			return err
 
 		} else if !response.Success {
-			fmt.Fprintf(os.Stderr, "Server returned failure: %s\n", response.Error)
-			os.Exit(1)
+			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
 			fmt.Printf("position: %v\n", response.Position)
 		}
 
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
-		os.Exit(1)
+		return fmt.Errorf("Unknown command: %s", command)
 	}
 
 	// Save out the persistent file
 	if b, err := json.MarshalIndent(config, "", "\t"); err != nil {
-		fmt.Fprintf(os.Stderr, "failed to marshal data error: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to marshal data error: %s", err)
 	} else {
 		if err := ioutil.WriteFile(*data, b, os.ModePerm); err != nil {
-			fmt.Fprintf(os.Stderr, "failed to save file %s error: %s\n", *data, err)
-			os.Exit(1)
+			return fmt.Errorf("failed to save file %s error: %s", *data, err)
 		}
+	}
+
+	return nil
+}
+
+// Simple main
+func main() {
+	flag.Usage = Usage
+	flag.Parse()
+
+	// Verify we have a single command line arg
+	args := flag.Args()
+	if len(args) != 1 {
+		Usage()
+		os.Exit(1)
+	}
+
+	// Run the inner main
+	if err := InnerMain(args[0]); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+		os.Exit(1)
 	}
 }
