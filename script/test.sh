@@ -4,8 +4,11 @@ cd "$(dirname "$0")"
 cd ..
 set -x
 
+# Build the image
+bash script/build.sh
+
 # Build and start the service
-docker-compose up --build --detach
+docker-compose up --detach
 
 # Run tests, including integration tests
 go mod download

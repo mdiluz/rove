@@ -5,7 +5,7 @@ volumes:
 
 services:
   rove-server:
-    build: .
+    image: rove-server:latest
     ports:
       - "80:80"
     command: ./rove-server --port 80 --data=/mnt/rove-server
