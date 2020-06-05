@@ -89,7 +89,7 @@ func TestHandleCommands(t *testing.T) {
 		Commands: []Command{
 			{
 				Command:  CommandMove,
-				Bearing:  0.0,
+				Bearing:  "N",
 				Duration: 1,
 			},
 		},

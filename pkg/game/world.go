@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"math"
 
 	"github.com/google/uuid"
 )
@@ -16,10 +15,10 @@ type World struct {
 // RoverAttributes contains attributes of a rover
 type RoverAttributes struct {
 	// Speed represents the Speed that the rover will move per second
-	Speed float64 `json:"speed"`
+	Speed int `json:"speed"`
 
 	// Range represents the distance the unit's radar can see
-	Range float64 `json:"range"`
+	Range int `json:"range"`
 }
 
 // Rover describes a single rover in the world
@@ -103,16 +102,13 @@ func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
 }
 
 // SetPosition sets an rovers position
-func (w *World) MoveRover(id uuid.UUID, bearing float64, duration float64) (Vector, error) {
+func (w *World) MoveRover(id uuid.UUID, bearing Direction, duration int) (Vector, error) {
 	if i, ok := w.Rovers[id]; ok {
 		// Calculate the distance
-		distance := i.Attributes.Speed * float64(duration)
+		distance := i.Attributes.Speed * duration
 
 		// Calculate the full movement based on the bearing
-		move := Vector{
-			X: math.Sin(bearing) * distance,
-			Y: math.Cos(bearing) * distance,
-		}
+		move := bearing.Vector().Multiplied(distance)
 
 		// Increment the position by the movement
 		i.Pos.Add(move)
@@ -138,7 +134,7 @@ func (w World) RadarFromRover(id uuid.UUID) (RadarDescription, error) {
 
 		// Gather nearby rovers within the range
 		for _, r2 := range w.Rovers {
-			if r1.Id != r2.Id && r1.Pos.Distance(r2.Pos) < r1.Attributes.Range {
+			if r1.Id != r2.Id && r1.Pos.Distance(r2.Pos) < float64(r1.Attributes.Range) {
 				desc.Rovers = append(desc.Rovers, r2.Pos)
 			}
 		}

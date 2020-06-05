@@ -20,14 +20,14 @@ func TestCommand_Move(t *testing.T) {
 	err = world.WarpRover(a, pos)
 	assert.NoError(t, err, "Failed to set position for rover")
 
-	bearing := 0.0
-	duration := 1.0
+	bearing := North
+	duration := 1
 	// Try the move command
 	moveCommand := world.CommandMove(a, bearing, duration)
 	assert.NoError(t, world.Execute(moveCommand), "Failed to execute move command")
 
 	newpos, err := world.RoverPosition(a)
 	assert.NoError(t, err, "Failed to set position for rover")
-	pos.Add(Vector{0.0, float64(duration) * attribs.Speed}) // We should have moved duration*speed north
+	pos.Add(Vector{0.0, duration * attribs.Speed}) // We should have moved duration*speed north
 	assert.Equal(t, pos, newpos, "Failed to correctly set position for rover")
 }

@@ -169,3 +169,61 @@ func TestVector_Distance(t *testing.T) {
 		})
 	}
 }
+
+func TestVector_Multiplied(t *testing.T) {
+
+	tests := []struct {
+		name string
+		vec  Vector
+		arg  int
+		want Vector
+	}{
+		{
+			name: "Basic multiply 1",
+			vec:  North.Vector(),
+			arg:  2,
+			want: Vector{0, 2},
+		},
+		{
+			name: "Basic multiply 2",
+			vec:  NorthWest.Vector(),
+			arg:  -1,
+			want: SouthEast.Vector(),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := Vector{
+				X: tt.vec.X,
+				Y: tt.vec.Y,
+			}
+			if got := v.Multiplied(tt.arg); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Vector.Multiplied() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDirection(t *testing.T) {
+	dir := North
+
+	assert.Equal(t, "North", dir.String())
+	assert.Equal(t, "N", dir.ShortString())
+	assert.Equal(t, Vector{0, 1}, dir.Vector())
+
+	dir, err := DirectionFromString("N")
+	assert.NoError(t, err)
+	assert.Equal(t, North, dir)
+
+	dir, err = DirectionFromString("n")
+	assert.NoError(t, err)
+	assert.Equal(t, North, dir)
+
+	dir, err = DirectionFromString("north")
+	assert.NoError(t, err)
+	assert.Equal(t, North, dir)
+
+	dir, err = DirectionFromString("NorthWest")
+	assert.NoError(t, err)
+	assert.Equal(t, NorthWest, dir)
+}

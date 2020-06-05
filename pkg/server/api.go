@@ -70,6 +70,17 @@ const (
 	CommandMove = "move"
 )
 
+const (
+	BearingNorth = "North"
+	BearingNorthEast
+	BearingEast
+	BearingSouthEast
+	BearingSouth
+	BearingSouthWest
+	BearingWest
+	BearingNorthWest
+)
+
 // Command describes a single command to execute
 // it contains the type, and then any members used for each command type
 type Command struct {
@@ -77,8 +88,8 @@ type Command struct {
 	Command string `json:"command"`
 
 	// Used for CommandMove
-	Bearing  float64 `json:"bearing"`  // The direction to move in degrees
-	Duration float64 `json:"duration"` // The duration of the move in seconds
+	Bearing  string `json:"bearing"`  // The direction to move on a compass in short (NW) or long (NorthWest) form
+	Duration int    `json:"duration"` // The duration of the move in ticks
 }
 
 // ================

@@ -6,8 +6,8 @@ For a proof of concept we'll implement a very small subset of the final features
 ### Core Features
 
 * Create an account (done)
-* Control an entity in a 2D map (done)
-* Query for what the entity can see
+* Control an rover in a 2D map (done)
+* Query for what the rover can see (done)
 * Persistent accounts and world (done)
 * Multiple users (done)
 * Populate map with locations/objects

@@ -148,6 +148,22 @@ func HandleSpawn(s *Server, b io.ReadCloser, w io.Writer) error {
 	return nil
 }
 
+// ConvertCommands converts server commands to game commands
+func (s *Server) ConvertCommands(commands []Command, inst uuid.UUID) ([]game.Command, error) {
+	var cmds []game.Command
+	for _, c := range commands {
+		switch c.Command {
+		case CommandMove:
+			if bearing, err := game.DirectionFromString(c.Bearing); err != nil {
+				return nil, err
+			} else {
+				cmds = append(cmds, s.world.CommandMove(inst, bearing, c.Duration))
+			}
+		}
+	}
+	return cmds, nil
+}
+
 // HandleSpawn will spawn the player entity for the associated account
 func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
 	// Set up the response
@@ -170,18 +186,12 @@ func HandleCommands(s *Server, b io.ReadCloser, w io.Writer) error {
 	} else if inst, err := s.accountant.GetRover(id); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
+	} else if cmds, err := s.ConvertCommands(data.Commands, inst); err != nil {
+		response.Error = fmt.Sprintf("Couldn't convert commands: %s", err)
+
 	} else {
 		// log the data sent
 		fmt.Printf("\tcommands data: %v\n", data)
-
-		// Iterate through the commands to generate all game commands
-		var cmds []game.Command
-		for _, c := range data.Commands {
-			switch c.Command {
-			case CommandMove:
-				cmds = append(cmds, s.world.CommandMove(inst, c.Bearing, c.Duration))
-			}
-		}
 
 		// Execute the commands
 		if err := s.world.Execute(cmds...); err != nil {
