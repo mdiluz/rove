@@ -115,6 +115,8 @@ func (w *World) MoveRover(id uuid.UUID, bearing Direction) (RoverAttributes, err
 		// Calculate the full movement based on the bearing
 		move := bearing.Vector().Multiplied(distance)
 
+		// TODO: Verify there's nothing blocking this movement
+
 		// Increment the position by the movement
 		i.Attributes.Pos.Add(move)
 
