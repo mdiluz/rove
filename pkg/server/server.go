@@ -41,6 +41,7 @@ type Server struct {
 	// Config settings
 	address     string
 	persistence int
+	tick        int
 
 	// sync point for sub-threads
 	sync sync.WaitGroup
@@ -63,6 +64,14 @@ func OptionAddress(address string) ServerOption {
 func OptionPersistentData() ServerOption {
 	return func(s *Server) {
 		s.persistence = PersistentData
+	}
+}
+
+// OptionTick defines the number of minutes per tick
+// 0 means no automatic server tick
+func OptionTick(minutes int) ServerOption {
+	return func(s *Server) {
+		s.tick = minutes
 	}
 }
 
@@ -128,19 +137,26 @@ func (s *Server) Addr() string {
 func (s *Server) Run() {
 	defer s.sync.Done()
 
-	// Set up the schedule
-	s.schedule.AddFunc("0,30", func() {
-		// Ensure we don't quit during this function
-		s.sync.Add(1)
-		defer s.sync.Done()
+	// Set up the schedule if requested
+	if s.tick != 0 {
+		if err := s.schedule.AddFunc(fmt.Sprintf("* */%d * * *", s.tick), func() {
+			// Ensure we don't quit during this function
+			s.sync.Add(1)
+			defer s.sync.Done()
 
-		// Run the command queues
-		s.world.ExecuteCommandQueues()
+			fmt.Println("Execuring server tick")
 
-		// Save out the new world state
-		s.SaveWorld()
-	})
-	s.schedule.Start()
+			// Run the command queues
+			s.world.ExecuteCommandQueues()
+
+			// Save out the new world state
+			s.SaveWorld()
+		}); err != nil {
+			log.Fatal(err)
+		}
+		s.schedule.Start()
+		fmt.Printf("First server tick scheduled for %s\n", s.schedule.Entries()[0].Next.Format("15:04:05"))
+	}
 
 	// Serve the http requests
 	if err := s.server.Serve(s.listener); err != nil && err != http.ErrServerClosed {
