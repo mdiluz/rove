@@ -10,6 +10,7 @@ import (
 
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
+	"github.com/mdiluz/rove/pkg/version"
 )
 
 var USAGE = ""
@@ -32,6 +33,7 @@ var home = os.Getenv("HOME")
 var filepath = path.Join(home, ".local/share/rove.json")
 
 // General usage
+var ver = flag.Bool("version", false, "Display version number")
 var host = flag.String("host", "", "path to game host server")
 var data = flag.String("data", filepath, "data file for storage")
 
@@ -207,6 +209,12 @@ func InnerMain(command string) error {
 func main() {
 	flag.Usage = Usage
 	flag.Parse()
+
+	// Print the version if requested
+	if *ver {
+		fmt.Println(version.Version)
+		return
+	}
 
 	// Verify we have a single command line arg
 	args := flag.Args()
