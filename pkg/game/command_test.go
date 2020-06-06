@@ -23,8 +23,8 @@ func TestCommand_Move(t *testing.T) {
 	bearing := North
 	duration := 1
 	// Try the move command
-	moveCommand := world.CommandMove(a, bearing, duration)
-	assert.NoError(t, world.Execute(moveCommand), "Failed to execute move command")
+	moveCommand := Command{Command: CommandMove, Bearing: bearing.String(), Duration: duration}
+	assert.NoError(t, world.Execute(a, moveCommand), "Failed to execute move command")
 
 	newpos, err := world.RoverPosition(a)
 	assert.NoError(t, err, "Failed to set position for rover")

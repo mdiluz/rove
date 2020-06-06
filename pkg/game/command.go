@@ -1,14 +1,14 @@
 package game
 
-import "github.com/google/uuid"
+const (
+	CommandMove = "move"
+)
 
-// A command is simply a function that acts on the a given rover in the world
-type Command func() error
+// Command represends a single command to execute
+type Command struct {
+	Command string `json:"command"`
 
-// CommandMove will move the rover in question
-func (w *World) CommandMove(id uuid.UUID, bearing Direction, duration int) Command {
-	return func() error {
-		_, err := w.MoveRover(id, bearing, duration)
-		return err
-	}
+	// Used in the move command
+	Bearing  string `json:"bearing,omitempty"`
+	Duration int    `json:"duration,omitempty"`
 }

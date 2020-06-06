@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/server"
 	"github.com/stretchr/testify/assert"
@@ -95,9 +96,9 @@ func TestServer_Command(t *testing.T) {
 	assert.True(t, r2.Success)
 
 	c := rove.CommandData{
-		Commands: []rove.Command{
+		Commands: []game.Command{
 			{
-				Command:  rove.CommandMove,
+				Command:  game.CommandMove,
 				Bearing:  "N",
 				Duration: 1,
 			},

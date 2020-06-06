@@ -146,10 +146,17 @@ func (w World) RadarFromRover(id uuid.UUID) (RadarDescription, error) {
 }
 
 // Execute will run the commands given
-func (w *World) Execute(commands ...Command) error {
+func (w *World) Execute(id uuid.UUID, commands ...Command) error {
 	for _, c := range commands {
-		if err := c(); err != nil {
-			return err
+		switch c.Command {
+		case "move":
+			if dir, err := DirectionFromString(c.Bearing); err != nil {
+				return fmt.Errorf("unknown direction: %s", c.Bearing)
+			} else if _, err := w.MoveRover(id, dir, c.Duration); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("unknown command: %s", c.Command)
 		}
 	}
 	return nil

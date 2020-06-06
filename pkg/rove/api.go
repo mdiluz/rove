@@ -79,29 +79,13 @@ func (s Server) Command(account string, d CommandData) (r CommandResponse, err e
 
 // CommandData is a set of commands to execute in order
 type CommandData struct {
-	Commands []Command `json:"commands"`
+	Commands []game.Command `json:"commands"`
 }
 
 // CommandResponse is the response to be sent back
 type CommandResponse struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error,omitempty"`
-}
-
-const (
-	// CommandMove describes a single move command
-	CommandMove = "move"
-)
-
-// Command describes a single command to execute
-// it contains the type, and then any members used for each command type
-type Command struct {
-	// Command is the main command string
-	Command string `json:"command"`
-
-	// Used for CommandMove
-	Bearing  string `json:"bearing"`  // The direction to move on a compass in short (NW) or long (NorthWest) form
-	Duration int    `json:"duration"` // The duration of the move in ticks
 }
 
 // ================

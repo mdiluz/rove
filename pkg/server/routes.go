@@ -146,10 +146,7 @@ func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writ
 	} else if inst, err := s.accountant.GetRover(id); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
-	} else if cmds, err := s.ConvertCommands(data.Commands, inst); err != nil {
-		response.Error = fmt.Sprintf("Couldn't convert commands: %s", err)
-
-	} else if err := s.world.Execute(cmds...); err != nil {
+	} else if err := s.world.Execute(inst, data.Commands...); err != nil {
 		response.Error = fmt.Sprintf("Failed to execute commands: %s", err)
 
 	} else {

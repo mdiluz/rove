@@ -96,9 +96,9 @@ func TestHandleCommand(t *testing.T) {
 	assert.NoError(t, err, "Couldn't get rover position")
 
 	data := rove.CommandData{
-		Commands: []rove.Command{
+		Commands: []game.Command{
 			{
-				Command:  rove.CommandMove,
+				Command:  game.CommandMove,
 				Bearing:  "N",
 				Duration: 1,
 			},
