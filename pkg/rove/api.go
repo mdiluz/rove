@@ -17,8 +17,10 @@ func (s Server) Status() (r StatusResponse, err error) {
 
 // StatusResponse is a struct that contains information on the status of the server
 type StatusResponse struct {
-	Ready   bool   `json:"ready"`
-	Version string `json:"version"`
+	Ready    bool   `json:"ready"`
+	Version  string `json:"version"`
+	Tick     int    `json:"tick"`
+	NextTick string `json:"nexttick,omitempty"`
 }
 
 // ==============================

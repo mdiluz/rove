@@ -59,10 +59,18 @@ var Routes = []Route{
 func HandleStatus(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
 
 	// Simply return the current server status
-	return rove.StatusResponse{
+	response := rove.StatusResponse{
 		Ready:   true,
 		Version: version.Version,
-	}, nil
+		Tick:    s.tick,
+	}
+
+	// If there's a schedule, respond with it
+	if len(s.schedule.Entries()) > 0 {
+		response.NextTick = s.schedule.Entries()[0].Next.Format("15:04:05")
+	}
+
+	return response, nil
 }
 
 // HandleRegister handles /register endpoint

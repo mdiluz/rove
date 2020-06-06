@@ -105,6 +105,8 @@ func InnerMain(command string) error {
 		} else {
 			fmt.Printf("Ready: %t\n", response.Ready)
 			fmt.Printf("Version: %s\n", response.Version)
+			fmt.Printf("Tick: %d\n", response.Tick)
+			fmt.Printf("Next Tick: %s\n", response.NextTick)
 		}
 
 	case "register":
