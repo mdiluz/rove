@@ -159,8 +159,7 @@ func InnerMain(command string) error {
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
-			// TODO: Pretify the response
-			fmt.Printf("%+v\n", response)
+			fmt.Printf("Request succeeded\n")
 		}
 
 	case "radar":
