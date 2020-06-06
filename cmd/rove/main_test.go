@@ -54,7 +54,7 @@ func Test_InnerMain(t *testing.T) {
 
 	// These methods should fail without an account
 	assert.Error(t, InnerMain("spawn"))
-	assert.Error(t, InnerMain("command"))
+	assert.Error(t, InnerMain("move"))
 	assert.Error(t, InnerMain("radar"))
 	assert.Error(t, InnerMain("rover"))
 
@@ -73,7 +73,11 @@ func Test_InnerMain(t *testing.T) {
 	assert.NoError(t, InnerMain("spawn"))
 
 	// These should now work
-	assert.NoError(t, InnerMain("command"))
 	assert.NoError(t, InnerMain("radar"))
 	assert.NoError(t, InnerMain("rover"))
+
+	// Move should work with arguments
+	flag.Set("bearing", "N")
+	flag.Set("duration", "1")
+	assert.NoError(t, InnerMain("move"))
 }
