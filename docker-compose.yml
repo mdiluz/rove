@@ -11,6 +11,6 @@ services:
     image: rove-server:latest
     ports:
       - "80:80"
-    command: ./rove-server --port 80 --data=/mnt/rove-server
+    command: ./rove-server --address ":80" --data=/mnt/rove-server ${ROVE_ARGS}
     volumes:
       - persistent-data:/mnt/rove-server:rw

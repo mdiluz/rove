@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/mdiluz/rove/pkg/persistence"
 	"github.com/mdiluz/rove/pkg/server"
@@ -13,8 +14,9 @@ import (
 )
 
 var ver = flag.Bool("version", false, "Display version number")
-var port = flag.Int("port", 8080, "The port to host on")
+var port = flag.String("address", ":8080", "The address to host on")
 var data = flag.String("data", os.TempDir(), "Directory to store persistant data")
+var quit = flag.Int("quit", 0, "Quit after n seconds, useful for testing")
 
 func main() {
 	flag.Parse()
@@ -32,7 +34,7 @@ func main() {
 
 	// Create the server data
 	s := server.NewServer(
-		server.OptionPort(*port),
+		server.OptionAddress(*port),
 		server.OptionPersistentData())
 
 	// Initialise the server
@@ -52,9 +54,19 @@ func main() {
 		os.Exit(0)
 	}()
 
-	fmt.Println("Running...")
+	// Quit after a time if requested
+	if *quit != 0 {
+		go func() {
+			time.Sleep(time.Duration(*quit) * time.Second)
+			if err := s.Close(); err != nil {
+				panic(err)
+			}
+			os.Exit(0)
+		}()
+	}
 
 	// Run the server
+	fmt.Printf("Serving HTTP on %s\n", s.Addr())
 	s.Run()
 
 	// Close the server

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"path"
 	"testing"
@@ -11,14 +12,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var address string
+
 func TestMain(m *testing.M) {
-	s := server.NewServer(server.OptionPort(8080))
-	s.Initialise()
+	s := server.NewServer()
+	if err := s.Initialise(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	address = s.Addr()
+
 	go s.Run()
 
+	fmt.Printf("Test server hosted on %s", address)
 	code := m.Run()
 
-	s.Close()
+	if err := s.Close(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	os.Exit(code)
 }
@@ -31,7 +44,7 @@ func Test_InnerMain(t *testing.T) {
 	assert.Error(t, InnerMain("status"))
 
 	// Now set the host
-	flag.Set("host", "localhost:8080")
+	flag.Set("host", address)
 
 	// No error now as we have a host
 	assert.NoError(t, InnerMain("status"))

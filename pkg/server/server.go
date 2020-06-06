@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -27,12 +28,14 @@ const (
 
 // Server contains the relevant data to run a game server
 type Server struct {
-	port int
+	address string
 
 	accountant *accounts.Accountant
 	world      *game.World
 
-	server *http.Server
+	listener net.Listener
+	server   *http.Server
+
 	router *mux.Router
 
 	persistence int
@@ -43,10 +46,10 @@ type Server struct {
 // ServerOption defines a server creation option
 type ServerOption func(s *Server)
 
-// OptionPort sets the server port for hosting
-func OptionPort(port int) ServerOption {
+// OptionAddress sets the server address for hosting
+func OptionAddress(address string) ServerOption {
 	return func(s *Server) {
-		s.port = port
+		s.address = address
 	}
 }
 
@@ -64,7 +67,7 @@ func NewServer(opts ...ServerOption) *Server {
 
 	// Set up the default server
 	s := &Server{
-		port:        8080,
+		address:     "",
 		persistence: EphemeralData,
 		router:      router,
 	}
@@ -75,7 +78,7 @@ func NewServer(opts ...ServerOption) *Server {
 	}
 
 	// Set up the server object
-	s.server = &http.Server{Addr: fmt.Sprintf(":%d", s.port), Handler: router}
+	s.server = &http.Server{Addr: s.address, Handler: s.router}
 
 	// Create the accountant
 	s.accountant = accounts.NewAccountant()
@@ -85,7 +88,10 @@ func NewServer(opts ...ServerOption) *Server {
 }
 
 // Initialise sets up internal state ready to serve
-func (s *Server) Initialise() error {
+func (s *Server) Initialise() (err error) {
+
+	// Add to our sync
+	s.sync.Add(1)
 
 	// Load the accounts if requested
 	if s.persistence == PersistentData {
@@ -99,19 +105,26 @@ func (s *Server) Initialise() error {
 		s.router.HandleFunc(route.path, s.wrapHandler(route.method, route.handler))
 	}
 
-	// Add to our sync
-	s.sync.Add(1)
+	// Start the listen
+	if s.listener, err = net.Listen("tcp", s.server.Addr); err != nil {
+		return err
+	}
 
+	s.address = s.listener.Addr().String()
 	return nil
+}
+
+// Addr will return the server address set after the listen
+func (s Server) Addr() string {
+	return s.address
 }
 
 // Run executes the server
 func (s *Server) Run() {
 	defer s.sync.Done()
 
-	// Listen and serve the http requests
-	fmt.Printf("Serving HTTP on port %d\n", s.port)
-	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	// Serve the http requests
+	if err := s.server.Serve(s.listener); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 }

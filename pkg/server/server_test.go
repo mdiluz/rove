@@ -11,12 +11,12 @@ func TestNewServer(t *testing.T) {
 	}
 }
 
-func TestNewServer_OptionPort(t *testing.T) {
-	server := NewServer(OptionPort(1234))
+func TestNewServer_OptionAddress(t *testing.T) {
+	server := NewServer(OptionAddress(":1234"))
 	if server == nil {
 		t.Error("Failed to create server")
-	} else if server.port != 1234 {
-		t.Error("Failed to set server port")
+	} else if server.address != ":1234" {
+		t.Error("Failed to set server address")
 	}
 }
 
@@ -36,6 +36,7 @@ func TestServer_Run(t *testing.T) {
 	} else if err := server.Initialise(); err != nil {
 		t.Error(err)
 	}
+
 	go server.Run()
 
 	if err := server.Close(); err != nil {
@@ -50,6 +51,7 @@ func TestServer_RunPersistentData(t *testing.T) {
 	} else if err := server.Initialise(); err != nil {
 		t.Error(err)
 	}
+
 	go server.Run()
 
 	if err := server.Close(); err != nil {

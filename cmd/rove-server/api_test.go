@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -10,16 +11,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var serv rove.Server = "localhost:8080"
+// To be set by the main function
+var serv rove.Server
 
 func TestMain(m *testing.M) {
-	s := server.NewServer(server.OptionPort(8080))
-	s.Initialise()
+	s := server.NewServer()
+	if err := s.Initialise(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	serv = rove.Server(s.Addr())
+
 	go s.Run()
 
+	fmt.Printf("Test server hosted on %s", serv)
 	code := m.Run()
 
-	s.Close()
+	if err := s.Close(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	os.Exit(code)
 }
