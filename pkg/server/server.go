@@ -139,12 +139,12 @@ func (s *Server) Run() {
 
 	// Set up the schedule if requested
 	if s.tick != 0 {
-		if err := s.schedule.AddFunc(fmt.Sprintf("* */%d * * *", s.tick), func() {
+		if err := s.schedule.AddFunc(fmt.Sprintf("0 */%d * * *", s.tick), func() {
 			// Ensure we don't quit during this function
 			s.sync.Add(1)
 			defer s.sync.Done()
 
-			fmt.Println("Execuring server tick")
+			fmt.Println("Executing server tick")
 
 			// Run the command queues
 			s.world.ExecuteCommandQueues()
