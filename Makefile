@@ -6,4 +6,7 @@ build:
 install:
 	go install -ldflags="-X 'github.com/mdiluz/rove/pkg/version.Version=${VERSION}'" ./...
 
-.PHONY: install
+test:
+	go test -v ./...
+
+.PHONY: install test
