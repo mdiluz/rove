@@ -44,12 +44,19 @@ func (w *World) SpawnRover() uuid.UUID {
 
 			Speed: 1.0,
 			Range: 20.0,
-			Pos:   Vector{},
 
 			// Set the name randomly
 			Name: babble.NewBabbler().Babble(),
 		},
 	}
+
+	// Spawn in a random place near the origin
+	rover.Attributes.Pos = Vector{
+		10 - (rand.Int() % 20),
+		10 - (rand.Int() % 20),
+	}
+
+	// TODO: Verify no blockages in this area
 
 	// Append the rover to the list
 	w.Rovers[rover.Id] = rover
