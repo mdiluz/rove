@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/google/uuid"
 )
@@ -10,6 +11,15 @@ import (
 type World struct {
 	// Rovers is a id->data map of all the rovers in the game
 	Rovers map[uuid.UUID]Rover `json:"rovers"`
+
+	// Mutex to lock around all world operations
+	worldMutex sync.RWMutex
+
+	// Commands is the set of currently executing command streams per rover
+	CommandQueue map[uuid.UUID]CommandStream `json:"commands"`
+
+	// Mutex to lock around command operations
+	cmdMutex sync.RWMutex
 }
 
 // RoverAttributes contains attributes of a rover
@@ -36,12 +46,16 @@ type Rover struct {
 // NewWorld creates a new world object
 func NewWorld() *World {
 	return &World{
-		Rovers: make(map[uuid.UUID]Rover),
+		Rovers:       make(map[uuid.UUID]Rover),
+		CommandQueue: make(map[uuid.UUID]CommandStream),
 	}
 }
 
 // SpawnRover adds an rover to the game
 func (w *World) SpawnRover() uuid.UUID {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
 	// Initialise the rover
 	rover := Rover{
 		Id: uuid.New(),
@@ -64,6 +78,9 @@ func (w *World) SpawnRover() uuid.UUID {
 
 // Removes an rover from the game
 func (w *World) DestroyRover(id uuid.UUID) error {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
 	if _, ok := w.Rovers[id]; ok {
 		delete(w.Rovers, id)
 	} else {
@@ -73,7 +90,10 @@ func (w *World) DestroyRover(id uuid.UUID) error {
 }
 
 // RoverAttributes returns the attributes of a requested rover
-func (w World) RoverAttributes(id uuid.UUID) (RoverAttributes, error) {
+func (w *World) RoverAttributes(id uuid.UUID) (RoverAttributes, error) {
+	w.worldMutex.RLock()
+	defer w.worldMutex.RUnlock()
+
 	if i, ok := w.Rovers[id]; ok {
 		return i.Attributes, nil
 	} else {
@@ -82,7 +102,10 @@ func (w World) RoverAttributes(id uuid.UUID) (RoverAttributes, error) {
 }
 
 // RoverPosition returns the position of a given rover
-func (w World) RoverPosition(id uuid.UUID) (Vector, error) {
+func (w *World) RoverPosition(id uuid.UUID) (Vector, error) {
+	w.worldMutex.RLock()
+	defer w.worldMutex.RUnlock()
+
 	if i, ok := w.Rovers[id]; ok {
 		return i.Pos, nil
 	} else {
@@ -92,6 +115,9 @@ func (w World) RoverPosition(id uuid.UUID) (Vector, error) {
 
 // WarpRover sets an rovers position
 func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
 	if i, ok := w.Rovers[id]; ok {
 		i.Pos = pos
 		w.Rovers[id] = i
@@ -102,10 +128,13 @@ func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
 }
 
 // SetPosition sets an rovers position
-func (w *World) MoveRover(id uuid.UUID, bearing Direction, duration int) (Vector, error) {
+func (w *World) MoveRover(id uuid.UUID, bearing Direction) (Vector, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
 	if i, ok := w.Rovers[id]; ok {
 		// Calculate the distance
-		distance := i.Attributes.Speed * duration
+		distance := i.Attributes.Speed
 
 		// Calculate the full movement based on the bearing
 		move := bearing.Vector().Multiplied(distance)
@@ -128,7 +157,10 @@ type RadarDescription struct {
 }
 
 // RadarFromRover can be used to query what a rover can currently see
-func (w World) RadarFromRover(id uuid.UUID) (RadarDescription, error) {
+func (w *World) RadarFromRover(id uuid.UUID) (RadarDescription, error) {
+	w.worldMutex.RLock()
+	defer w.worldMutex.RUnlock()
+
 	if r1, ok := w.Rovers[id]; ok {
 		var desc RadarDescription
 
@@ -145,19 +177,89 @@ func (w World) RadarFromRover(id uuid.UUID) (RadarDescription, error) {
 	}
 }
 
-// Execute will run the commands given
-func (w *World) Execute(id uuid.UUID, commands ...Command) error {
+// Enqueue will queue the commands given
+func (w *World) Enqueue(rover uuid.UUID, commands ...Command) error {
+
+	// First validate the commands
 	for _, c := range commands {
 		switch c.Command {
 		case "move":
-			if dir, err := DirectionFromString(c.Bearing); err != nil {
+			if _, err := DirectionFromString(c.Bearing); err != nil {
 				return fmt.Errorf("unknown direction: %s", c.Bearing)
-			} else if _, err := w.MoveRover(id, dir, c.Duration); err != nil {
-				return err
 			}
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
 		}
 	}
+
+	// Lock our commands edit
+	w.cmdMutex.Lock()
+	defer w.cmdMutex.Unlock()
+
+	// Append the commands to the current set
+	cmds := w.CommandQueue[rover]
+	w.CommandQueue[rover] = append(cmds, commands...)
+
 	return nil
+}
+
+// Execute will execute any commands in the current command queue
+func (w *World) Execute() error {
+	w.cmdMutex.Lock()
+	defer w.cmdMutex.Unlock()
+
+	// Iterate through all commands
+	for rover, cmds := range w.CommandQueue {
+		if len(cmds) != 0 {
+			// Extract the first command in the queue
+			c := cmds[0]
+
+			// Execute the command and clear up if requested
+			if done, err := w.ExecuteCommand(&c, rover); err != nil {
+				w.CommandQueue[rover] = cmds[1:]
+				fmt.Println(err)
+			} else if done {
+				w.CommandQueue[rover] = cmds[1:]
+			} else {
+				w.CommandQueue[rover][0] = c
+			}
+
+			// If there was an error
+
+		} else {
+			// Clean out the empty entry
+			delete(w.CommandQueue, rover)
+		}
+	}
+
+	return nil
+}
+
+// ExecuteCommand will execute a single command
+func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	switch c.Command {
+	case "move":
+		if dir, err := DirectionFromString(c.Bearing); err != nil {
+			return true, fmt.Errorf("unknown direction in command %+v, skipping: %s\n", c, err)
+
+		} else if _, err := w.MoveRover(rover, dir); err != nil {
+			return true, fmt.Errorf("error moving rover in command %+v, skipping: %s\n", c, err)
+
+		} else {
+			// If we've successfully moved, reduce the duration by 1
+			c.Duration -= 1
+
+			// If we've used up the full duration, remove it, otherwise update
+			if c.Duration == 0 {
+				finished = true
+			}
+		}
+	default:
+		return true, fmt.Errorf("unknown command: %s", c.Command)
+	}
+
+	return
 }

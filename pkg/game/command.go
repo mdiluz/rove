@@ -12,3 +12,6 @@ type Command struct {
 	Bearing  string `json:"bearing,omitempty"`
 	Duration int    `json:"duration,omitempty"`
 }
+
+// CommandStream is a list of commands to execute in order
+type CommandStream []Command

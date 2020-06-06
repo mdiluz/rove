@@ -114,7 +114,7 @@ func (s *Server) Initialise() (err error) {
 }
 
 // Addr will return the server address set after the listen
-func (s Server) Addr() string {
+func (s *Server) Addr() string {
 	return s.address
 }
 
