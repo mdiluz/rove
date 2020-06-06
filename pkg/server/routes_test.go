@@ -92,7 +92,7 @@ func TestHandleCommand(t *testing.T) {
 	// Spawn the rover rover for the account
 	_, inst, err := s.SpawnRoverForAccount(a.Id)
 
-	pos, err := s.world.RoverPosition(inst)
+	attribs, err := s.world.RoverAttributes(inst)
 	assert.NoError(t, err, "Couldn't get rover position")
 
 	data := rove.CommandData{
@@ -127,10 +127,10 @@ func TestHandleCommand(t *testing.T) {
 	// Tick the command queues to progress the move command
 	s.world.ExecuteCommandQueues()
 
-	pos2, err := s.world.RoverPosition(inst)
+	attribs2, err := s.world.RoverAttributes(inst)
 	assert.NoError(t, err, "Couldn't get rover position")
-	pos.Add(game.Vector{X: 0.0, Y: attrib.Speed * 1}) // Should have moved north by the speed and duration
-	assert.Equal(t, pos, pos2, "Rover should have moved by bearing")
+	attribs.Pos.Add(game.Vector{X: 0.0, Y: attrib.Speed * 1}) // Should have moved north by the speed and duration
+	assert.Equal(t, attribs.Pos, attribs2.Pos, "Rover should have moved by bearing")
 }
 
 func TestHandleRadar(t *testing.T) {

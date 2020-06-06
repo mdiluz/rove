@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+	"github.com/tjarratt/babble"
 )
 
 // World describes a self contained universe and everything in it
@@ -20,27 +21,6 @@ type World struct {
 
 	// Mutex to lock around command operations
 	cmdMutex sync.RWMutex
-}
-
-// RoverAttributes contains attributes of a rover
-type RoverAttributes struct {
-	// Speed represents the Speed that the rover will move per second
-	Speed int `json:"speed"`
-
-	// Range represents the distance the unit's radar can see
-	Range int `json:"range"`
-}
-
-// Rover describes a single rover in the world
-type Rover struct {
-	// Id is a unique ID for this rover
-	Id uuid.UUID `json:"id"`
-
-	// Pos represents where this rover is in the world
-	Pos Vector `json:"pos"`
-
-	// Attributes represents the physical attributes of the rover
-	Attributes RoverAttributes `json:"attributes"`
 }
 
 // NewWorld creates a new world object
@@ -59,14 +39,14 @@ func (w *World) SpawnRover() uuid.UUID {
 	// Initialise the rover
 	rover := Rover{
 		Id: uuid.New(),
-
-		// TODO: Set this somehow
-		Pos: Vector{},
-
-		// TODO: Stop these being random numbers
 		Attributes: RoverAttributes{
+
 			Speed: 1.0,
 			Range: 20.0,
+			Pos:   Vector{},
+
+			// Set the name randomly
+			Name: babble.NewBabbler().Babble(),
 		},
 	}
 
@@ -101,25 +81,13 @@ func (w *World) RoverAttributes(id uuid.UUID) (RoverAttributes, error) {
 	}
 }
 
-// RoverPosition returns the position of a given rover
-func (w *World) RoverPosition(id uuid.UUID) (Vector, error) {
-	w.worldMutex.RLock()
-	defer w.worldMutex.RUnlock()
-
-	if i, ok := w.Rovers[id]; ok {
-		return i.Pos, nil
-	} else {
-		return Vector{}, fmt.Errorf("no rover matching id")
-	}
-}
-
 // WarpRover sets an rovers position
 func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
 	if i, ok := w.Rovers[id]; ok {
-		i.Pos = pos
+		i.Attributes.Pos = pos
 		w.Rovers[id] = i
 		return nil
 	} else {
@@ -128,7 +96,7 @@ func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
 }
 
 // SetPosition sets an rovers position
-func (w *World) MoveRover(id uuid.UUID, bearing Direction) (Vector, error) {
+func (w *World) MoveRover(id uuid.UUID, bearing Direction) (RoverAttributes, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -140,13 +108,13 @@ func (w *World) MoveRover(id uuid.UUID, bearing Direction) (Vector, error) {
 		move := bearing.Vector().Multiplied(distance)
 
 		// Increment the position by the movement
-		i.Pos.Add(move)
+		i.Attributes.Pos.Add(move)
 
 		// Set the rover values to the new ones
 		w.Rovers[id] = i
-		return i.Pos, nil
+		return i.Attributes, nil
 	} else {
-		return Vector{}, fmt.Errorf("no rover matching id")
+		return RoverAttributes{}, fmt.Errorf("no rover matching id")
 	}
 }
 
@@ -166,8 +134,8 @@ func (w *World) RadarFromRover(id uuid.UUID) (RadarDescription, error) {
 
 		// Gather nearby rovers within the range
 		for _, r2 := range w.Rovers {
-			if r1.Id != r2.Id && r1.Pos.Distance(r2.Pos) < float64(r1.Attributes.Range) {
-				desc.Rovers = append(desc.Rovers, r2.Pos)
+			if r1.Id != r2.Id && r1.Attributes.Pos.Distance(r2.Attributes.Pos) < float64(r1.Attributes.Range) {
+				desc.Rovers = append(desc.Rovers, r2.Attributes.Pos)
 			}
 		}
 

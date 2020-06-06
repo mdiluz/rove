@@ -66,8 +66,8 @@ type SpawnResponse struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error,omitempty"`
 
-	// The location of the spawned entity
-	Position game.Vector `json:"position"`
+	// The attributes of the spawned entity
+	Attributes game.RoverAttributes `json:"attributes"`
 }
 
 // ==============================
@@ -122,6 +122,6 @@ type RoverResponse struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error,omitempty"`
 
-	// The set of positions for nearby rovers
-	Position game.Vector `json:"position"`
+	// The current position of this rover
+	Attributes game.RoverAttributes `json:"attributes"`
 }

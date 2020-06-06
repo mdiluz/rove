@@ -126,14 +126,14 @@ func HandleSpawn(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 	} else if id, err := uuid.Parse(id); err != nil {
 		response.Error = "Provided account ID was invalid"
 
-	} else if pos, rover, err := s.SpawnRoverForAccount(id); err != nil {
+	} else if attribs, rover, err := s.SpawnRoverForAccount(id); err != nil {
 		response.Error = err.Error()
 
 	} else {
-		fmt.Printf("New rover spawned\taccount:%s\trover:%s\tpos:%+v\n", id, rover, pos)
+		fmt.Printf("New rover spawned\taccount:%s\trover:%s\attributes:%+v\n", id, rover, attribs)
 
 		response.Success = true
-		response.Position = pos
+		response.Attributes = attribs
 	}
 
 	return response, nil
@@ -217,12 +217,12 @@ func HandleRover(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 	} else if inst, err := s.accountant.GetRover(id); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
-	} else if pos, err := s.world.RoverPosition(inst); err != nil {
+	} else if attribs, err := s.world.RoverAttributes(inst); err != nil {
 		response.Error = fmt.Sprintf("Error getting radar from rover: %s", err)
 
 	} else {
-		fmt.Printf("Responded with rover\taccount:%s\trover:%+v\n", id, pos)
-		response.Position = pos
+		fmt.Printf("Responded with rover\taccount:%s\trover:%+v\n", id, attribs)
+		response.Attributes = attribs
 		response.Success = true
 	}
 

@@ -258,10 +258,10 @@ func (s *Server) wrapHandler(method string, handler Handler) func(w http.Respons
 }
 
 // SpawnRoverForAccount spawns the rover rover for an account
-func (s *Server) SpawnRoverForAccount(accountid uuid.UUID) (game.Vector, uuid.UUID, error) {
+func (s *Server) SpawnRoverForAccount(accountid uuid.UUID) (game.RoverAttributes, uuid.UUID, error) {
 	inst := s.world.SpawnRover()
-	if pos, err := s.world.RoverPosition(inst); err != nil {
-		return game.Vector{}, uuid.UUID{}, fmt.Errorf("No position found for created rover")
+	if attribs, err := s.world.RoverAttributes(inst); err != nil {
+		return game.RoverAttributes{}, uuid.UUID{}, fmt.Errorf("No attributes found for created rover")
 
 	} else {
 		if err := s.accountant.AssignRover(accountid, inst); err != nil {
@@ -270,9 +270,9 @@ func (s *Server) SpawnRoverForAccount(accountid uuid.UUID) (game.Vector, uuid.UU
 				fmt.Printf("Failed to destroy rover after failed rover assign: %s", err)
 			}
 
-			return game.Vector{}, uuid.UUID{}, err
+			return game.RoverAttributes{}, uuid.UUID{}, err
 		} else {
-			return pos, inst, nil
+			return attribs, inst, nil
 		}
 	}
 }

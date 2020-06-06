@@ -134,7 +134,7 @@ func InnerMain(command string) error {
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
-			fmt.Printf("Spawned at position %+v\n", response.Position)
+			fmt.Printf("Spawned rover with attributes %+v\n", response.Attributes)
 		}
 
 	case "move":
@@ -184,7 +184,7 @@ func InnerMain(command string) error {
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
-			fmt.Printf("position: %v\n", response.Position)
+			fmt.Printf("attributes: %v\n", response.Attributes)
 		}
 
 	default:
