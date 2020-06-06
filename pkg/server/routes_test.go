@@ -180,5 +180,5 @@ func TestHandleRover(t *testing.T) {
 		t.Errorf("got false for /rover: %s", status.Error)
 	}
 
-	// TODO: Verify the radar information
+	// TODO: Verify the rover information
 }
