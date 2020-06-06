@@ -5,6 +5,10 @@ WORKDIR /app
 COPY . .
 RUN go mod download
 
+# For /usr/share/dict/words
+RUN apt-get update && apt-get install -y wamerican
+
+
 RUN go build -o rove-server -ldflags="-X 'github.com/mdiluz/rove/pkg/version.Version=$(git describe --always --long --dirty --tags)'" cmd/rove-server/main.go
 
 CMD [ "./rove-server" ]
