@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
 )
 
@@ -20,7 +21,7 @@ func Usage() {
 	fmt.Println("\tstatus  \tprints the server status")
 	fmt.Println("\tregister\tregisters an account and stores it (use with -name)")
 	fmt.Println("\tspawn   \tspawns a rover for the current account")
-	fmt.Println("\tcommand \tissues commands to the rover")
+	fmt.Println("\tmove    \tissues move command to rover")
 	fmt.Println("\tradar   \tgathers radar data for the current rover")
 	fmt.Println("\trover   \tgets data for current rover")
 	fmt.Println("\nOptions:")
@@ -30,16 +31,22 @@ func Usage() {
 var home = os.Getenv("HOME")
 var filepath = path.Join(home, ".local/share/rove.json")
 
+// General usage
 var host = flag.String("host", "", "path to game host server")
 var data = flag.String("data", filepath, "data file for storage")
+
+// For register command
+var name = flag.String("name", "", "used with status command for the account name")
+
+// For the duration command
+var duration = flag.Int("duration", 1, "used for the move command duration")
+var bearing = flag.String("bearing", "", "used for the move command bearing (compass direction)")
 
 // Config is used to store internal data
 type Config struct {
 	Host     string            `json:"host,omitempty"`
 	Accounts map[string]string `json:"accounts,omitempty"`
 }
-
-var name = flag.String("name", "", "used with status command for the account name")
 
 // verifyId will verify an account ID
 func verifyId(id string) error {
@@ -128,9 +135,16 @@ func InnerMain(command string) error {
 			fmt.Printf("Spawned at position %+v\n", response.Position)
 		}
 
-	case "command":
-		// TODO: Actually assemble requested commands
-		d := rove.CommandData{}
+	case "move":
+		d := rove.CommandData{
+			Commands: []game.Command{
+				{
+					Command:  game.CommandMove,
+					Duration: *duration,
+					Bearing:  *bearing,
+				},
+			},
+		}
 
 		if err := verifyId(account); err != nil {
 			return err
