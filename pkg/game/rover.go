@@ -11,7 +11,7 @@ type RoverAttributes struct {
 	Range int `json:"range"`
 
 	// Name of this rover
-	Name string
+	Name string `json:"name"`
 
 	// Pos represents where this rover is in the world
 	Pos Vector `json:"pos"`
