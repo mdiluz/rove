@@ -19,6 +19,9 @@ jobs:
         go-version: ^1.13
       id: go
 
+    - name: Install dict
+      run: sudo apt-get update && sudo apt-get install wamerican
+
     - name: Check out repo
       uses: actions/checkout@v2
 
