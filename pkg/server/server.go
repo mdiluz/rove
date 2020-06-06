@@ -15,6 +15,7 @@ import (
 	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/persistence"
+	"github.com/robfig/cron"
 )
 
 const (
@@ -27,19 +28,25 @@ const (
 
 // Server contains the relevant data to run a game server
 type Server struct {
-	address string
 
+	// Internal state
 	accountant *accounts.Accountant
 	world      *game.World
 
+	// HTTP server
 	listener net.Listener
 	server   *http.Server
+	router   *mux.Router
 
-	router *mux.Router
-
+	// Config settings
+	address     string
 	persistence int
 
+	// sync point for sub-threads
 	sync sync.WaitGroup
+
+	// cron schedule for world ticks
+	schedule *cron.Cron
 }
 
 // ServerOption defines a server creation option
@@ -69,6 +76,7 @@ func NewServer(opts ...ServerOption) *Server {
 		address:     "",
 		persistence: EphemeralData,
 		router:      router,
+		schedule:    cron.New(),
 	}
 
 	// Apply all options
@@ -93,10 +101,8 @@ func (s *Server) Initialise() (err error) {
 	s.sync.Add(1)
 
 	// Load the accounts if requested
-	if s.persistence == PersistentData {
-		if err := persistence.LoadAll("accounts", &s.accountant, "world", &s.world); err != nil {
-			return err
-		}
+	if err := s.LoadAll(); err != nil {
+		return err
 	}
 
 	// Set up the handlers
@@ -122,6 +128,20 @@ func (s *Server) Addr() string {
 func (s *Server) Run() {
 	defer s.sync.Done()
 
+	// Set up the schedule
+	s.schedule.AddFunc("0,30", func() {
+		// Ensure we don't quit during this function
+		s.sync.Add(1)
+		defer s.sync.Done()
+
+		// Run the command queues
+		s.world.ExecuteCommandQueues()
+
+		// Save out the new world state
+		s.SaveWorld()
+	})
+	s.schedule.Start()
+
 	// Serve the http requests
 	if err := s.server.Serve(s.listener); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
@@ -130,6 +150,9 @@ func (s *Server) Run() {
 
 // Close closes up the server
 func (s *Server) Close() error {
+	// Stop the cron
+	s.schedule.Stop()
+
 	// Try and shut down the http server
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -137,12 +160,55 @@ func (s *Server) Close() error {
 		return err
 	}
 
-	// Wait until the server is shut down
+	// Wait until the server has shut down
 	s.sync.Wait()
 
+	// Save and return
+	return s.SaveAll()
+}
+
+// SaveWorld will save out the world file
+func (s *Server) SaveWorld() error {
+	if s.persistence == PersistentData {
+		s.world.RLock()
+		defer s.world.RUnlock()
+		if err := persistence.SaveAll("world", s.world); err != nil {
+			return fmt.Errorf("failed to save out persistent data: %s", err)
+		}
+	}
+	return nil
+}
+
+// SaveAccounts will save out the accounts file
+func (s *Server) SaveAccounts() error {
+	if s.persistence == PersistentData {
+		if err := persistence.SaveAll("accounts", s.accountant); err != nil {
+			return fmt.Errorf("failed to save out persistent data: %s", err)
+		}
+	}
+	return nil
+}
+
+// SaveAll will save out all server files
+func (s *Server) SaveAll() error {
 	// Save the accounts if requested
 	if s.persistence == PersistentData {
+		s.world.RLock()
+		defer s.world.RUnlock()
+
 		if err := persistence.SaveAll("accounts", s.accountant, "world", s.world); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// LoadAll will load all persistent data
+func (s *Server) LoadAll() error {
+	if s.persistence == PersistentData {
+		s.world.Lock()
+		defer s.world.Unlock()
+		if err := persistence.LoadAll("accounts", &s.accountant, "world", &s.world); err != nil {
 			return err
 		}
 	}

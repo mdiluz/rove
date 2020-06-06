@@ -84,7 +84,12 @@ func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Wri
 	} else if acc, err := s.accountant.RegisterAccount(data.Name); err != nil {
 		response.Error = err.Error()
 
+	} else if err := s.SaveAll(); err != nil {
+		response.Error = fmt.Sprintf("Internal server error when saving accounts: %s", err)
+
 	} else {
+		// Save out the new accounts
+
 		response.Id = acc.Id.String()
 		response.Success = true
 	}

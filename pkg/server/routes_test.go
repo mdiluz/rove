@@ -124,6 +124,9 @@ func TestHandleCommand(t *testing.T) {
 	attrib, err := s.world.RoverAttributes(inst)
 	assert.NoError(t, err, "Couldn't get rover attribs")
 
+	// Tick the command queues to progress the move command
+	s.world.ExecuteCommandQueues()
+
 	pos2, err := s.world.RoverPosition(inst)
 	assert.NoError(t, err, "Couldn't get rover position")
 	pos.Add(game.Vector{X: 0.0, Y: attrib.Speed * 1}) // Should have moved north by the speed and duration

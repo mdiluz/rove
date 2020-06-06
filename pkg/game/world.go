@@ -204,7 +204,7 @@ func (w *World) Enqueue(rover uuid.UUID, commands ...Command) error {
 }
 
 // Execute will execute any commands in the current command queue
-func (w *World) Execute() error {
+func (w *World) ExecuteCommandQueues() {
 	w.cmdMutex.Lock()
 	defer w.cmdMutex.Unlock()
 
@@ -231,14 +231,10 @@ func (w *World) Execute() error {
 			delete(w.CommandQueue, rover)
 		}
 	}
-
-	return nil
 }
 
 // ExecuteCommand will execute a single command
 func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err error) {
-	w.worldMutex.Lock()
-	defer w.worldMutex.Unlock()
 
 	switch c.Command {
 	case "move":
@@ -262,4 +258,28 @@ func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err 
 	}
 
 	return
+}
+
+// RLock read locks the world
+func (w *World) RLock() {
+	w.worldMutex.RLock()
+	w.cmdMutex.RLock()
+}
+
+// RUnlock read unlocks the world
+func (w *World) RUnlock() {
+	w.worldMutex.RUnlock()
+	w.cmdMutex.RUnlock()
+}
+
+// Lock locks the world
+func (w *World) Lock() {
+	w.worldMutex.Lock()
+	w.cmdMutex.Lock()
+}
+
+// Unlock unlocks the world
+func (w *World) Unlock() {
+	w.worldMutex.Unlock()
+	w.cmdMutex.Unlock()
 }

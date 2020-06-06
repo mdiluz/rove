@@ -26,6 +26,9 @@ func TestCommand_Move(t *testing.T) {
 	moveCommand := Command{Command: CommandMove, Bearing: bearing.String(), Duration: duration}
 	assert.NoError(t, world.Enqueue(a, moveCommand), "Failed to execute move command")
 
+	// Tick the world
+	world.ExecuteCommandQueues()
+
 	newpos, err := world.RoverPosition(a)
 	assert.NoError(t, err, "Failed to set position for rover")
 	pos.Add(Vector{0.0, duration * attribs.Speed}) // We should have moved duration*speed north
