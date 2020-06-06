@@ -14,17 +14,17 @@ import (
 )
 
 var ver = flag.Bool("version", false, "Display version number")
-var port = flag.String("address", ":8080", "The address to host on")
-var data = flag.String("data", os.TempDir(), "Directory to store persistant data")
 var quit = flag.Int("quit", 0, "Quit after n seconds, useful for testing")
+var address = flag.String("address", "", "The address to host on, automatically selected if empty")
+var data = flag.String("data", "", "Directory to store persistant data, no storage if empty")
 
-func main() {
+func InnerMain() {
 	flag.Parse()
 
 	// Print the version if requested
 	if *ver {
 		fmt.Println(version.Version)
-		os.Exit(0)
+		return
 	}
 
 	fmt.Printf("Initialising version %s...\n", version.Version)
@@ -34,7 +34,7 @@ func main() {
 
 	// Create the server data
 	s := server.NewServer(
-		server.OptionAddress(*port),
+		server.OptionAddress(*address),
 		server.OptionPersistentData())
 
 	// Initialise the server
@@ -73,4 +73,9 @@ func main() {
 	if err := s.Close(); err != nil {
 		panic(err)
 	}
+}
+
+func main() {
+	flag.Parse()
+	InnerMain()
 }

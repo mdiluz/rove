@@ -12,7 +12,7 @@ go build ./...
 ROVE_ARGS="--quit 1" docker-compose up --build --exit-code-from=rove-server --abort-on-container-exit
 
 # Run tests with coverage
-go test -v ./... -cover -coverprofile=/tmp/c.out
+go test -v ./... -cover -coverprofile=/tmp/c.out -count 1
 
 # Convert the coverage data to html
 go tool cover -html=/tmp/c.out -o /tmp/coverage.html
