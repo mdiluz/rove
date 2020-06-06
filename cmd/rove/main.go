@@ -184,7 +184,7 @@ func InnerMain(command string) error {
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
-			fmt.Printf("attributes: %v\n", response.Attributes)
+			fmt.Printf("attributes: %+v\n", response.Attributes)
 		}
 
 	default:
