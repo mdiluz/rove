@@ -17,7 +17,7 @@ var ver = flag.Bool("version", false, "Display version number")
 var quit = flag.Int("quit", 0, "Quit after n seconds, useful for testing")
 var address = flag.String("address", "", "The address to host on, automatically selected if empty")
 var data = flag.String("data", "", "Directory to store persistant data, no storage if empty")
-var tick = flag.Int("tick", 30, "Number of minutes per server tick (0 for no tick)")
+var tick = flag.Int("tick", 5, "Number of minutes per server tick (0 for no tick)")
 
 func InnerMain() {
 	flag.Parse()
