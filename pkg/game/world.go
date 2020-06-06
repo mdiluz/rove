@@ -235,7 +235,7 @@ func (w *World) ExecuteCommandQueues() {
 
 // ExecuteCommand will execute a single command
 func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err error) {
-	fmt.Printf("Executing command: %+v", *c)
+	fmt.Printf("Executing command: %+v\n", *c)
 
 	switch c.Command {
 	case "move":

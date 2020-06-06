@@ -89,7 +89,7 @@ func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Wri
 
 	} else {
 		// Save out the new accounts
-		fmt.Printf("New account registered\tname:%s\tid:%s", acc.Name, acc.Id)
+		fmt.Printf("New account registered\tname:%s\tid:%s\n", acc.Name, acc.Id)
 
 		response.Id = acc.Id.String()
 		response.Success = true
@@ -122,7 +122,7 @@ func HandleSpawn(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 		response.Error = err.Error()
 
 	} else {
-		fmt.Printf("New rover spawned\taccount:%s\trover:%s\tpos:%+v", id, rover, pos)
+		fmt.Printf("New rover spawned\taccount:%s\trover:%s\tpos:%+v\n", id, rover, pos)
 
 		response.Success = true
 		response.Position = pos
@@ -158,7 +158,7 @@ func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writ
 		response.Error = fmt.Sprintf("Failed to execute commands: %s", err)
 
 	} else {
-		fmt.Printf("Queued commands\taccount:%s\tcommands:%+v", id, data.Commands)
+		fmt.Printf("Queued commands\taccount:%s\tcommands:%+v\n", id, data.Commands)
 		response.Success = true
 	}
 
@@ -185,7 +185,7 @@ func HandleRadar(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 		response.Error = fmt.Sprintf("Error getting radar from rover: %s", err)
 
 	} else {
-		fmt.Printf("Responded with radar\taccount:%s\tradar:%+v", id, radar)
+		fmt.Printf("Responded with radar\taccount:%s\tradar:%+v\n", id, radar)
 		response.Rovers = radar.Rovers
 		response.Success = true
 	}
@@ -213,7 +213,7 @@ func HandleRover(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 		response.Error = fmt.Sprintf("Error getting radar from rover: %s", err)
 
 	} else {
-		fmt.Printf("Responded with rover\taccount:%s\trover:%+v", id, pos)
+		fmt.Printf("Responded with rover\taccount:%s\trover:%+v\n", id, pos)
 		response.Position = pos
 		response.Success = true
 	}
