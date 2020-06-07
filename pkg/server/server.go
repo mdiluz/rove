@@ -109,6 +109,11 @@ func (s *Server) Initialise() (err error) {
 	// Add to our sync
 	s.sync.Add(1)
 
+	// Spawn a border on the default world
+	if err := s.world.SpawnWorldBorder(); err != nil {
+		return err
+	}
+
 	// Load the accounts if requested
 	if err := s.LoadAll(); err != nil {
 		return err

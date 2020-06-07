@@ -46,6 +46,26 @@ func NewAtlas(size int, chunkSize int) Atlas {
 	return a
 }
 
+// SpawnAtlasBorder surrounds the current atlas in a border wall
+func (a *Atlas) SpawnAtlasBorder() error {
+	extent := a.ChunkSize * (a.Size / 2)
+	// Surround the atlas in walls
+	for i := -extent; i < extent; i++ {
+
+		if err := a.SetTile(Vector{i, extent - 1}, TileWall); err != nil {
+			return err
+		} else if a.SetTile(Vector{extent - 1, i}, TileWall); err != nil {
+			return err
+		} else if a.SetTile(Vector{-extent, i}, TileWall); err != nil {
+			return err
+		} else if a.SetTile(Vector{i, extent - 1}, TileWall); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // SetTile sets an individual tile's kind
 func (a *Atlas) SetTile(v Vector, tile Tile) error {
 	chunk := a.ToChunk(v)

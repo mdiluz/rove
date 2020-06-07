@@ -32,8 +32,13 @@ func NewWorld() *World {
 	return &World{
 		Rovers:       make(map[uuid.UUID]Rover),
 		CommandQueue: make(map[uuid.UUID]CommandStream),
-		Atlas:        NewAtlas(2, 8), // TODO: Choose an appropriate world size
+		Atlas:        NewAtlas(4, 8), // TODO: Choose an appropriate world size
 	}
+}
+
+// SpawnWorldBorder spawns a border at the edge of the world atlas
+func (w *World) SpawnWorldBorder() error {
+	return w.Atlas.SpawnAtlasBorder()
 }
 
 // SpawnRover adds an rover to the game
@@ -56,8 +61,8 @@ func (w *World) SpawnRover() uuid.UUID {
 
 	// Spawn in a random place near the origin
 	rover.Attributes.Pos = Vector{
-		10 - (rand.Int() % 20),
-		10 - (rand.Int() % 20),
+		w.Atlas.ChunkSize - (rand.Int() % (w.Atlas.ChunkSize * 2)),
+		w.Atlas.ChunkSize - (rand.Int() % (w.Atlas.ChunkSize * 2)),
 	}
 
 	// TODO: Verify no blockages in this area

@@ -4,7 +4,7 @@ package game
 type Tile byte
 
 const (
-	TileEmpty = '_'
+	TileEmpty = Tile(0)
 
-	TileRock = 'o'
+	TileWall = Tile(1)
 )
