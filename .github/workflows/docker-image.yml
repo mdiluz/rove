@@ -34,7 +34,7 @@ jobs:
         fi
 
     - name: Build and Test
-      run: ./script/test.sh
+      run: make test
 
     - name: Upload test coverage result
       uses: actions/upload-artifact@v1
