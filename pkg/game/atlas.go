@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"log"
+	"math/rand"
 )
 
 // Chunk represents a fixed square grid of tiles
@@ -46,9 +47,21 @@ func NewAtlas(size int, chunkSize int) Atlas {
 	return a
 }
 
-// SpawnAtlasBorder surrounds the current atlas in a border wall
-func (a *Atlas) SpawnAtlasBorder() error {
+// SpawnWorld spawns the current world
+func (a *Atlas) SpawnWorld() error {
 	extent := a.ChunkSize * (a.Size / 2)
+
+	// Pepper the current world with rocks
+	for i := -extent; i < extent; i++ {
+		for j := -extent; j < extent; j++ {
+			if rand.Int()%16 == 0 {
+				if err := a.SetTile(Vector{i, j}, TileRock); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	// Surround the atlas in walls
 	for i := -extent; i < extent; i++ {
 

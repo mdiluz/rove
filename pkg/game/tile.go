@@ -5,8 +5,8 @@ type Tile byte
 
 const (
 	TileEmpty = Tile(0)
+	TileRover = Tile(1)
 
-	TileWall = Tile(1)
-
-	TileRover = Tile(2)
+	TileWall = Tile(2)
+	TileRock = Tile(3)
 )

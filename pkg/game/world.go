@@ -38,7 +38,7 @@ func NewWorld() *World {
 
 // SpawnWorldBorder spawns a border at the edge of the world atlas
 func (w *World) SpawnWorldBorder() error {
-	return w.Atlas.SpawnAtlasBorder()
+	return w.Atlas.SpawnWorld()
 }
 
 // SpawnRover adds an rover to the game

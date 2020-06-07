@@ -135,13 +135,13 @@ func TestAtlas_Grown(t *testing.T) {
 	assert.Equal(t, Tile(3), tile)
 }
 
-func TestAtlas_SpawnAtlasBorder(t *testing.T) {
+func TestAtlas_SpawnWorld(t *testing.T) {
 	// Start with a small example
 	a := NewAtlas(2, 2)
 	assert.NotNil(t, a)
 	assert.Equal(t, 4, len(a.Chunks))
 
-	assert.NoError(t, a.SpawnAtlasBorder())
+	assert.NoError(t, a.SpawnWorld())
 	tile, err := a.GetTile(Vector{0, 0})
 	assert.NoError(t, err)
 	assert.Equal(t, TileEmpty, tile)
