@@ -54,7 +54,7 @@ func (a *Atlas) SpawnWorld() error {
 	// Pepper the current world with rocks
 	for i := -extent; i < extent; i++ {
 		for j := -extent; j < extent; j++ {
-			if rand.Int()%16 == 0 {
+			if rand.Intn(16) == 0 {
 				if err := a.SetTile(Vector{i, j}, TileRock); err != nil {
 					return err
 				}
