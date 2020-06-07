@@ -1,6 +1,9 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 // Kind represents the type of a tile on the map
 type Kind byte
@@ -25,8 +28,11 @@ type Atlas struct {
 }
 
 // NewAtlas creates a new empty atlas
-func NewAtlas(radius int, chunkSize int) Atlas {
-	size := radius * 2
+func NewAtlas(size int, chunkSize int) Atlas {
+	if size%2 != 0 {
+		log.Fatal("atlas size must always be even")
+	}
+
 	a := Atlas{
 		Size:      size,
 		Chunks:    make([]Chunk, size*size),
@@ -108,17 +114,20 @@ func (a *Atlas) ChunkOrigin(chunk int) Vector {
 	return v.Multiplied(a.ChunkSize)
 }
 
-// Grown will return a grown copy of the current atlas
-func (a *Atlas) Grown(newRadius int) (Atlas, error) {
-	delta := (newRadius * 2) - a.Size
+// Grow will return a grown copy of the current atlas
+func (a *Atlas) Grow(size int) error {
+	if size%2 != 0 {
+		return fmt.Errorf("atlas size must always be even")
+	}
+	delta := size - a.Size
 	if delta < 0 {
-		return Atlas{}, fmt.Errorf("Cannot shrink an atlas")
+		return fmt.Errorf("Cannot shrink an atlas")
 	} else if delta == 0 {
-		return Atlas{}, nil
+		return nil
 	}
 
 	// Create a new atlas
-	newAtlas := NewAtlas(newRadius, a.ChunkSize)
+	newAtlas := NewAtlas(size, a.ChunkSize)
 
 	// Copy old chunks into new chunks
 	for index, chunk := range a.Chunks {
@@ -126,6 +135,9 @@ func (a *Atlas) Grown(newRadius int) (Atlas, error) {
 		newAtlas.Chunks[newAtlas.ToChunk(a.ChunkOrigin(index))] = chunk
 	}
 
+	// Copy the new atlas data into this one
+	*a = newAtlas
+
 	// Return the new atlas
-	return newAtlas, nil
+	return nil
 }

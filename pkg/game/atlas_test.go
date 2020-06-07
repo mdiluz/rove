@@ -7,14 +7,14 @@ import (
 )
 
 func TestAtlas_NewAtlas(t *testing.T) {
-	a := NewAtlas(1, 1) // "radius" of 1, each chunk just one tile
+	a := NewAtlas(2, 1)
 	assert.NotNil(t, a)
 	// Tiles should look like: 2 | 3
 	//  -----
 	//  0 | 1
 	assert.Equal(t, 4, len(a.Chunks))
 
-	a = NewAtlas(2, 1) // "radius" of 2
+	a = NewAtlas(4, 1)
 	assert.NotNil(t, a)
 	// Tiles should look like: 2 | 3
 	//  -----
@@ -23,7 +23,7 @@ func TestAtlas_NewAtlas(t *testing.T) {
 }
 
 func TestAtlas_ToChunk(t *testing.T) {
-	a := NewAtlas(1, 1)
+	a := NewAtlas(2, 1)
 	assert.NotNil(t, a)
 	// Tiles should look like: 2 | 3
 	//  -----
@@ -37,7 +37,7 @@ func TestAtlas_ToChunk(t *testing.T) {
 	tile = a.ToChunk(Vector{-1, 0})
 	assert.Equal(t, 2, tile)
 
-	a = NewAtlas(1, 2)
+	a = NewAtlas(2, 2)
 	assert.NotNil(t, a)
 	// Tiles should look like:
 	// 2 | 3
@@ -52,7 +52,7 @@ func TestAtlas_ToChunk(t *testing.T) {
 	tile = a.ToChunk(Vector{-2, 1})
 	assert.Equal(t, 2, tile)
 
-	a = NewAtlas(2, 2)
+	a = NewAtlas(4, 2)
 	assert.NotNil(t, a)
 	// Tiles should look like:
 	//  12| 13|| 14| 15
@@ -73,7 +73,7 @@ func TestAtlas_ToChunk(t *testing.T) {
 }
 
 func TestAtlas_GetSetTile(t *testing.T) {
-	a := NewAtlas(2, 10)
+	a := NewAtlas(4, 10)
 	assert.NotNil(t, a)
 
 	// Set the origin tile to 1 and test it
@@ -91,7 +91,7 @@ func TestAtlas_GetSetTile(t *testing.T) {
 
 func TestAtlas_Grown(t *testing.T) {
 	// Start with a small example
-	a := NewAtlas(1, 2)
+	a := NewAtlas(2, 2)
 	assert.NotNil(t, a)
 	assert.Equal(t, 4, len(a.Chunks))
 
@@ -101,7 +101,7 @@ func TestAtlas_Grown(t *testing.T) {
 	assert.NoError(t, a.SetTile(Vector{1, -2}, 3))
 
 	// Grow once to just double it
-	a, err := a.Grown(2)
+	err := a.Grow(4)
 	assert.NoError(t, err)
 	assert.Equal(t, 16, len(a.Chunks))
 
@@ -118,7 +118,7 @@ func TestAtlas_Grown(t *testing.T) {
 	assert.Equal(t, Kind(3), tile)
 
 	// Grow it again even bigger
-	a, err = a.Grown(5)
+	err = a.Grow(10)
 	assert.NoError(t, err)
 	assert.Equal(t, 100, len(a.Chunks))
 
