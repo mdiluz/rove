@@ -7,6 +7,7 @@ const (
 	TileEmpty = Tile(0)
 	TileRover = Tile(1)
 
+	// TODO: Is there even a difference between these two?
 	TileWall = Tile(2)
 	TileRock = Tile(3)
 )

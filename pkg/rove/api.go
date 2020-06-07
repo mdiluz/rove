@@ -21,6 +21,8 @@ type StatusResponse struct {
 	Version  string `json:"version"`
 	Tick     int    `json:"tick"`
 	NextTick string `json:"nexttick,omitempty"`
+
+	// TODO: return more useful info
 }
 
 // ==============================

@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+// TODO: Pull this out into math package and get more test coverage
+
 // Abs gets the absolute value of an int
 func Abs(x int) int {
 	if x < 0 {

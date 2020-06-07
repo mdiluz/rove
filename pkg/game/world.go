@@ -55,6 +55,7 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 			Range: 5.0,
 
 			// Set the name randomly
+			// TODO: Fix the stupid "'s"
 			Name: babble.NewBabbler().Babble(),
 		},
 	}

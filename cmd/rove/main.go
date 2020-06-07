@@ -16,6 +16,7 @@ import (
 var USAGE = ""
 
 // Command usage
+// TODO: Allow COMMAND to be used first
 func Usage() {
 	fmt.Printf("Usage: %s [OPTIONS]... COMMAND\n", os.Args[0])
 	fmt.Println("\nCommands:")
@@ -173,6 +174,8 @@ func InnerMain(command string) error {
 
 		} else {
 			fmt.Printf("radar blips: %+v\n", response.Blips)
+
+			// TODO: Do some art
 		}
 
 	case "rover":
