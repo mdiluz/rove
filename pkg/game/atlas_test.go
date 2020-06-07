@@ -80,13 +80,13 @@ func TestAtlas_GetSetTile(t *testing.T) {
 	assert.NoError(t, a.SetTile(Vector{0, 0}, 1))
 	tile, err := a.GetTile(Vector{0, 0})
 	assert.NoError(t, err)
-	assert.Equal(t, Kind(1), tile)
+	assert.Equal(t, Tile(1), tile)
 
 	// Set another tile to 1 and test it
 	assert.NoError(t, a.SetTile(Vector{5, -2}, 2))
 	tile, err = a.GetTile(Vector{5, -2})
 	assert.NoError(t, err)
-	assert.Equal(t, Kind(2), tile)
+	assert.Equal(t, Tile(2), tile)
 }
 
 func TestAtlas_Grown(t *testing.T) {
@@ -107,15 +107,15 @@ func TestAtlas_Grown(t *testing.T) {
 
 	tile, err := a.GetTile(Vector{0, 0})
 	assert.NoError(t, err)
-	assert.Equal(t, Kind(1), tile)
+	assert.Equal(t, Tile(1), tile)
 
 	tile, err = a.GetTile(Vector{-1, -1})
 	assert.NoError(t, err)
-	assert.Equal(t, Kind(2), tile)
+	assert.Equal(t, Tile(2), tile)
 
 	tile, err = a.GetTile(Vector{1, -2})
 	assert.NoError(t, err)
-	assert.Equal(t, Kind(3), tile)
+	assert.Equal(t, Tile(3), tile)
 
 	// Grow it again even bigger
 	err = a.Grow(10)
@@ -124,13 +124,13 @@ func TestAtlas_Grown(t *testing.T) {
 
 	tile, err = a.GetTile(Vector{0, 0})
 	assert.NoError(t, err)
-	assert.Equal(t, Kind(1), tile)
+	assert.Equal(t, Tile(1), tile)
 
 	tile, err = a.GetTile(Vector{-1, -1})
 	assert.NoError(t, err)
-	assert.Equal(t, Kind(2), tile)
+	assert.Equal(t, Tile(2), tile)
 
 	tile, err = a.GetTile(Vector{1, -2})
 	assert.NoError(t, err)
-	assert.Equal(t, Kind(3), tile)
+	assert.Equal(t, Tile(3), tile)
 }

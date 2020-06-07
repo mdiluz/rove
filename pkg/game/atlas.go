@@ -5,13 +5,10 @@ import (
 	"log"
 )
 
-// Kind represents the type of a tile on the map
-type Kind byte
-
 // Chunk represents a fixed square grid of tiles
 type Chunk struct {
 	// Tiles represents the tiles within the chunk
-	Tiles []Kind `json:"tiles"`
+	Tiles []Tile `json:"tiles"`
 }
 
 // Atlas represents a grid of Chunks
@@ -42,7 +39,7 @@ func NewAtlas(size int, chunkSize int) Atlas {
 	// Initialise all the chunks
 	for i := range a.Chunks {
 		a.Chunks[i] = Chunk{
-			Tiles: make([]Kind, chunkSize*chunkSize),
+			Tiles: make([]Tile, chunkSize*chunkSize),
 		}
 	}
 
@@ -50,7 +47,7 @@ func NewAtlas(size int, chunkSize int) Atlas {
 }
 
 // SetTile sets an individual tile's kind
-func (a *Atlas) SetTile(v Vector, tile Kind) error {
+func (a *Atlas) SetTile(v Vector, tile Tile) error {
 	chunk := a.ToChunk(v)
 	if chunk >= len(a.Chunks) {
 		return fmt.Errorf("location outside of allocated atlas")
@@ -66,7 +63,7 @@ func (a *Atlas) SetTile(v Vector, tile Kind) error {
 }
 
 // GetTile will return an individual tile
-func (a *Atlas) GetTile(v Vector) (Kind, error) {
+func (a *Atlas) GetTile(v Vector) (Tile, error) {
 	chunk := a.ToChunk(v)
 	if chunk > len(a.Chunks) {
 		return 0, fmt.Errorf("location outside of allocated atlas")
