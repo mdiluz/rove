@@ -142,17 +142,9 @@ func TestAtlas_SpawnWorld(t *testing.T) {
 	assert.Equal(t, 4, len(a.Chunks))
 
 	assert.NoError(t, a.SpawnWorld())
-	tile, err := a.GetTile(Vector{0, 0})
-	assert.NoError(t, err)
-	assert.Equal(t, TileEmpty, tile)
-
-	tile, err = a.GetTile(Vector{1, 1})
+	tile, err := a.GetTile(Vector{1, 1})
 	assert.NoError(t, err)
 	assert.Equal(t, TileWall, tile)
-
-	tile, err = a.GetTile(Vector{-1, -1})
-	assert.NoError(t, err)
-	assert.Equal(t, TileEmpty, tile)
 
 	tile, err = a.GetTile(Vector{-2, -2})
 	assert.NoError(t, err)
