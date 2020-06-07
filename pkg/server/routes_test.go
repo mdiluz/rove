@@ -140,7 +140,22 @@ func TestHandleRadar(t *testing.T) {
 	assert.NoError(t, err, "Error registering account")
 
 	// Spawn the rover rover for the account
-	_, _, err = s.SpawnRoverForAccount(a.Id)
+	_, id, err := s.SpawnRoverForAccount(a.Id)
+	assert.NoError(t, err)
+
+	// Warp this rover to 0
+	assert.NoError(t, s.world.WarpRover(id, game.Vector{}))
+
+	// Spawn another rover
+	id, err = s.world.SpawnRover()
+	assert.NoError(t, err)
+	// Warp this rover to just above the other one
+	roverPos := game.Vector{X: 0, Y: 1}
+	assert.NoError(t, s.world.WarpRover(id, roverPos))
+
+	// Set a tile to wall below this rover
+	wallPos := game.Vector{X: 0, Y: -1}
+	assert.NoError(t, s.world.Atlas.SetTile(wallPos, game.TileWall))
 
 	request, _ := http.NewRequest(http.MethodGet, path.Join("/", a.Id.String(), "/radar"), nil)
 	response := httptest.NewRecorder()
@@ -155,7 +170,18 @@ func TestHandleRadar(t *testing.T) {
 		t.Errorf("got false for /radar: %s", status.Error)
 	}
 
-	// TODO: Verify the radar information
+	foundWall := false
+	foundRover := false
+	for _, b := range status.Blips {
+		if b.Position == wallPos && b.Tile == game.TileWall {
+			foundWall = true
+		} else if b.Position == roverPos && b.Tile == game.TileRover {
+			foundRover = true
+		}
+	}
+	assert.True(t, foundWall)
+	assert.True(t, foundRover)
+
 }
 
 func TestHandleRover(t *testing.T) {
@@ -164,8 +190,9 @@ func TestHandleRover(t *testing.T) {
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
 
-	// Spawn the rover rover for the account
-	_, _, err = s.SpawnRoverForAccount(a.Id)
+	// Spawn one rover for the account
+	attribs, _, err := s.SpawnRoverForAccount(a.Id)
+	assert.NoError(t, err)
 
 	request, _ := http.NewRequest(http.MethodGet, path.Join("/", a.Id.String(), "/rover"), nil)
 	response := httptest.NewRecorder()
@@ -178,7 +205,7 @@ func TestHandleRover(t *testing.T) {
 
 	if status.Success != true {
 		t.Errorf("got false for /rover: %s", status.Error)
+	} else if attribs != status.Attributes {
+		t.Errorf("Missmatched attributes: %+v, !=%+v", attribs, status.Attributes)
 	}
-
-	// TODO: Verify the rover information
 }

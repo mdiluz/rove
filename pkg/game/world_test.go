@@ -16,8 +16,10 @@ func TestNewWorld(t *testing.T) {
 
 func TestWorld_CreateRover(t *testing.T) {
 	world := NewWorld()
-	a := world.SpawnRover()
-	b := world.SpawnRover()
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
+	b, err := world.SpawnRover()
+	assert.NoError(t, err)
 
 	// Basic duplicate check
 	if a == b {
@@ -29,7 +31,8 @@ func TestWorld_CreateRover(t *testing.T) {
 
 func TestWorld_RoverAttributes(t *testing.T) {
 	world := NewWorld()
-	a := world.SpawnRover()
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
 
 	attribs, err := world.RoverAttributes(a)
 	assert.NoError(t, err, "Failed to get rover attribs")
@@ -39,10 +42,12 @@ func TestWorld_RoverAttributes(t *testing.T) {
 
 func TestWorld_DestroyRover(t *testing.T) {
 	world := NewWorld()
-	a := world.SpawnRover()
-	b := world.SpawnRover()
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
+	b, err := world.SpawnRover()
+	assert.NoError(t, err)
 
-	err := world.DestroyRover(a)
+	err = world.DestroyRover(a)
 	assert.NoError(t, err, "Error returned from rover destroy")
 
 	// Basic duplicate check
@@ -55,7 +60,8 @@ func TestWorld_DestroyRover(t *testing.T) {
 
 func TestWorld_GetSetMovePosition(t *testing.T) {
 	world := NewWorld()
-	a := world.SpawnRover()
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
 	attribs, err := world.RoverAttributes(a)
 	assert.NoError(t, err, "Failed to get rover attribs")
 
@@ -86,22 +92,34 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 
 func TestWorld_RadarFromRover(t *testing.T) {
 	world := NewWorld()
-	a := world.SpawnRover()
-	b := world.SpawnRover()
-	c := world.SpawnRover()
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
+	b, err := world.SpawnRover()
+	assert.NoError(t, err)
+	c, err := world.SpawnRover()
+	assert.NoError(t, err)
 
 	// Get a's attributes
 	attrib, err := world.RoverAttributes(a)
 	assert.NoError(t, err, "Failed to get rover attribs")
 
 	// Warp the rovers so a can see b but not c
+	bpos := Vector{attrib.Range - 1, 0}
+	cpos := Vector{attrib.Range + 1, 0}
 	assert.NoError(t, world.WarpRover(a, Vector{0, 0}), "Failed to warp rover")
-	assert.NoError(t, world.WarpRover(b, Vector{attrib.Range - 1, 0}), "Failed to warp rover")
-	assert.NoError(t, world.WarpRover(c, Vector{attrib.Range + 1, 0}), "Failed to warp rover")
+	assert.NoError(t, world.WarpRover(b, bpos), "Failed to warp rover")
+	assert.NoError(t, world.WarpRover(c, cpos), "Failed to warp rover")
 
 	radar, err := world.RadarFromRover(a)
 	assert.NoError(t, err, "Failed to get radar from rover")
-	assert.Equal(t, 1, len(radar.Rovers), "Radar returned wrong number of rovers")
-	assert.Equal(t, Vector{attrib.Range - 1, 0}, radar.Rovers[0], "Rover on radar in wrong position")
+	assert.Equal(t, 1, len(radar), "Radar returned wrong number of rovers")
+
+	found := false
+	for _, blip := range radar {
+		if blip.Position == bpos && blip.Tile == TileRover {
+			found = true
+		}
+	}
+	assert.True(t, found, "Rover not found on radar in expected position")
 
 }

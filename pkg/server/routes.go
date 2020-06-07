@@ -197,7 +197,7 @@ func HandleRadar(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 
 	} else {
 		fmt.Printf("Responded with radar\taccount:%s\tradar:%+v\n", id, radar)
-		response.Rovers = radar.Rovers
+		response.Blips = radar
 		response.Success = true
 	}
 

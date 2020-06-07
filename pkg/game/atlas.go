@@ -85,13 +85,13 @@ func (a *Atlas) SetTile(v Vector, tile Tile) error {
 // GetTile will return an individual tile
 func (a *Atlas) GetTile(v Vector) (Tile, error) {
 	chunk := a.ToChunk(v)
-	if chunk > len(a.Chunks) {
+	if chunk >= len(a.Chunks) {
 		return 0, fmt.Errorf("location outside of allocated atlas")
 	}
 
 	local := a.ToChunkLocal(v)
 	tileId := local.X + local.Y*a.ChunkSize
-	if tileId > len(a.Chunks[chunk].Tiles) {
+	if tileId >= len(a.Chunks[chunk].Tiles) {
 		return 0, fmt.Errorf("location outside of allocated chunk")
 	}
 
@@ -129,6 +129,11 @@ func (a *Atlas) ChunkOrigin(chunk int) Vector {
 	}
 
 	return v.Multiplied(a.ChunkSize)
+}
+
+// GetWorldExtent gets the extent of the world
+func (a *Atlas) GetWorldExtent() int {
+	return (a.Size / 2) * a.ChunkSize
 }
 
 // Grow will return a grown copy of the current atlas

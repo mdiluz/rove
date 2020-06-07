@@ -172,7 +172,7 @@ func InnerMain(command string) error {
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
-			fmt.Printf("nearby rovers: %+v\n", response.Rovers)
+			fmt.Printf("radar blips: %+v\n", response.Blips)
 		}
 
 	case "rover":

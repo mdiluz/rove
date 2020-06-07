@@ -27,6 +27,22 @@ func Pmod(x, d int) int {
 	}
 }
 
+// Max returns the highest int
+func Max(x int, y int) int {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+// Min returns the lowest int
+func Min(x int, y int) int {
+	if x > y {
+		return y
+	}
+	return x
+}
+
 // Vector desribes a 3D vector
 type Vector struct {
 	X int `json:"x"`

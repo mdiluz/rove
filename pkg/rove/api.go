@@ -104,8 +104,8 @@ type RadarResponse struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error,omitempty"`
 
-	// The set of positions for nearby rovers
-	Rovers []game.Vector `json:"rovers"`
+	// The set of positions for nearby non-empty tiles
+	Blips []game.RadarBlip `json:"blips"`
 }
 
 // ================

@@ -269,7 +269,7 @@ func (s *Server) wrapHandler(method string, handler Handler) func(w http.Respons
 			w.WriteHeader(http.StatusInternalServerError)
 
 		} else if err := json.NewEncoder(w).Encode(val); err != nil {
-			fmt.Printf("Failed to encode return to json: %s", err)
+			fmt.Printf("Failed to encode reply to json: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 
 		} else {
@@ -280,9 +280,11 @@ func (s *Server) wrapHandler(method string, handler Handler) func(w http.Respons
 
 // SpawnRoverForAccount spawns the rover rover for an account
 func (s *Server) SpawnRoverForAccount(accountid uuid.UUID) (game.RoverAttributes, uuid.UUID, error) {
-	inst := s.world.SpawnRover()
-	if attribs, err := s.world.RoverAttributes(inst); err != nil {
-		return game.RoverAttributes{}, uuid.UUID{}, fmt.Errorf("No attributes found for created rover")
+	if inst, err := s.world.SpawnRover(); err != nil {
+		return game.RoverAttributes{}, uuid.UUID{}, err
+
+	} else if attribs, err := s.world.RoverAttributes(inst); err != nil {
+		return game.RoverAttributes{}, uuid.UUID{}, fmt.Errorf("No attributes found for created rover: %s", err)
 
 	} else {
 		if err := s.accountant.AssignRover(accountid, inst); err != nil {

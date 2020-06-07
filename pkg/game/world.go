@@ -42,7 +42,7 @@ func (w *World) SpawnWorldBorder() error {
 }
 
 // SpawnRover adds an rover to the game
-func (w *World) SpawnRover() uuid.UUID {
+func (w *World) SpawnRover() (uuid.UUID, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -52,7 +52,7 @@ func (w *World) SpawnRover() uuid.UUID {
 		Attributes: RoverAttributes{
 
 			Speed: 1.0,
-			Range: 20.0,
+			Range: 5.0,
 
 			// Set the name randomly
 			Name: babble.NewBabbler().Babble(),
@@ -65,12 +65,29 @@ func (w *World) SpawnRover() uuid.UUID {
 		w.Atlas.ChunkSize - (rand.Int() % (w.Atlas.ChunkSize * 2)),
 	}
 
-	// TODO: Verify no blockages in this area
+	// Seach until we error (run out of world)
+	for {
+		if tile, err := w.Atlas.GetTile(rover.Attributes.Pos); err != nil {
+			return uuid.Nil, err
+		} else {
+			if tile == TileEmpty {
+				break
+			} else {
+				// Try and spawn to the east of the blockage
+				rover.Attributes.Pos.Add(Vector{1, 0})
+			}
+		}
+	}
+
+	// Set the world tile to a rover
+	if err := w.Atlas.SetTile(rover.Attributes.Pos, TileRover); err != nil {
+		return uuid.Nil, err
+	}
 
 	// Append the rover to the list
 	w.Rovers[rover.Id] = rover
 
-	return rover.Id
+	return rover.Id, nil
 }
 
 // Removes an rover from the game
@@ -78,7 +95,11 @@ func (w *World) DestroyRover(id uuid.UUID) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	if _, ok := w.Rovers[id]; ok {
+	if i, ok := w.Rovers[id]; ok {
+		// Clear the tile
+		if err := w.Atlas.SetTile(i.Attributes.Pos, TileEmpty); err != nil {
+			return fmt.Errorf("coudln't clear old rover tile: %s", err)
+		}
 		delete(w.Rovers, id)
 	} else {
 		return fmt.Errorf("no rover matching id")
@@ -104,6 +125,14 @@ func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
 	defer w.worldMutex.Unlock()
 
 	if i, ok := w.Rovers[id]; ok {
+		// Update the world tile
+		// TODO: Make this (and other things) transactional
+		if err := w.Atlas.SetTile(pos, TileRover); err != nil {
+			return fmt.Errorf("coudln't set rover tile: %s", err)
+		} else if err := w.Atlas.SetTile(i.Attributes.Pos, TileEmpty); err != nil {
+			return fmt.Errorf("coudln't clear old rover tile: %s", err)
+		}
+
 		i.Attributes.Pos = pos
 		w.Rovers[id] = i
 		return nil
@@ -129,8 +158,16 @@ func (w *World) MoveRover(id uuid.UUID, bearing Direction) (RoverAttributes, err
 
 		// Get the tile and verify it's empty
 		if tile, err := w.Atlas.GetTile(newPos); err != nil {
-			return i.Attributes, fmt.Errorf("couldn't get tile for new position")
+			return i.Attributes, fmt.Errorf("couldn't get tile for new position: %s", err)
 		} else if tile == TileEmpty {
+			// Set the world tiles
+			// TODO: Make this (and other things) transactional
+			if err := w.Atlas.SetTile(newPos, TileRover); err != nil {
+				return i.Attributes, fmt.Errorf("coudln't set rover tile: %s", err)
+			} else if err := w.Atlas.SetTile(i.Attributes.Pos, TileEmpty); err != nil {
+				return i.Attributes, fmt.Errorf("coudln't clear old rover tile: %s", err)
+			}
+
 			// Perform the move
 			i.Attributes.Pos = newPos
 			w.Rovers[id] = i
@@ -142,30 +179,54 @@ func (w *World) MoveRover(id uuid.UUID, bearing Direction) (RoverAttributes, err
 	}
 }
 
-// RadarDescription describes what a rover can see
-type RadarDescription struct {
-	// Rovers is the set of rovers that this radar can see
-	Rovers []Vector `json:"rovers"`
+// RadarBlip represents a single blip on the radar
+type RadarBlip struct {
+	Position Vector `json:"position"`
+	Tile     Tile   `json:"tile"`
 }
 
 // RadarFromRover can be used to query what a rover can currently see
-func (w *World) RadarFromRover(id uuid.UUID) (RadarDescription, error) {
+func (w *World) RadarFromRover(id uuid.UUID) ([]RadarBlip, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
-	if r1, ok := w.Rovers[id]; ok {
-		var desc RadarDescription
+	if r, ok := w.Rovers[id]; ok {
+		var blips []RadarBlip
 
-		// Gather nearby rovers within the range
-		for _, r2 := range w.Rovers {
-			if r1.Id != r2.Id && r1.Attributes.Pos.Distance(r2.Attributes.Pos) < float64(r1.Attributes.Range) {
-				desc.Rovers = append(desc.Rovers, r2.Attributes.Pos)
+		extent := w.Atlas.GetWorldExtent()
+
+		// Get min and max extents to query
+		min := Vector{
+			Max(-extent, r.Attributes.Pos.X-r.Attributes.Range),
+			Max(-extent, r.Attributes.Pos.Y-r.Attributes.Range),
+		}
+		max := Vector{
+			Min(extent-1, r.Attributes.Pos.X+r.Attributes.Range),
+			Min(extent-1, r.Attributes.Pos.Y+r.Attributes.Range),
+		}
+
+		// Gather up all tiles within the range
+		for i := min.X; i < max.X; i++ {
+			for j := min.Y; j < max.Y; j++ {
+
+				// Skip this rover
+				q := Vector{i, j}
+				if q == r.Attributes.Pos {
+					continue
+				}
+
+				if tile, err := w.Atlas.GetTile(q); err != nil {
+					return blips, fmt.Errorf("failed to query tile: %s", err)
+
+				} else if tile != TileEmpty {
+					blips = append(blips, RadarBlip{Position: q, Tile: tile})
+				}
 			}
 		}
 
-		return desc, nil
+		return blips, nil
 	} else {
-		return RadarDescription{}, fmt.Errorf("no rover matching id")
+		return nil, fmt.Errorf("no rover matching id")
 	}
 }
 

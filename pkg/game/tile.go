@@ -7,4 +7,6 @@ const (
 	TileEmpty = Tile(0)
 
 	TileWall = Tile(1)
+
+	TileRover = Tile(2)
 )
