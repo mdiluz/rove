@@ -6,6 +6,27 @@ import (
 	"strings"
 )
 
+// Abs gets the absolute value of an int
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+// pmod is a mositive modulo
+// golang's % is a "remainder" function si misbehaves for negative modulus inputs
+func Pmod(x, d int) int {
+	x = x % d
+	if x >= 0 {
+		return x
+	} else if d < 0 {
+		return x - d
+	} else {
+		return x + d
+	}
+}
+
 // Vector desribes a 3D vector
 type Vector struct {
 	X int `json:"x"`
@@ -43,6 +64,11 @@ func (v Vector) Distance(v2 Vector) float64 {
 // Multiplied returns the vector multiplied by an int
 func (v Vector) Multiplied(val int) Vector {
 	return Vector{v.X * val, v.Y * val}
+}
+
+// Divided returns the vector divided by an int
+func (v Vector) Divided(val int) Vector {
+	return Vector{v.X / val, v.Y / val}
 }
 
 // Direction describes a compass direction

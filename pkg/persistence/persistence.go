@@ -29,6 +29,7 @@ func jsonPath(name string) string {
 
 // Save will serialise the interface into a json file
 func Save(name string, data interface{}) error {
+	path := jsonPath(name)
 	if b, err := json.MarshalIndent(data, "", "\t"); err != nil {
 		return err
 	} else {
@@ -36,6 +37,8 @@ func Save(name string, data interface{}) error {
 			return err
 		}
 	}
+
+	fmt.Printf("Saved %s\n", path)
 	return nil
 }
 
@@ -54,9 +57,12 @@ func Load(name string, data interface{}) error {
 		return err
 	} else if len(b) == 0 {
 		fmt.Printf("File %s was empty, loading with fresh data\n", path)
+		return nil
 	} else if err := json.Unmarshal(b, data); err != nil {
 		return fmt.Errorf("failed to load file %s error: %s", path, err)
 	}
+
+	fmt.Printf("Loaded %s\n", path)
 	return nil
 }
 
