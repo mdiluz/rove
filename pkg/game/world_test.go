@@ -60,8 +60,8 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.NoError(t, err, "Failed to get rover attribs")
 
 	pos := Vector{
-		X: 1.0,
-		Y: 2.0,
+		X: 0.0,
+		Y: 0.0,
 	}
 
 	err = world.WarpRover(a, pos)
@@ -77,6 +77,11 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.NoError(t, err, "Failed to set position for rover")
 	pos.Add(Vector{0, attribs.Speed * duration}) // We should have move one unit of the speed north
 	assert.Equal(t, pos, newAttribs.Pos, "Failed to correctly move position for rover")
+
+	// Place a tile in front of the rover
+	assert.NoError(t, world.Atlas.SetTile(Vector{0, 2}, TileWall))
+	newAttribs, err = world.MoveRover(a, bearing)
+	assert.Equal(t, pos, newAttribs.Pos, "Failed to correctly not move position for rover into wall")
 }
 
 func TestWorld_RadarFromRover(t *testing.T) {

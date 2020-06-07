@@ -124,13 +124,18 @@ func (w *World) MoveRover(id uuid.UUID, bearing Direction) (RoverAttributes, err
 		// Calculate the full movement based on the bearing
 		move := bearing.Vector().Multiplied(distance)
 
-		// TODO: Verify there's nothing blocking this movement
+		// Try the new move position
+		newPos := i.Attributes.Pos.Added(move)
 
-		// Increment the position by the movement
-		i.Attributes.Pos.Add(move)
+		// Get the tile and verify it's empty
+		if tile, err := w.Atlas.GetTile(newPos); err != nil {
+			return i.Attributes, fmt.Errorf("couldn't get tile for new position")
+		} else if tile == TileEmpty {
+			// Perform the move
+			i.Attributes.Pos = newPos
+			w.Rovers[id] = i
+		}
 
-		// Set the rover values to the new ones
-		w.Rovers[id] = i
 		return i.Attributes, nil
 	} else {
 		return RoverAttributes{}, fmt.Errorf("no rover matching id")
