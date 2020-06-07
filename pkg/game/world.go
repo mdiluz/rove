@@ -36,8 +36,8 @@ func NewWorld() *World {
 	}
 }
 
-// SpawnWorldBorder spawns a border at the edge of the world atlas
-func (w *World) SpawnWorldBorder() error {
+// SpawnWorld spawns a border at the edge of the world atlas
+func (w *World) SpawnWorld() error {
 	return w.Atlas.SpawnWorld()
 }
 
