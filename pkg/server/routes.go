@@ -130,7 +130,7 @@ func HandleSpawn(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 		response.Error = err.Error()
 
 	} else {
-		fmt.Printf("New rover spawned\taccount:%s\trover:%s\attributes:%+v\n", id, rover, attribs)
+		fmt.Printf("New rover spawned\taccount:%s\trover:%s\tattributes:%+v\n", id, rover, attribs)
 
 		response.Success = true
 		response.Attributes = attribs
