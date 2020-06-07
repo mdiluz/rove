@@ -3,15 +3,15 @@ Proof Of Concept
 
 For a proof of concept we'll implement a very small subset of the final features
 
-### Core Features
+### Core Features (done)
 
-* Create an account (done)
-* Control an rover in a 2D map (done)
-* Query for what the rover can see (done)
-* Persistent accounts and world (done)
-* Multiple users (done)
+* Create an account
+* Control an rover in a 2D map
+* Query for what the rover can see
+* Persistent accounts and world
+* Multiple users
 * Populate map with locations/objects
-* Commands happen in "real time" (done)
+* Commands happen in "real time"
 
 ### Stretch goals
 
