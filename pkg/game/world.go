@@ -32,7 +32,7 @@ func NewWorld() *World {
 	return &World{
 		Rovers:       make(map[uuid.UUID]Rover),
 		CommandQueue: make(map[uuid.UUID]CommandStream),
-		Atlas:        NewAtlas(2, 10), // TODO: Choose an appropriate world size
+		Atlas:        NewAtlas(2, 8), // TODO: Choose an appropriate world size
 	}
 }
 

@@ -3,7 +3,7 @@ package game
 import "fmt"
 
 // Kind represents the type of a tile on the map
-type Kind int
+type Kind byte
 
 // Chunk represents a fixed square grid of tiles
 type Chunk struct {
