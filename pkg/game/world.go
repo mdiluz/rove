@@ -14,6 +14,9 @@ type World struct {
 	// Rovers is a id->data map of all the rovers in the game
 	Rovers map[uuid.UUID]Rover `json:"rovers"`
 
+	// Atlas represends the world map of chunks and tiles
+	Atlas Atlas `json:"atlas"`
+
 	// Mutex to lock around all world operations
 	worldMutex sync.RWMutex
 
