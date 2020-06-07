@@ -129,6 +129,9 @@ func HandleSpawn(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 	} else if attribs, rover, err := s.SpawnRoverForAccount(id); err != nil {
 		response.Error = err.Error()
 
+	} else if err := s.SaveWorld(); err != nil {
+		response.Error = fmt.Sprintf("Internal server error when saving world: %s", err)
+
 	} else {
 		fmt.Printf("New rover spawned\taccount:%s\trover:%s\tattributes:%+v\n", id, rover, attribs)
 

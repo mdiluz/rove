@@ -49,21 +49,17 @@ func InnerMain() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		fmt.Println("SIGTERM recieved, exiting...")
-		if err := s.Close(); err != nil {
+		fmt.Println("Quit requested, exiting...")
+		if err := s.Stop(); err != nil {
 			panic(err)
 		}
-		os.Exit(0)
 	}()
 
 	// Quit after a time if requested
 	if *quit != 0 {
 		go func() {
 			time.Sleep(time.Duration(*quit) * time.Second)
-			if err := s.Close(); err != nil {
-				panic(err)
-			}
-			os.Exit(0)
+			syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
 		}()
 	}
 

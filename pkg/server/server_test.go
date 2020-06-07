@@ -39,7 +39,7 @@ func TestServer_Run(t *testing.T) {
 
 	go server.Run()
 
-	if err := server.Close(); err != nil {
+	if err := server.StopAndClose(); err != nil {
 		t.Error(err)
 	}
 }
@@ -54,7 +54,7 @@ func TestServer_RunPersistentData(t *testing.T) {
 
 	go server.Run()
 
-	if err := server.Close(); err != nil {
+	if err := server.StopAndClose(); err != nil {
 		t.Error(err)
 	}
 }

@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 	fmt.Printf("Test server hosted on %s", address)
 	code := m.Run()
 
-	if err := s.Close(); err != nil {
+	if err := s.StopAndClose(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

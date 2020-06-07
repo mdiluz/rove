@@ -164,8 +164,8 @@ func (s *Server) Run() {
 	}
 }
 
-// Close closes up the server
-func (s *Server) Close() error {
+// Stop will stop the current server
+func (s *Server) Stop() error {
 	// Stop the cron
 	s.schedule.Stop()
 
@@ -176,11 +176,27 @@ func (s *Server) Close() error {
 		return err
 	}
 
+	return nil
+}
+
+// Close waits until the server is finished and closes up shop
+func (s *Server) Close() error {
 	// Wait until the server has shut down
 	s.sync.Wait()
 
 	// Save and return
 	return s.SaveAll()
+}
+
+// Close waits until the server is finished and closes up shop
+func (s *Server) StopAndClose() error {
+	// Stop the server
+	if err := s.Stop(); err != nil {
+		return err
+	}
+
+	// Close and return
+	return s.Close()
 }
 
 // SaveWorld will save out the world file
