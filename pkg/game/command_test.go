@@ -7,7 +7,7 @@ import (
 )
 
 func TestCommand_Move(t *testing.T) {
-	world := NewWorld(2, 4)
+	world := NewWorld(2, 8)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 	pos := Vector{
