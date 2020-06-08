@@ -144,9 +144,17 @@ func (a *Atlas) ChunkOrigin(chunk int) Vector {
 	return v.Multiplied(a.ChunkSize)
 }
 
-// GetWorldExtent gets the extent of the world
-func (a *Atlas) GetWorldExtent() int {
-	return (a.Size / 2) * a.ChunkSize
+// GetWorldExtent gets the min and max valid coordinates of world
+func (a *Atlas) GetWorldExtents() (min Vector, max Vector) {
+	min = Vector{
+		-(a.Size / 2) * a.ChunkSize,
+		-(a.Size / 2) * a.ChunkSize,
+	}
+	max = Vector{
+		-min.X - 1,
+		-min.Y - 1,
+	}
+	return
 }
 
 // Grow will return a grown copy of the current atlas

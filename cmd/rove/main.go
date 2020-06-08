@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"path"
 
@@ -173,9 +174,14 @@ func InnerMain(command string) error {
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
-			fmt.Printf("radar blips: %+v\n", response.Blips)
-
-			// TODO: Do some art
+			// Print the radar
+			num := int(math.Sqrt(float64(len(response.Tiles))))
+			for i := 0; i < num; i++ {
+				for j := num - 1; j >= 0; j-- {
+					fmt.Printf("%d", response.Tiles[i+num*j])
+				}
+				fmt.Print("\n")
+			}
 		}
 
 	case "rover":

@@ -146,13 +146,6 @@ func TestHandleRadar(t *testing.T) {
 	// Warp this rover to 0
 	assert.NoError(t, s.world.WarpRover(id, game.Vector{}))
 
-	// Spawn another rover
-	id, err = s.world.SpawnRover()
-	assert.NoError(t, err)
-	// Warp this rover to just above the other one
-	roverPos := game.Vector{X: 0, Y: 1}
-	assert.NoError(t, s.world.WarpRover(id, roverPos))
-
 	// Set a tile to wall below this rover
 	wallPos := game.Vector{X: 0, Y: -1}
 	assert.NoError(t, s.world.Atlas.SetTile(wallPos, game.TileWall))
@@ -170,18 +163,7 @@ func TestHandleRadar(t *testing.T) {
 		t.Errorf("got false for /radar: %s", status.Error)
 	}
 
-	foundWall := false
-	foundRover := false
-	for _, b := range status.Blips {
-		if b.Position == wallPos && b.Tile == game.TileWall {
-			foundWall = true
-		} else if b.Position == roverPos && b.Tile == game.TileRover {
-			foundRover = true
-		}
-	}
-	assert.True(t, foundWall)
-	assert.True(t, foundRover)
-
+	assert.Equal(t, game.TileRover, status.Tiles[len(status.Tiles)/2])
 }
 
 func TestHandleRover(t *testing.T) {

@@ -128,6 +128,7 @@ func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
 	if i, ok := w.Rovers[id]; ok {
 		// Update the world tile
 		// TODO: Make this (and other things) transactional
+		// TODO: Check this worldtile is free
 		if err := w.Atlas.SetTile(pos, TileRover); err != nil {
 			return fmt.Errorf("coudln't set rover tile: %s", err)
 		} else if err := w.Atlas.SetTile(i.Attributes.Pos, TileEmpty); err != nil {
@@ -180,52 +181,55 @@ func (w *World) MoveRover(id uuid.UUID, bearing Direction) (RoverAttributes, err
 	}
 }
 
-// RadarBlip represents a single blip on the radar
-type RadarBlip struct {
-	Position Vector `json:"position"`
-	Tile     Tile   `json:"tile"`
-}
-
 // RadarFromRover can be used to query what a rover can currently see
-func (w *World) RadarFromRover(id uuid.UUID) ([]RadarBlip, error) {
+func (w *World) RadarFromRover(id uuid.UUID) ([]Tile, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
 	if r, ok := w.Rovers[id]; ok {
-		var blips []RadarBlip
+		// The radar should span in range direction on each axis, plus the row/column the rover is currently on
+		radarSpan := (r.Attributes.Range * 2) + 1
+		roverPos := r.Attributes.Pos
 
-		extent := w.Atlas.GetWorldExtent()
-
-		// Get min and max extents to query
-		min := Vector{
-			Max(-extent, r.Attributes.Pos.X-r.Attributes.Range),
-			Max(-extent, r.Attributes.Pos.Y-r.Attributes.Range),
+		// Get the radar min and max values
+		radarMin := Vector{
+			X: roverPos.X - r.Attributes.Range,
+			Y: roverPos.Y - r.Attributes.Range,
 		}
-		max := Vector{
-			Min(extent-1, r.Attributes.Pos.X+r.Attributes.Range),
-			Min(extent-1, r.Attributes.Pos.Y+r.Attributes.Range),
+		radarMax := Vector{
+			X: roverPos.X + r.Attributes.Range,
+			Y: roverPos.Y + r.Attributes.Range,
+		}
+
+		// Make sure we only query within the actual world
+		worldMin, worldMax := w.Atlas.GetWorldExtents()
+		scanMin := Vector{
+			X: Max(radarMin.X, worldMin.X),
+			Y: Max(radarMin.Y, worldMin.Y),
+		}
+		scanMax := Vector{
+			X: Min(radarMax.X, worldMax.X),
+			Y: Min(radarMax.Y, worldMax.Y),
 		}
 
 		// Gather up all tiles within the range
-		for i := min.X; i < max.X; i++ {
-			for j := min.Y; j < max.Y; j++ {
-
-				// Skip this rover
+		var radar = make([]Tile, radarSpan*radarSpan)
+		for i := scanMin.X; i < scanMax.X; i++ {
+			for j := scanMin.Y; j < scanMax.Y; j++ {
 				q := Vector{i, j}
-				if q == r.Attributes.Pos {
-					continue
-				}
 
 				if tile, err := w.Atlas.GetTile(q); err != nil {
-					return blips, fmt.Errorf("failed to query tile: %s", err)
+					return nil, fmt.Errorf("failed to query tile: %s", err)
 
-				} else if tile != TileEmpty {
-					blips = append(blips, RadarBlip{Position: q, Tile: tile})
+				} else {
+					// Get the position relative to the bottom left of the radar
+					relative := q.Added(radarMin.Negated())
+					radar[relative.X+relative.Y*radarSpan] = tile
 				}
 			}
 		}
 
-		return blips, nil
+		return radar, nil
 	} else {
 		return nil, fmt.Errorf("no rover matching id")
 	}

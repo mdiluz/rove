@@ -96,30 +96,24 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	assert.NoError(t, err)
 	b, err := world.SpawnRover()
 	assert.NoError(t, err)
-	c, err := world.SpawnRover()
-	assert.NoError(t, err)
 
 	// Get a's attributes
 	attrib, err := world.RoverAttributes(a)
 	assert.NoError(t, err, "Failed to get rover attribs")
 
-	// Warp the rovers so a can see b but not c
-	bpos := Vector{attrib.Range - 1, 0}
-	cpos := Vector{attrib.Range + 1, 0}
+	// Warp the rovers so a can see b
+	bpos := Vector{-attrib.Range, -attrib.Range}
 	assert.NoError(t, world.WarpRover(a, Vector{0, 0}), "Failed to warp rover")
 	assert.NoError(t, world.WarpRover(b, bpos), "Failed to warp rover")
-	assert.NoError(t, world.WarpRover(c, cpos), "Failed to warp rover")
 
 	radar, err := world.RadarFromRover(a)
 	assert.NoError(t, err, "Failed to get radar from rover")
-	assert.Equal(t, 1, len(radar), "Radar returned wrong number of rovers")
+	fullRange := attrib.Range + attrib.Range + 1
+	assert.Equal(t, fullRange*fullRange, len(radar), "Radar returned wrong number of rovers")
 
-	found := false
-	for _, blip := range radar {
-		if blip.Position == bpos && blip.Tile == TileRover {
-			found = true
-		}
-	}
-	assert.True(t, found, "Rover not found on radar in expected position")
+	// bottom left should be a rover (we put one there with bpos)
+	assert.Equal(t, radar[0], TileRover, "Rover not found on radar in expected position")
+	// Centre should be rover
+	assert.Equal(t, radar[fullRange*fullRange/2], TileRover, "Rover not found on radar in expected position")
 
 }

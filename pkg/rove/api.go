@@ -107,7 +107,8 @@ type RadarResponse struct {
 	Error   string `json:"error,omitempty"`
 
 	// The set of positions for nearby non-empty tiles
-	Blips []game.RadarBlip `json:"blips"`
+	Range int         `json:"range"`
+	Tiles []game.Tile `json:"tiles"`
 }
 
 // ================
