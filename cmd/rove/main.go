@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"math"
 	"os"
 	"path"
 
@@ -175,13 +174,7 @@ func InnerMain(command string) error {
 
 		} else {
 			// Print out the radar
-			num := int(math.Sqrt(float64(len(response.Tiles))))
-			for j := num - 1; j >= 0; j-- {
-				for i := 0; i < num; i++ {
-					fmt.Printf("%d", response.Tiles[i+num*j])
-				}
-				fmt.Print("\n")
-			}
+			game.PrintTiles(response.Tiles)
 		}
 
 	case "rover":

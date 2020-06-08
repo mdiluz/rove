@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"strings"
 	"sync"
@@ -68,8 +69,8 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 
 	// Spawn in a random place near the origin
 	rover.Attributes.Pos = Vector{
-		w.Atlas.ChunkSize - (rand.Int() % (w.Atlas.ChunkSize * 2)),
-		w.Atlas.ChunkSize - (rand.Int() % (w.Atlas.ChunkSize * 2)),
+		w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
+		w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
 	}
 
 	// Seach until we error (run out of world)
@@ -90,6 +91,8 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 	if err := w.Atlas.SetTile(rover.Attributes.Pos, TileRover); err != nil {
 		return uuid.Nil, err
 	}
+
+	fmt.Printf("Spawned rover at %+v\n", rover.Attributes.Pos)
 
 	// Append the rover to the list
 	w.Rovers[rover.Id] = rover
@@ -152,9 +155,11 @@ func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
 		}
 
 		// Update the world tile
-		// TODO: Make this (and other things) transactional
-		// TODO: Check this worldtile is free
-		if err := w.Atlas.SetTile(pos, TileRover); err != nil {
+		if tile, err := w.Atlas.GetTile(pos); err != nil {
+			return fmt.Errorf("coudln't get state of destination rover tile: %s", err)
+		} else if tile == TileRover {
+			return fmt.Errorf("Can't warp rover to occupied tile, check before warping")
+		} else if err := w.Atlas.SetTile(pos, TileRover); err != nil {
 			return fmt.Errorf("coudln't set rover tile: %s", err)
 		} else if err := w.Atlas.SetTile(i.Attributes.Pos, TileEmpty); err != nil {
 			return fmt.Errorf("coudln't clear old rover tile: %s", err)
@@ -343,6 +348,17 @@ func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err 
 	}
 
 	return
+}
+
+// PrintTiles simply prints the input tiles directly for debug
+func PrintTiles(tiles []Tile) {
+	num := int(math.Sqrt(float64(len(tiles))))
+	for j := num - 1; j >= 0; j-- {
+		for i := 0; i < num; i++ {
+			fmt.Printf("%d", tiles[i+num*j])
+		}
+		fmt.Print("\n")
+	}
 }
 
 // RLock read locks the world

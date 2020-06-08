@@ -107,8 +107,8 @@ func TestWorld_RadarFromRover(t *testing.T) {
 
 	// Warp the rovers into position
 	bpos := Vector{-3, -3}
-	assert.NoError(t, world.WarpRover(a, Vector{0, 0}), "Failed to warp rover")
 	assert.NoError(t, world.WarpRover(b, bpos), "Failed to warp rover")
+	assert.NoError(t, world.WarpRover(a, Vector{0, 0}), "Failed to warp rover")
 
 	// Spawn the world wall
 	err = world.Atlas.SpawnWalls()
@@ -129,6 +129,7 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	// O------O-
 	// OR-----O-
 	// OOOOOOOO-
+	PrintTiles(radar)
 
 	// Test all expected values
 	assert.Equal(t, TileRover, radar[1+fullRange])
