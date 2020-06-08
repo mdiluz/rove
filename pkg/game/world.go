@@ -146,6 +146,11 @@ func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
 	defer w.worldMutex.Unlock()
 
 	if i, ok := w.Rovers[id]; ok {
+		// Nothing to do if these positions match
+		if i.Attributes.Pos == pos {
+			return nil
+		}
+
 		// Update the world tile
 		// TODO: Make this (and other things) transactional
 		// TODO: Check this worldtile is free
