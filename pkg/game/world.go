@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"sync"
 
 	"github.com/google/uuid"
@@ -58,10 +59,12 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 			Range: 5.0,
 
 			// Set the name randomly
-			// TODO: Fix the stupid "'s"
 			Name: babble.NewBabbler().Babble(),
 		},
 	}
+
+	// Dictionaries tend to include the possesive
+	strings.ReplaceAll(rover.Attributes.Name, "'s", "")
 
 	// Spawn in a random place near the origin
 	rover.Attributes.Pos = Vector{
