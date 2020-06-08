@@ -16,7 +16,7 @@ var address string
 
 func TestMain(m *testing.M) {
 	s := server.NewServer()
-	if err := s.Initialise(); err != nil {
+	if err := s.Initialise(true); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

@@ -19,7 +19,7 @@ func TestHandleStatus(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	s := NewServer()
-	s.Initialise()
+	s.Initialise(true)
 	s.router.ServeHTTP(response, request)
 	assert.Equal(t, http.StatusOK, response.Code)
 
@@ -46,7 +46,7 @@ func TestHandleRegister(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	s := NewServer()
-	s.Initialise()
+	s.Initialise(true)
 	s.router.ServeHTTP(response, request)
 	assert.Equal(t, http.StatusOK, response.Code)
 
@@ -60,7 +60,7 @@ func TestHandleRegister(t *testing.T) {
 
 func TestHandleSpawn(t *testing.T) {
 	s := NewServer()
-	s.Initialise()
+	s.Initialise(true)
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
 	data := rove.SpawnData{}
@@ -85,12 +85,13 @@ func TestHandleSpawn(t *testing.T) {
 
 func TestHandleCommand(t *testing.T) {
 	s := NewServer()
-	s.Initialise()
+	s.Initialise(false) // Leave the world empty with no obstacles
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
 
 	// Spawn the rover rover for the account
 	_, inst, err := s.SpawnRoverForAccount(a.Id)
+	assert.NoError(t, s.world.WarpRover(inst, game.Vector{}))
 
 	attribs, err := s.world.RoverAttributes(inst)
 	assert.NoError(t, err, "Couldn't get rover position")
@@ -135,7 +136,7 @@ func TestHandleCommand(t *testing.T) {
 
 func TestHandleRadar(t *testing.T) {
 	s := NewServer()
-	s.Initialise()
+	s.Initialise(false) // Spawn a clean world
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
 
@@ -189,7 +190,7 @@ func TestHandleRadar(t *testing.T) {
 
 func TestHandleRover(t *testing.T) {
 	s := NewServer()
-	s.Initialise()
+	s.Initialise(true)
 	a, err := s.accountant.RegisterAccount("test")
 	assert.NoError(t, err, "Error registering account")
 

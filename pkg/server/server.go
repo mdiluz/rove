@@ -104,13 +104,13 @@ func NewServer(opts ...ServerOption) *Server {
 }
 
 // Initialise sets up internal state ready to serve
-func (s *Server) Initialise() (err error) {
+func (s *Server) Initialise(fillWorld bool) (err error) {
 
 	// Add to our sync
 	s.sync.Add(1)
 
 	// Spawn a border on the default world
-	if err := s.world.SpawnWorld(); err != nil {
+	if err := s.world.SpawnWorld(fillWorld); err != nil {
 		return err
 	}
 

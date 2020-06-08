@@ -39,9 +39,11 @@ func NewWorld(size int, chunkSize int) *World {
 }
 
 // SpawnWorld spawns a border at the edge of the world atlas
-func (w *World) SpawnWorld() error {
-	if err := w.Atlas.SpawnRocks(); err != nil {
-		return err
+func (w *World) SpawnWorld(fillWorld bool) error {
+	if fillWorld {
+		if err := w.Atlas.SpawnRocks(); err != nil {
+			return err
+		}
 	}
 	return w.Atlas.SpawnWalls()
 }

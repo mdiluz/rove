@@ -40,7 +40,7 @@ func InnerMain() {
 		server.OptionTick(*tick))
 
 	// Initialise the server
-	if err := s.Initialise(); err != nil {
+	if err := s.Initialise(true); err != nil {
 		panic(err)
 	}
 

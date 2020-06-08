@@ -33,7 +33,7 @@ func TestServer_Run(t *testing.T) {
 	server := NewServer()
 	if server == nil {
 		t.Error("Failed to create server")
-	} else if err := server.Initialise(); err != nil {
+	} else if err := server.Initialise(true); err != nil {
 		t.Error(err)
 	}
 
@@ -48,7 +48,7 @@ func TestServer_RunPersistentData(t *testing.T) {
 	server := NewServer(OptionPersistentData())
 	if server == nil {
 		t.Error("Failed to create server")
-	} else if err := server.Initialise(); err != nil {
+	} else if err := server.Initialise(true); err != nil {
 		t.Error(err)
 	}
 
