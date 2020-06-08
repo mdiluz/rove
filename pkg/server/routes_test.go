@@ -140,15 +140,21 @@ func TestHandleRadar(t *testing.T) {
 	assert.NoError(t, err, "Error registering account")
 
 	// Spawn the rover rover for the account
-	_, id, err := s.SpawnRoverForAccount(a.Id)
+	attrib, id, err := s.SpawnRoverForAccount(a.Id)
 	assert.NoError(t, err)
 
-	// Warp this rover to 0
+	// Warp this rover to 0,0
 	assert.NoError(t, s.world.WarpRover(id, game.Vector{}))
 
-	// Set a tile to wall below this rover
-	wallPos := game.Vector{X: 0, Y: -1}
-	assert.NoError(t, s.world.Atlas.SetTile(wallPos, game.TileWall))
+	// Explicity set a few nearby tiles
+	wallPos1 := game.Vector{X: 0, Y: -1}
+	wallPos2 := game.Vector{X: 1, Y: 1}
+	rockPos := game.Vector{X: 1, Y: 3}
+	emptyPos := game.Vector{X: -2, Y: -3}
+	assert.NoError(t, s.world.Atlas.SetTile(wallPos1, game.TileWall))
+	assert.NoError(t, s.world.Atlas.SetTile(wallPos2, game.TileWall))
+	assert.NoError(t, s.world.Atlas.SetTile(rockPos, game.TileRock))
+	assert.NoError(t, s.world.Atlas.SetTile(emptyPos, game.TileEmpty))
 
 	request, _ := http.NewRequest(http.MethodGet, path.Join("/", a.Id.String(), "/radar"), nil)
 	response := httptest.NewRecorder()
@@ -163,7 +169,22 @@ func TestHandleRadar(t *testing.T) {
 		t.Errorf("got false for /radar: %s", status.Error)
 	}
 
+	scope := attrib.Range*2 + 1
+	radarOrigin := game.Vector{X: -attrib.Range, Y: -attrib.Range}
+
+	// Make sure the rover tile is correct
 	assert.Equal(t, game.TileRover, status.Tiles[len(status.Tiles)/2])
+
+	// Check our other tiles
+	wallPos1.Add(radarOrigin.Negated())
+	wallPos2.Add(radarOrigin.Negated())
+	rockPos.Add(radarOrigin.Negated())
+	emptyPos.Add(radarOrigin.Negated())
+	assert.Equal(t, game.TileWall, status.Tiles[wallPos1.X+wallPos1.Y*scope])
+	assert.Equal(t, game.TileWall, status.Tiles[wallPos2.X+wallPos2.Y*scope])
+	assert.Equal(t, game.TileRock, status.Tiles[rockPos.X+rockPos.Y*scope])
+	assert.Equal(t, game.TileEmpty, status.Tiles[emptyPos.X+emptyPos.Y*scope])
+
 }
 
 func TestHandleRover(t *testing.T) {

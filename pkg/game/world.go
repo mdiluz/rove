@@ -28,17 +28,20 @@ type World struct {
 }
 
 // NewWorld creates a new world object
-func NewWorld() *World {
+func NewWorld(size int, chunkSize int) *World {
 	return &World{
 		Rovers:       make(map[uuid.UUID]Rover),
 		CommandQueue: make(map[uuid.UUID]CommandStream),
-		Atlas:        NewAtlas(4, 8), // TODO: Choose an appropriate world size
+		Atlas:        NewAtlas(size, chunkSize), // TODO: Choose an appropriate world size
 	}
 }
 
 // SpawnWorld spawns a border at the edge of the world atlas
 func (w *World) SpawnWorld() error {
-	return w.Atlas.SpawnWorld()
+	if err := w.Atlas.SpawnRocks(); err != nil {
+		return err
+	}
+	return w.Atlas.SpawnWalls()
 }
 
 // SpawnRover adds an rover to the game
@@ -117,6 +120,20 @@ func (w *World) RoverAttributes(id uuid.UUID) (RoverAttributes, error) {
 		return i.Attributes, nil
 	} else {
 		return RoverAttributes{}, fmt.Errorf("no rover matching id")
+	}
+}
+
+// SetRoverAttributes sets the attributes of a requested rover
+func (w *World) SetRoverAttributes(id uuid.UUID, attributes RoverAttributes) error {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	if i, ok := w.Rovers[id]; ok {
+		i.Attributes = attributes
+		w.Rovers[id] = i
+		return nil
+	} else {
+		return fmt.Errorf("no rover matching id")
 	}
 }
 
@@ -214,8 +231,8 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]Tile, error) {
 
 		// Gather up all tiles within the range
 		var radar = make([]Tile, radarSpan*radarSpan)
-		for i := scanMin.X; i < scanMax.X; i++ {
-			for j := scanMin.Y; j < scanMax.Y; j++ {
+		for j := scanMin.Y; j <= scanMax.Y; j++ {
+			for i := scanMin.X; i <= scanMax.X; i++ {
 				q := Vector{i, j}
 
 				if tile, err := w.Atlas.GetTile(q); err != nil {
@@ -224,7 +241,8 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]Tile, error) {
 				} else {
 					// Get the position relative to the bottom left of the radar
 					relative := q.Added(radarMin.Negated())
-					radar[relative.X+relative.Y*radarSpan] = tile
+					index := relative.X + relative.Y*radarSpan
+					radar[index] = tile
 				}
 			}
 		}

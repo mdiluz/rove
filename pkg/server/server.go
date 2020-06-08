@@ -98,7 +98,7 @@ func NewServer(opts ...ServerOption) *Server {
 
 	// Create the accountant
 	s.accountant = accounts.NewAccountant()
-	s.world = game.NewWorld()
+	s.world = game.NewWorld(4, 8) // TODO: Configure this
 
 	return s
 }

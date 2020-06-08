@@ -8,14 +8,14 @@ import (
 
 func TestNewWorld(t *testing.T) {
 	// Very basic for now, nothing to verify
-	world := NewWorld()
+	world := NewWorld(4, 4)
 	if world == nil {
 		t.Error("Failed to create world")
 	}
 }
 
 func TestWorld_CreateRover(t *testing.T) {
-	world := NewWorld()
+	world := NewWorld(2, 8)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 	b, err := world.SpawnRover()
@@ -30,7 +30,7 @@ func TestWorld_CreateRover(t *testing.T) {
 }
 
 func TestWorld_RoverAttributes(t *testing.T) {
-	world := NewWorld()
+	world := NewWorld(2, 4)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 
@@ -41,7 +41,7 @@ func TestWorld_RoverAttributes(t *testing.T) {
 }
 
 func TestWorld_DestroyRover(t *testing.T) {
-	world := NewWorld()
+	world := NewWorld(4, 1)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 	b, err := world.SpawnRover()
@@ -59,7 +59,7 @@ func TestWorld_DestroyRover(t *testing.T) {
 }
 
 func TestWorld_GetSetMovePosition(t *testing.T) {
-	world := NewWorld()
+	world := NewWorld(4, 4)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 	attribs, err := world.RoverAttributes(a)
@@ -91,29 +91,52 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 }
 
 func TestWorld_RadarFromRover(t *testing.T) {
-	world := NewWorld()
+	// Create world that should have visible walls on the radar
+	world := NewWorld(4, 2)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 	b, err := world.SpawnRover()
 	assert.NoError(t, err)
 
-	// Get a's attributes
+	// Set the rover range to a predictable value
 	attrib, err := world.RoverAttributes(a)
 	assert.NoError(t, err, "Failed to get rover attribs")
+	attrib.Range = 4 // Set the range to 4 so we can predict the radar fully
+	err = world.SetRoverAttributes(a, attrib)
+	assert.NoError(t, err, "Failed to set rover attribs")
 
-	// Warp the rovers so a can see b
-	bpos := Vector{-attrib.Range, -attrib.Range}
+	// Warp the rovers into position
+	bpos := Vector{-3, -3}
 	assert.NoError(t, world.WarpRover(a, Vector{0, 0}), "Failed to warp rover")
 	assert.NoError(t, world.WarpRover(b, bpos), "Failed to warp rover")
 
+	// Spawn the world wall
+	err = world.Atlas.SpawnWalls()
+	assert.NoError(t, err)
+
 	radar, err := world.RadarFromRover(a)
 	assert.NoError(t, err, "Failed to get radar from rover")
-	fullRange := attrib.Range + attrib.Range + 1
-	assert.Equal(t, fullRange*fullRange, len(radar), "Radar returned wrong number of rovers")
+	fullRange := 4 + 4 + 1
+	assert.Equal(t, fullRange*fullRange, len(radar), "Radar returned wrong length")
 
-	// bottom left should be a rover (we put one there with bpos)
-	assert.Equal(t, radar[0], TileRover, "Rover not found on radar in expected position")
-	// Centre should be rover
-	assert.Equal(t, radar[fullRange*fullRange/2], TileRover, "Rover not found on radar in expected position")
+	// It should look like:
+	// ---------
+	// OOOOOOOO-
+	// O------O-
+	// O------O-
+	// O---R--O-
+	// O------O-
+	// O------O-
+	// OR-----O-
+	// OOOOOOOO-
 
+	// Test all expected values
+	assert.Equal(t, TileRover, radar[1+fullRange])
+	assert.Equal(t, TileRover, radar[4+4*fullRange])
+	for i := 0; i < 8; i++ {
+		assert.Equal(t, TileWall, radar[i])
+		assert.Equal(t, TileWall, radar[i+(7*9)])
+		assert.Equal(t, TileWall, radar[i*9])
+		assert.Equal(t, TileWall, radar[(i*9)+7])
+	}
 }

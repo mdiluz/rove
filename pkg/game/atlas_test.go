@@ -137,16 +137,32 @@ func TestAtlas_Grown(t *testing.T) {
 
 func TestAtlas_SpawnWorld(t *testing.T) {
 	// Start with a small example
-	a := NewAtlas(2, 2)
+	a := NewAtlas(2, 4)
 	assert.NotNil(t, a)
 	assert.Equal(t, 4, len(a.Chunks))
+	assert.NoError(t, a.SpawnWalls())
 
-	assert.NoError(t, a.SpawnWorld())
-	tile, err := a.GetTile(Vector{1, 1})
-	assert.NoError(t, err)
-	assert.Equal(t, TileWall, tile)
+	for i := -4; i < 4; i++ {
+		tile, err := a.GetTile(Vector{i, -4})
+		assert.NoError(t, err)
+		assert.Equal(t, TileWall, tile)
+	}
 
-	tile, err = a.GetTile(Vector{-2, -2})
-	assert.NoError(t, err)
-	assert.Equal(t, TileWall, tile)
+	for i := -4; i < 4; i++ {
+		tile, err := a.GetTile(Vector{-4, i})
+		assert.NoError(t, err)
+		assert.Equal(t, TileWall, tile)
+	}
+
+	for i := -4; i < 4; i++ {
+		tile, err := a.GetTile(Vector{3, i})
+		assert.NoError(t, err)
+		assert.Equal(t, TileWall, tile)
+	}
+
+	for i := -4; i < 4; i++ {
+		tile, err := a.GetTile(Vector{i, 3})
+		assert.NoError(t, err)
+		assert.Equal(t, TileWall, tile)
+	}
 }

@@ -174,10 +174,10 @@ func InnerMain(command string) error {
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		} else {
-			// Print the radar
+			// Print out the radar
 			num := int(math.Sqrt(float64(len(response.Tiles))))
-			for i := 0; i < num; i++ {
-				for j := num - 1; j >= 0; j-- {
+			for j := num - 1; j >= 0; j-- {
+				for i := 0; i < num; i++ {
 					fmt.Printf("%d", response.Tiles[i+num*j])
 				}
 				fmt.Print("\n")

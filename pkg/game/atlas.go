@@ -47,8 +47,8 @@ func NewAtlas(size int, chunkSize int) Atlas {
 	return a
 }
 
-// SpawnWorld spawns the current world
-func (a *Atlas) SpawnWorld() error {
+// SpawnRocks peppers the world with rocks
+func (a *Atlas) SpawnRocks() error {
 	extent := a.ChunkSize * (a.Size / 2)
 
 	// Pepper the current world with rocks
@@ -62,16 +62,23 @@ func (a *Atlas) SpawnWorld() error {
 		}
 	}
 
+	return nil
+}
+
+// SpawnWalls spawns the around the world
+func (a *Atlas) SpawnWalls() error {
+	extent := a.ChunkSize * (a.Size / 2)
+
 	// Surround the atlas in walls
 	for i := -extent; i < extent; i++ {
 
-		if err := a.SetTile(Vector{i, extent - 1}, TileWall); err != nil {
+		if err := a.SetTile(Vector{i, extent - 1}, TileWall); err != nil { // N
 			return err
-		} else if a.SetTile(Vector{extent - 1, i}, TileWall); err != nil {
+		} else if a.SetTile(Vector{extent - 1, i}, TileWall); err != nil { // E
 			return err
-		} else if a.SetTile(Vector{-extent, i}, TileWall); err != nil {
+		} else if a.SetTile(Vector{i, -extent}, TileWall); err != nil { // S
 			return err
-		} else if a.SetTile(Vector{i, extent - 1}, TileWall); err != nil {
+		} else if a.SetTile(Vector{-extent, i}, TileWall); err != nil { // W
 			return err
 		}
 	}
