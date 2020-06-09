@@ -37,7 +37,7 @@ func NewWorld(size int, chunkSize int) *World {
 	return &World{
 		Rovers:       make(map[uuid.UUID]Rover),
 		CommandQueue: make(map[uuid.UUID]CommandStream),
-		Atlas:        NewAtlas(size, chunkSize), // TODO: Choose an appropriate world size
+		Atlas:        NewAtlas(size, chunkSize),
 	}
 }
 
@@ -198,7 +198,6 @@ func (w *World) MoveRover(id uuid.UUID, bearing bearing.Bearing) (RoverAttribute
 			return i.Attributes, fmt.Errorf("couldn't get tile for new position: %s", err)
 		} else if tile == TileEmpty {
 			// Set the world tiles
-			// TODO: Make this (and other things) transactional
 			if err := w.Atlas.SetTile(newPos, TileRover); err != nil {
 				return i.Attributes, fmt.Errorf("coudln't set rover tile: %s", err)
 			} else if err := w.Atlas.SetTile(i.Attributes.Pos, TileEmpty); err != nil {
