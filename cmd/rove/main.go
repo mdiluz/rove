@@ -16,17 +16,16 @@ import (
 var USAGE = ""
 
 // Command usage
-// TODO: Allow COMMAND to be used first
 func Usage() {
-	fmt.Printf("Usage: %s [OPTIONS]... COMMAND\n", os.Args[0])
-	fmt.Println("\nCommands:")
-	fmt.Println("\tstatus  \tprints the server status")
-	fmt.Println("\tregister\tregisters an account and stores it (use with -name)")
-	fmt.Println("\tspawn   \tspawns a rover for the current account")
-	fmt.Println("\tmove    \tissues move command to rover")
-	fmt.Println("\tradar   \tgathers radar data for the current rover")
-	fmt.Println("\trover   \tgets data for current rover")
-	fmt.Println("\nOptions:")
+	fmt.Fprintf(os.Stderr, "Usage: %s COMMAND [OPTIONS]...\n", os.Args[0])
+	fmt.Fprintln(os.Stderr, "\nCommands:")
+	fmt.Fprintln(os.Stderr, "\tstatus  \tprints the server status")
+	fmt.Fprintln(os.Stderr, "\tregister\tregisters an account and stores it (use with -name)")
+	fmt.Fprintln(os.Stderr, "\tspawn   \tspawns a rover for the current account")
+	fmt.Fprintln(os.Stderr, "\tmove    \tissues move command to rover")
+	fmt.Fprintln(os.Stderr, "\tradar   \tgathers radar data for the current rover")
+	fmt.Fprintln(os.Stderr, "\trover   \tgets data for current rover")
+	fmt.Fprintln(os.Stderr, "\nOptions:")
 	flag.PrintDefaults()
 }
 
@@ -191,7 +190,9 @@ func InnerMain(command string) error {
 		}
 
 	default:
-		return fmt.Errorf("Unknown command: %s", command)
+		// Print the usage
+		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
+		Usage()
 	}
 
 	// Save out the persistent file
@@ -209,7 +210,7 @@ func InnerMain(command string) error {
 // Simple main
 func main() {
 	flag.Usage = Usage
-	flag.Parse()
+	flag.CommandLine.Parse(os.Args[2:])
 
 	// Print the version if requested
 	if *ver {
@@ -217,15 +218,8 @@ func main() {
 		return
 	}
 
-	// Verify we have a single command line arg
-	args := flag.Args()
-	if len(args) != 1 {
-		Usage()
-		os.Exit(1)
-	}
-
 	// Run the inner main
-	if err := InnerMain(args[0]); err != nil {
+	if err := InnerMain(os.Args[1]); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		os.Exit(1)
 	}
