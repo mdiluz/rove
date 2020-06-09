@@ -28,6 +28,9 @@ type World struct {
 	// Commands is the set of currently executing command streams per rover
 	CommandQueue map[uuid.UUID]CommandStream `json:"commands"`
 
+	// Incoming represents the set of commands to add to the queue at the end of the current tick
+	Incoming map[uuid.UUID]CommandStream `json:"incoming"`
+
 	// Mutex to lock around command operations
 	cmdMutex sync.RWMutex
 }
@@ -37,6 +40,7 @@ func NewWorld(size int, chunkSize int) *World {
 	return &World{
 		Rovers:       make(map[uuid.UUID]Rover),
 		CommandQueue: make(map[uuid.UUID]CommandStream),
+		Incoming:     make(map[uuid.UUID]CommandStream),
 		Atlas:        NewAtlas(size, chunkSize),
 	}
 }
@@ -289,11 +293,22 @@ func (w *World) Enqueue(rover uuid.UUID, commands ...Command) error {
 	w.cmdMutex.Lock()
 	defer w.cmdMutex.Unlock()
 
-	// Append the commands to the current set
-	cmds := w.CommandQueue[rover]
-	w.CommandQueue[rover] = append(cmds, commands...)
+	// Append the commands to the incoming set
+	cmds := w.Incoming[rover]
+	w.Incoming[rover] = append(cmds, commands...)
 
 	return nil
+}
+
+// EnqueueAllIncoming will enqueue the incoming commands
+func (w *World) EnqueueAllIncoming() {
+	// Add any incoming commands from this tick and clear that queue
+	for id, incoming := range w.Incoming {
+		commands := w.CommandQueue[id]
+		commands = append(commands, incoming...)
+		w.CommandQueue[id] = commands
+	}
+	w.Incoming = make(map[uuid.UUID]CommandStream)
 }
 
 // Execute will execute any commands in the current command queue
@@ -301,7 +316,7 @@ func (w *World) ExecuteCommandQueues() {
 	w.cmdMutex.Lock()
 	defer w.cmdMutex.Unlock()
 
-	// Iterate through all commands
+	// Iterate through all the current commands
 	for rover, cmds := range w.CommandQueue {
 		if len(cmds) != 0 {
 			// Extract the first command in the queue
@@ -324,6 +339,9 @@ func (w *World) ExecuteCommandQueues() {
 			delete(w.CommandQueue, rover)
 		}
 	}
+
+	// Add any incoming commands from this tick and clear that queue
+	w.EnqueueAllIncoming()
 }
 
 // ExecuteCommand will execute a single command

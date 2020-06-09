@@ -30,6 +30,7 @@ func TestCommand_Move(t *testing.T) {
 	assert.NoError(t, world.Enqueue(a, moveCommand), "Failed to execute move command")
 
 	// Tick the world
+	world.EnqueueAllIncoming()
 	world.ExecuteCommandQueues()
 
 	newatributes, err := world.RoverAttributes(a)

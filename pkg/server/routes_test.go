@@ -127,6 +127,7 @@ func TestHandleCommand(t *testing.T) {
 	assert.NoError(t, err, "Couldn't get rover attribs")
 
 	// Tick the command queues to progress the move command
+	s.world.EnqueueAllIncoming()
 	s.world.ExecuteCommandQueues()
 
 	attribs2, err := s.world.RoverAttributes(inst)
