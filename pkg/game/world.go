@@ -279,7 +279,7 @@ func (w *World) Enqueue(rover uuid.UUID, commands ...Command) error {
 		switch c.Command {
 		case "move":
 			if _, err := bearing.FromString(c.Bearing); err != nil {
-				return fmt.Errorf("unknown direction: %s", c.Bearing)
+				return fmt.Errorf("unknown bearing: %s", c.Bearing)
 			}
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
@@ -334,7 +334,7 @@ func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err 
 	switch c.Command {
 	case "move":
 		if dir, err := bearing.FromString(c.Bearing); err != nil {
-			return true, fmt.Errorf("unknown direction in command %+v, skipping: %s\n", c, err)
+			return true, fmt.Errorf("unknown bearing in command %+v, skipping: %s\n", c, err)
 
 		} else if _, err := w.MoveRover(rover, dir); err != nil {
 			return true, fmt.Errorf("error moving rover in command %+v, skipping: %s\n", c, err)
