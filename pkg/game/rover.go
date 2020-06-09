@@ -1,6 +1,9 @@
 package game
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"github.com/mdiluz/rove/pkg/vector"
+)
 
 // RoverAttributes contains attributes of a rover
 type RoverAttributes struct {
@@ -14,7 +17,7 @@ type RoverAttributes struct {
 	Name string `json:"name"`
 
 	// Pos represents where this rover is in the world
-	Pos Vector `json:"pos"`
+	Pos vector.Vector `json:"pos"`
 }
 
 // Rover describes a single rover in the world

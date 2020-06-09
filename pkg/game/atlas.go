@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+
+	"github.com/mdiluz/rove/pkg/maths"
+	"github.com/mdiluz/rove/pkg/vector"
 )
 
 // Chunk represents a fixed square grid of tiles
@@ -55,7 +58,7 @@ func (a *Atlas) SpawnRocks() error {
 	for i := -extent; i < extent; i++ {
 		for j := -extent; j < extent; j++ {
 			if rand.Intn(16) == 0 {
-				if err := a.SetTile(Vector{i, j}, TileRock); err != nil {
+				if err := a.SetTile(vector.Vector{X: i, Y: j}, TileRock); err != nil {
 					return err
 				}
 			}
@@ -72,13 +75,13 @@ func (a *Atlas) SpawnWalls() error {
 	// Surround the atlas in walls
 	for i := -extent; i < extent; i++ {
 
-		if err := a.SetTile(Vector{i, extent - 1}, TileWall); err != nil { // N
+		if err := a.SetTile(vector.Vector{X: i, Y: extent - 1}, TileWall); err != nil { // N
 			return err
-		} else if a.SetTile(Vector{extent - 1, i}, TileWall); err != nil { // E
+		} else if a.SetTile(vector.Vector{X: extent - 1, Y: i}, TileWall); err != nil { // E
 			return err
-		} else if a.SetTile(Vector{i, -extent}, TileWall); err != nil { // S
+		} else if a.SetTile(vector.Vector{X: i, Y: -extent}, TileWall); err != nil { // S
 			return err
-		} else if a.SetTile(Vector{-extent, i}, TileWall); err != nil { // W
+		} else if a.SetTile(vector.Vector{X: -extent, Y: i}, TileWall); err != nil { // W
 			return err
 		}
 	}
@@ -87,7 +90,7 @@ func (a *Atlas) SpawnWalls() error {
 }
 
 // SetTile sets an individual tile's kind
-func (a *Atlas) SetTile(v Vector, tile Tile) error {
+func (a *Atlas) SetTile(v vector.Vector, tile Tile) error {
 	chunk := a.ToChunk(v)
 	if chunk >= len(a.Chunks) {
 		return fmt.Errorf("location outside of allocated atlas")
@@ -103,7 +106,7 @@ func (a *Atlas) SetTile(v Vector, tile Tile) error {
 }
 
 // GetTile will return an individual tile
-func (a *Atlas) GetTile(v Vector) (Tile, error) {
+func (a *Atlas) GetTile(v vector.Vector) (Tile, error) {
 	chunk := a.ToChunk(v)
 	if chunk >= len(a.Chunks) {
 		return 0, fmt.Errorf("location outside of allocated atlas")
@@ -119,32 +122,32 @@ func (a *Atlas) GetTile(v Vector) (Tile, error) {
 }
 
 // ToChunkLocal gets a chunk local coordinate for a tile
-func (a *Atlas) ToChunkLocal(v Vector) Vector {
-	return Vector{Pmod(v.X, a.ChunkSize), Pmod(v.Y, a.ChunkSize)}
+func (a *Atlas) ToChunkLocal(v vector.Vector) vector.Vector {
+	return vector.Vector{X: maths.Pmod(v.X, a.ChunkSize), Y: maths.Pmod(v.Y, a.ChunkSize)}
 }
 
 // GetChunkLocal gets a chunk local coordinate for a tile
-func (a *Atlas) ToWorld(local Vector, chunk int) Vector {
+func (a *Atlas) ToWorld(local vector.Vector, chunk int) vector.Vector {
 	return a.ChunkOrigin(chunk).Added(local)
 }
 
 // GetChunkID gets the chunk ID for a position in the world
-func (a *Atlas) ToChunk(v Vector) int {
+func (a *Atlas) ToChunk(v vector.Vector) int {
 	local := a.ToChunkLocal(v)
 	// Get the chunk origin itself
 	origin := v.Added(local.Negated())
 	// Divided it by the number of chunks
 	origin = origin.Divided(a.ChunkSize)
 	// Shift it by our size (our origin is in the middle)
-	origin = origin.Added(Vector{a.Size / 2, a.Size / 2})
+	origin = origin.Added(vector.Vector{X: a.Size / 2, Y: a.Size / 2})
 	// Get the ID based on the final values
 	return (a.Size * origin.Y) + origin.X
 }
 
 // ChunkOrigin gets the chunk origin for a given chunk index
-func (a *Atlas) ChunkOrigin(chunk int) Vector {
-	v := Vector{
-		X: Pmod(chunk, a.Size) - (a.Size / 2),
+func (a *Atlas) ChunkOrigin(chunk int) vector.Vector {
+	v := vector.Vector{
+		X: maths.Pmod(chunk, a.Size) - (a.Size / 2),
 		Y: (chunk / a.Size) - (a.Size / 2),
 	}
 
@@ -152,14 +155,14 @@ func (a *Atlas) ChunkOrigin(chunk int) Vector {
 }
 
 // GetWorldExtent gets the min and max valid coordinates of world
-func (a *Atlas) GetWorldExtents() (min Vector, max Vector) {
-	min = Vector{
-		-(a.Size / 2) * a.ChunkSize,
-		-(a.Size / 2) * a.ChunkSize,
+func (a *Atlas) GetWorldExtents() (min vector.Vector, max vector.Vector) {
+	min = vector.Vector{
+		X: -(a.Size / 2) * a.ChunkSize,
+		Y: -(a.Size / 2) * a.ChunkSize,
 	}
-	max = Vector{
-		-min.X - 1,
-		-min.Y - 1,
+	max = vector.Vector{
+		X: -min.X - 1,
+		Y: -min.Y - 1,
 	}
 	return
 }

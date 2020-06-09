@@ -8,6 +8,9 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+	"github.com/mdiluz/rove/pkg/bearing"
+	"github.com/mdiluz/rove/pkg/maths"
+	"github.com/mdiluz/rove/pkg/vector"
 	"github.com/tjarratt/babble"
 )
 
@@ -70,9 +73,9 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 	strings.ReplaceAll(rover.Attributes.Name, "'s", "")
 
 	// Spawn in a random place near the origin
-	rover.Attributes.Pos = Vector{
-		w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
-		w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
+	rover.Attributes.Pos = vector.Vector{
+		X: w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
+		Y: w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
 	}
 
 	// Seach until we error (run out of world)
@@ -84,7 +87,7 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 				break
 			} else {
 				// Try and spawn to the east of the blockage
-				rover.Attributes.Pos.Add(Vector{1, 0})
+				rover.Attributes.Pos.Add(vector.Vector{X: 1, Y: 0})
 			}
 		}
 	}
@@ -146,7 +149,7 @@ func (w *World) SetRoverAttributes(id uuid.UUID, attributes RoverAttributes) err
 }
 
 // WarpRover sets an rovers position
-func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
+func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -176,7 +179,7 @@ func (w *World) WarpRover(id uuid.UUID, pos Vector) error {
 }
 
 // SetPosition sets an rovers position
-func (w *World) MoveRover(id uuid.UUID, bearing Direction) (RoverAttributes, error) {
+func (w *World) MoveRover(id uuid.UUID, bearing bearing.Direction) (RoverAttributes, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -224,31 +227,31 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]Tile, error) {
 		roverPos := r.Attributes.Pos
 
 		// Get the radar min and max values
-		radarMin := Vector{
+		radarMin := vector.Vector{
 			X: roverPos.X - r.Attributes.Range,
 			Y: roverPos.Y - r.Attributes.Range,
 		}
-		radarMax := Vector{
+		radarMax := vector.Vector{
 			X: roverPos.X + r.Attributes.Range,
 			Y: roverPos.Y + r.Attributes.Range,
 		}
 
 		// Make sure we only query within the actual world
 		worldMin, worldMax := w.Atlas.GetWorldExtents()
-		scanMin := Vector{
-			X: Max(radarMin.X, worldMin.X),
-			Y: Max(radarMin.Y, worldMin.Y),
+		scanMin := vector.Vector{
+			X: maths.Max(radarMin.X, worldMin.X),
+			Y: maths.Max(radarMin.Y, worldMin.Y),
 		}
-		scanMax := Vector{
-			X: Min(radarMax.X, worldMax.X),
-			Y: Min(radarMax.Y, worldMax.Y),
+		scanMax := vector.Vector{
+			X: maths.Min(radarMax.X, worldMax.X),
+			Y: maths.Min(radarMax.Y, worldMax.Y),
 		}
 
 		// Gather up all tiles within the range
 		var radar = make([]Tile, radarSpan*radarSpan)
 		for j := scanMin.Y; j <= scanMax.Y; j++ {
 			for i := scanMin.X; i <= scanMax.X; i++ {
-				q := Vector{i, j}
+				q := vector.Vector{X: i, Y: j}
 
 				if tile, err := w.Atlas.GetTile(q); err != nil {
 					return nil, fmt.Errorf("failed to query tile: %s", err)
@@ -275,7 +278,7 @@ func (w *World) Enqueue(rover uuid.UUID, commands ...Command) error {
 	for _, c := range commands {
 		switch c.Command {
 		case "move":
-			if _, err := DirectionFromString(c.Bearing); err != nil {
+			if _, err := bearing.DirectionFromString(c.Bearing); err != nil {
 				return fmt.Errorf("unknown direction: %s", c.Bearing)
 			}
 		default:
@@ -330,7 +333,7 @@ func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err 
 
 	switch c.Command {
 	case "move":
-		if dir, err := DirectionFromString(c.Bearing); err != nil {
+		if dir, err := bearing.DirectionFromString(c.Bearing); err != nil {
 			return true, fmt.Errorf("unknown direction in command %+v, skipping: %s\n", c, err)
 
 		} else if _, err := w.MoveRover(rover, dir); err != nil {

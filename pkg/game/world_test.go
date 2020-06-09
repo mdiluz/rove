@@ -3,6 +3,8 @@ package game
 import (
 	"testing"
 
+	"github.com/mdiluz/rove/pkg/bearing"
+	"github.com/mdiluz/rove/pkg/vector"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -65,7 +67,7 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	attribs, err := world.RoverAttributes(a)
 	assert.NoError(t, err, "Failed to get rover attribs")
 
-	pos := Vector{
+	pos := vector.Vector{
 		X: 0.0,
 		Y: 0.0,
 	}
@@ -77,15 +79,15 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.NoError(t, err, "Failed to set position for rover")
 	assert.Equal(t, pos, newAttribs.Pos, "Failed to correctly set position for rover")
 
-	bearing := North
+	bearing := bearing.North
 	duration := 1
 	newAttribs, err = world.MoveRover(a, bearing)
 	assert.NoError(t, err, "Failed to set position for rover")
-	pos.Add(Vector{0, attribs.Speed * duration}) // We should have move one unit of the speed north
+	pos.Add(vector.Vector{X: 0, Y: attribs.Speed * duration}) // We should have move one unit of the speed north
 	assert.Equal(t, pos, newAttribs.Pos, "Failed to correctly move position for rover")
 
 	// Place a tile in front of the rover
-	assert.NoError(t, world.Atlas.SetTile(Vector{0, 2}, TileWall))
+	assert.NoError(t, world.Atlas.SetTile(vector.Vector{X: 0, Y: 2}, TileWall))
 	newAttribs, err = world.MoveRover(a, bearing)
 	assert.Equal(t, pos, newAttribs.Pos, "Failed to correctly not move position for rover into wall")
 }
@@ -106,9 +108,9 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	assert.NoError(t, err, "Failed to set rover attribs")
 
 	// Warp the rovers into position
-	bpos := Vector{-3, -3}
+	bpos := vector.Vector{X: -3, Y: -3}
 	assert.NoError(t, world.WarpRover(b, bpos), "Failed to warp rover")
-	assert.NoError(t, world.WarpRover(a, Vector{0, 0}), "Failed to warp rover")
+	assert.NoError(t, world.WarpRover(a, vector.Vector{X: 0, Y: 0}), "Failed to warp rover")
 
 	// Spawn the world wall
 	err = world.Atlas.SpawnWalls()

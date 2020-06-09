@@ -1,4 +1,4 @@
-package game
+package vector
 
 import (
 	"math"
@@ -180,15 +180,15 @@ func TestVector_Multiplied(t *testing.T) {
 	}{
 		{
 			name: "Basic multiply 1",
-			vec:  North.Vector(),
+			vec:  Vector{0, 1},
 			arg:  2,
 			want: Vector{0, 2},
 		},
 		{
 			name: "Basic multiply 2",
-			vec:  NorthWest.Vector(),
+			vec:  Vector{-1, 1},
 			arg:  -1,
-			want: SouthEast.Vector(),
+			want: Vector{1, -1},
 		},
 	}
 	for _, tt := range tests {
@@ -202,28 +202,4 @@ func TestVector_Multiplied(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestDirection(t *testing.T) {
-	dir := North
-
-	assert.Equal(t, "North", dir.String())
-	assert.Equal(t, "N", dir.ShortString())
-	assert.Equal(t, Vector{0, 1}, dir.Vector())
-
-	dir, err := DirectionFromString("N")
-	assert.NoError(t, err)
-	assert.Equal(t, North, dir)
-
-	dir, err = DirectionFromString("n")
-	assert.NoError(t, err)
-	assert.Equal(t, North, dir)
-
-	dir, err = DirectionFromString("north")
-	assert.NoError(t, err)
-	assert.Equal(t, North, dir)
-
-	dir, err = DirectionFromString("NorthWest")
-	assert.NoError(t, err)
-	assert.Equal(t, NorthWest, dir)
 }

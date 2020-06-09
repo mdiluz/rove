@@ -10,6 +10,7 @@ import (
 
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
+	"github.com/mdiluz/rove/pkg/vector"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -91,7 +92,7 @@ func TestHandleCommand(t *testing.T) {
 
 	// Spawn the rover rover for the account
 	_, inst, err := s.SpawnRoverForAccount(a.Id)
-	assert.NoError(t, s.world.WarpRover(inst, game.Vector{}))
+	assert.NoError(t, s.world.WarpRover(inst, vector.Vector{}))
 
 	attribs, err := s.world.RoverAttributes(inst)
 	assert.NoError(t, err, "Couldn't get rover position")
@@ -130,7 +131,7 @@ func TestHandleCommand(t *testing.T) {
 
 	attribs2, err := s.world.RoverAttributes(inst)
 	assert.NoError(t, err, "Couldn't get rover position")
-	attribs.Pos.Add(game.Vector{X: 0.0, Y: attrib.Speed * 1}) // Should have moved north by the speed and duration
+	attribs.Pos.Add(vector.Vector{X: 0.0, Y: attrib.Speed * 1}) // Should have moved north by the speed and duration
 	assert.Equal(t, attribs.Pos, attribs2.Pos, "Rover should have moved by bearing")
 }
 
@@ -145,13 +146,13 @@ func TestHandleRadar(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Warp this rover to 0,0
-	assert.NoError(t, s.world.WarpRover(id, game.Vector{}))
+	assert.NoError(t, s.world.WarpRover(id, vector.Vector{}))
 
 	// Explicity set a few nearby tiles
-	wallPos1 := game.Vector{X: 0, Y: -1}
-	wallPos2 := game.Vector{X: 1, Y: 1}
-	rockPos := game.Vector{X: 1, Y: 3}
-	emptyPos := game.Vector{X: -2, Y: -3}
+	wallPos1 := vector.Vector{X: 0, Y: -1}
+	wallPos2 := vector.Vector{X: 1, Y: 1}
+	rockPos := vector.Vector{X: 1, Y: 3}
+	emptyPos := vector.Vector{X: -2, Y: -3}
 	assert.NoError(t, s.world.Atlas.SetTile(wallPos1, game.TileWall))
 	assert.NoError(t, s.world.Atlas.SetTile(wallPos2, game.TileWall))
 	assert.NoError(t, s.world.Atlas.SetTile(rockPos, game.TileRock))
@@ -171,7 +172,7 @@ func TestHandleRadar(t *testing.T) {
 	}
 
 	scope := attrib.Range*2 + 1
-	radarOrigin := game.Vector{X: -attrib.Range, Y: -attrib.Range}
+	radarOrigin := vector.Vector{X: -attrib.Range, Y: -attrib.Range}
 
 	// Make sure the rover tile is correct
 	assert.Equal(t, game.TileRover, status.Tiles[len(status.Tiles)/2])
