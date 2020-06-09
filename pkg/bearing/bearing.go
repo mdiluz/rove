@@ -7,11 +7,11 @@ import (
 	"github.com/mdiluz/rove/pkg/vector"
 )
 
-// Direction describes a compass direction
-type Direction int
+// Bearing describes a compass direction
+type Bearing int
 
 const (
-	North Direction = iota
+	North Bearing = iota
 	NorthEast
 	East
 	SouthEast
@@ -21,14 +21,14 @@ const (
 	NorthWest
 )
 
-// DirectionString simply describes the strings associated with a direction
-type DirectionString struct {
+// bearingString simply describes the strings associated with a direction
+type bearingString struct {
 	Long  string
 	Short string
 }
 
-// DirectionStrings is the set of strings for each direction
-var DirectionStrings = []DirectionString{
+// bearingStrings is the set of strings for each direction
+var bearingStrings = []bearingString{
 	{"North", "N"},
 	{"NorthEast", "NE"},
 	{"East", "E"},
@@ -40,26 +40,26 @@ var DirectionStrings = []DirectionString{
 }
 
 // String converts a Direction to a String
-func (d Direction) String() string {
-	return DirectionStrings[d].Long
+func (d Bearing) String() string {
+	return bearingStrings[d].Long
 }
 
 // ShortString converts a Direction to a short string version
-func (d Direction) ShortString() string {
-	return DirectionStrings[d].Short
+func (d Bearing) ShortString() string {
+	return bearingStrings[d].Short
 }
 
-// DirectionFromString gets the Direction from a string
-func DirectionFromString(s string) (Direction, error) {
-	for i, d := range DirectionStrings {
+// FromString gets the Direction from a string
+func FromString(s string) (Bearing, error) {
+	for i, d := range bearingStrings {
 		if strings.ToLower(d.Long) == strings.ToLower(s) || strings.ToLower(d.Short) == strings.ToLower(s) {
-			return Direction(i), nil
+			return Bearing(i), nil
 		}
 	}
 	return -1, fmt.Errorf("Unknown direction: %s", s)
 }
 
-var DirectionVectors = []vector.Vector{
+var bearingVectors = []vector.Vector{
 	{X: 0, Y: 1},  // N
 	{X: 1, Y: 1},  // NE
 	{X: 1, Y: 0},  // E
@@ -71,6 +71,6 @@ var DirectionVectors = []vector.Vector{
 }
 
 // Vector converts a Direction to a Vector
-func (d Direction) Vector() vector.Vector {
-	return DirectionVectors[d]
+func (d Bearing) Vector() vector.Vector {
+	return bearingVectors[d]
 }

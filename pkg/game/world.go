@@ -179,7 +179,7 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 }
 
 // SetPosition sets an rovers position
-func (w *World) MoveRover(id uuid.UUID, bearing bearing.Direction) (RoverAttributes, error) {
+func (w *World) MoveRover(id uuid.UUID, bearing bearing.Bearing) (RoverAttributes, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -278,7 +278,7 @@ func (w *World) Enqueue(rover uuid.UUID, commands ...Command) error {
 	for _, c := range commands {
 		switch c.Command {
 		case "move":
-			if _, err := bearing.DirectionFromString(c.Bearing); err != nil {
+			if _, err := bearing.FromString(c.Bearing); err != nil {
 				return fmt.Errorf("unknown direction: %s", c.Bearing)
 			}
 		default:
@@ -333,7 +333,7 @@ func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err 
 
 	switch c.Command {
 	case "move":
-		if dir, err := bearing.DirectionFromString(c.Bearing); err != nil {
+		if dir, err := bearing.FromString(c.Bearing); err != nil {
 			return true, fmt.Errorf("unknown direction in command %+v, skipping: %s\n", c, err)
 
 		} else if _, err := w.MoveRover(rover, dir); err != nil {
