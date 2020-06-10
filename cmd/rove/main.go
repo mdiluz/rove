@@ -125,8 +125,8 @@ func InnerMain(command string) error {
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		default:
-			fmt.Printf("Registered account with id: %s\n", response.Id)
-			config.Accounts[config.Host] = response.Id
+			fmt.Printf("Registered account with id: %s\n", d.Name)
+			config.Accounts[config.Host] = d.Name
 		}
 
 	case "move":

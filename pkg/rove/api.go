@@ -27,7 +27,6 @@ type StatusResponse struct {
 // API: /register method: POST
 
 // Register registers a user by name
-// Responds with a unique ID for that user to be used in future requests
 func (s Server) Register(d RegisterData) (r RegisterResponse, err error) {
 	err = s.Post("register", d, &r)
 	return
@@ -42,8 +41,6 @@ type RegisterData struct {
 type RegisterResponse struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error,omitempty"`
-
-	Id string `json:"id"`
 }
 
 // ==============================

@@ -66,7 +66,7 @@ func TestHandleCommand(t *testing.T) {
 	assert.NoError(t, err, "Error registering account")
 
 	// Spawn the rover rover for the account
-	_, inst, err := s.SpawnRoverForAccount(a.Id)
+	_, inst, err := s.SpawnRoverForAccount(a.Name)
 	assert.NoError(t, s.world.WarpRover(inst, vector.Vector{}))
 
 	attribs, err := s.world.RoverAttributes(inst)
@@ -85,7 +85,7 @@ func TestHandleCommand(t *testing.T) {
 	b, err := json.Marshal(data)
 	assert.NoError(t, err, "Error marshalling data")
 
-	request, _ := http.NewRequest(http.MethodPost, path.Join("/", a.Id.String(), "/command"), bytes.NewReader(b))
+	request, _ := http.NewRequest(http.MethodPost, path.Join("/", a.Name, "/command"), bytes.NewReader(b))
 	response := httptest.NewRecorder()
 
 	s.router.ServeHTTP(response, request)
@@ -118,7 +118,7 @@ func TestHandleRadar(t *testing.T) {
 	assert.NoError(t, err, "Error registering account")
 
 	// Spawn the rover rover for the account
-	attrib, id, err := s.SpawnRoverForAccount(a.Id)
+	attrib, id, err := s.SpawnRoverForAccount(a.Name)
 	assert.NoError(t, err)
 
 	// Warp this rover to 0,0
@@ -134,7 +134,7 @@ func TestHandleRadar(t *testing.T) {
 	assert.NoError(t, s.world.Atlas.SetTile(rockPos, game.TileRock))
 	assert.NoError(t, s.world.Atlas.SetTile(emptyPos, game.TileEmpty))
 
-	request, _ := http.NewRequest(http.MethodGet, path.Join("/", a.Id.String(), "/radar"), nil)
+	request, _ := http.NewRequest(http.MethodGet, path.Join("/", a.Name, "/radar"), nil)
 	response := httptest.NewRecorder()
 
 	s.router.ServeHTTP(response, request)
@@ -172,10 +172,10 @@ func TestHandleRover(t *testing.T) {
 	assert.NoError(t, err, "Error registering account")
 
 	// Spawn one rover for the account
-	attribs, _, err := s.SpawnRoverForAccount(a.Id)
+	attribs, _, err := s.SpawnRoverForAccount(a.Name)
 	assert.NoError(t, err)
 
-	request, _ := http.NewRequest(http.MethodGet, path.Join("/", a.Id.String(), "/rover"), nil)
+	request, _ := http.NewRequest(http.MethodGet, path.Join("/", a.Name, "/rover"), nil)
 	response := httptest.NewRecorder()
 
 	s.router.ServeHTTP(response, request)

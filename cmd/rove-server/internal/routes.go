@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
 )
@@ -87,7 +86,7 @@ func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Wri
 	} else if acc, err := s.accountant.RegisterAccount(data.Name); err != nil {
 		response.Error = err.Error()
 
-	} else if _, _, err := s.SpawnRoverForAccount(acc.Id); err != nil {
+	} else if _, _, err := s.SpawnRoverForAccount(acc.Name); err != nil {
 		response.Error = err.Error()
 
 	} else if err := s.SaveAll(); err != nil {
@@ -95,7 +94,6 @@ func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Wri
 
 	} else {
 		// Save out the new accounts
-		response.Id = acc.Id.String()
 		response.Success = true
 	}
 
@@ -120,9 +118,6 @@ func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writ
 	} else if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if id, err := uuid.Parse(id); err != nil {
-		response.Error = fmt.Sprintf("Provided account ID was invalid: %s", err)
-
 	} else if inst, err := s.accountant.GetRover(id); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
@@ -146,9 +141,6 @@ func HandleRadar(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 	id := vars["account"]
 	if len(id) == 0 {
 		response.Error = "No account ID provided"
-
-	} else if id, err := uuid.Parse(id); err != nil {
-		response.Error = fmt.Sprintf("Provided account ID was invalid: %s", err)
 
 	} else if inst, err := s.accountant.GetRover(id); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
@@ -178,9 +170,6 @@ func HandleRover(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 	id := vars["account"]
 	if len(id) == 0 {
 		response.Error = "No account ID provided"
-
-	} else if id, err := uuid.Parse(id); err != nil {
-		response.Error = fmt.Sprintf("Provided account ID was invalid: %s", err)
 
 	} else if inst, err := s.accountant.GetRover(id); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)

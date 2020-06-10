@@ -36,11 +36,6 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 		t.Errorf("Missmatched account name after register, expected: %s, actual: %s", nameb, acca.Name)
 	}
 
-	// Verify our accounts have differing IDs
-	if acca.Id == accb.Id {
-		t.Error("Duplicate account IDs fo separate accounts")
-	}
-
 	// Verify another request gets rejected
 	_, err = accountant.RegisterAccount(namea)
 	if err == nil {
@@ -62,12 +57,12 @@ func TestAccountant_AssignGetRover(t *testing.T) {
 
 	inst := uuid.New()
 
-	err = accountant.AssignRover(a.Id, inst)
+	err = accountant.AssignRover(a.Name, inst)
 	if err != nil {
 		t.Error("Failed to set rover for created account")
-	} else if accountant.Accounts[a.Id].Rover != inst {
+	} else if accountant.Accounts[a.Name].Rover != inst {
 		t.Error("Rover for assigned account is incorrect")
-	} else if id, err := accountant.GetRover(a.Id); err != nil {
+	} else if id, err := accountant.GetRover(a.Name); err != nil {
 		t.Error("Failed to get rover for account")
 	} else if id != inst {
 		t.Error("Fetched rover is incorrect for account")

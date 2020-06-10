@@ -50,7 +50,6 @@ func TestServer_Register(t *testing.T) {
 	r1, err := serv.Register(d1)
 	assert.NoError(t, err)
 	assert.True(t, r1.Success)
-	assert.NotZero(t, len(r1.Id))
 
 	d2 := rove.RegisterData{
 		Name: uuid.New().String(),
@@ -58,7 +57,6 @@ func TestServer_Register(t *testing.T) {
 	r2, err := serv.Register(d2)
 	assert.NoError(t, err)
 	assert.True(t, r2.Success)
-	assert.NotZero(t, len(r2.Id))
 
 	r3, err := serv.Register(d1)
 	assert.NoError(t, err)
@@ -72,7 +70,6 @@ func TestServer_Command(t *testing.T) {
 	r1, err := serv.Register(d1)
 	assert.NoError(t, err)
 	assert.True(t, r1.Success)
-	assert.NotZero(t, len(r1.Id))
 
 	c := rove.CommandData{
 		Commands: []game.Command{
@@ -83,7 +80,7 @@ func TestServer_Command(t *testing.T) {
 			},
 		},
 	}
-	r3, err := serv.Command(r1.Id, c)
+	r3, err := serv.Command(d1.Name, c)
 	assert.NoError(t, err)
 	assert.True(t, r3.Success)
 }
@@ -95,9 +92,8 @@ func TestServer_Radar(t *testing.T) {
 	r1, err := serv.Register(d1)
 	assert.NoError(t, err)
 	assert.True(t, r1.Success)
-	assert.NotZero(t, len(r1.Id))
 
-	r3, err := serv.Radar(r1.Id)
+	r3, err := serv.Radar(d1.Name)
 	assert.NoError(t, err)
 	assert.True(t, r3.Success)
 }
@@ -109,9 +105,8 @@ func TestServer_Rover(t *testing.T) {
 	r1, err := serv.Register(d1)
 	assert.NoError(t, err)
 	assert.True(t, r1.Success)
-	assert.NotZero(t, len(r1.Id))
 
-	r3, err := serv.Rover(r1.Id)
+	r3, err := serv.Rover(d1.Name)
 	assert.NoError(t, err)
 	assert.True(t, r3.Success)
 }
