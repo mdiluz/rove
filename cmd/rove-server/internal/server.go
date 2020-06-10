@@ -289,7 +289,7 @@ func (s *Server) SpawnRoverForAccount(account string) (game.RoverAttributes, uui
 		return game.RoverAttributes{}, uuid.UUID{}, fmt.Errorf("No attributes found for created rover: %s", err)
 
 	} else {
-		if err := s.accountant.AssignRover(account, inst); err != nil {
+		if err := s.accountant.AssignData(account, "rover", inst.String()); err != nil {
 			// Try and clear up the rover
 			if err := s.world.DestroyRover(inst); err != nil {
 				fmt.Printf("Failed to destroy rover after failed rover assign: %s", err)

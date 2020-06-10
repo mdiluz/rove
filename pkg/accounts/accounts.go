@@ -2,8 +2,6 @@ package accounts
 
 import (
 	"fmt"
-
-	"github.com/google/uuid"
 )
 
 const kAccountsFileName = "rove-accounts.json"
@@ -13,8 +11,8 @@ type Account struct {
 	// Name simply describes the account and must be unique
 	Name string `json:"name"`
 
-	// Rover represents the rover that this account owns
-	Rover uuid.UUID `json:"rover"`
+	// Data represents internal account data
+	Data map[string]string `json:"data"`
 }
 
 // Represents the accountant data to store
@@ -52,12 +50,12 @@ func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 	return
 }
 
-// AssignRover assigns rover ownership of an rover to an account
-func (a *Accountant) AssignRover(account string, rover uuid.UUID) error {
+// AssignRover assigns data to an account
+func (a *Accountant) AssignData(account string, key string, value string) error {
 
 	// Find the account matching the ID
 	if this, ok := a.Accounts[account]; ok {
-		this.Rover = rover
+		this.Data[key] = value
 		a.Accounts[account] = this
 	} else {
 		return fmt.Errorf("no account found for id: %s", account)
@@ -67,13 +65,11 @@ func (a *Accountant) AssignRover(account string, rover uuid.UUID) error {
 }
 
 // GetRover gets the rover rover for the account
-func (a *Accountant) GetRover(account string) (uuid.UUID, error) {
+func (a *Accountant) GetData(account string, key string) (string, error) {
 	// Find the account matching the ID
 	if this, ok := a.Accounts[account]; !ok {
-		return uuid.UUID{}, fmt.Errorf("no account found for id: %s", account)
-	} else if this.Rover == uuid.Nil {
-		return uuid.UUID{}, fmt.Errorf("no rover spawned for account %s", account)
+		return "", fmt.Errorf("no account found for id: %s", account)
 	} else {
-		return this.Rover, nil
+		return this.Data[key], nil
 	}
 }

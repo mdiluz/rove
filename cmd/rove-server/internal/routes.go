@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
 )
@@ -118,10 +119,13 @@ func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writ
 	} else if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if inst, err := s.accountant.GetRover(id); err != nil {
+	} else if inst, err := s.accountant.GetData(id, "rover"); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
-	} else if err := s.world.Enqueue(inst, data.Commands...); err != nil {
+	} else if id, err := uuid.Parse(inst); err != nil {
+		response.Error = fmt.Sprintf("Account had invalid rover id: %s", err)
+
+	} else if err := s.world.Enqueue(id, data.Commands...); err != nil {
 		response.Error = fmt.Sprintf("Failed to execute commands: %s", err)
 
 	} else {
@@ -142,13 +146,16 @@ func HandleRadar(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 	if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if inst, err := s.accountant.GetRover(id); err != nil {
+	} else if inst, err := s.accountant.GetData(id, "rover"); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
-	} else if attrib, err := s.world.RoverAttributes(inst); err != nil {
+	} else if id, err := uuid.Parse(inst); err != nil {
+		response.Error = fmt.Sprintf("Account had invalid rover id: %s", err)
+
+	} else if attrib, err := s.world.RoverAttributes(id); err != nil {
 		response.Error = fmt.Sprintf("Error getting rover attributes: %s", err)
 
-	} else if radar, err := s.world.RadarFromRover(inst); err != nil {
+	} else if radar, err := s.world.RadarFromRover(id); err != nil {
 		response.Error = fmt.Sprintf("Error getting radar from rover: %s", err)
 
 	} else {
@@ -171,10 +178,13 @@ func HandleRover(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 	if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if inst, err := s.accountant.GetRover(id); err != nil {
+	} else if inst, err := s.accountant.GetData(id, "rover"); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
-	} else if attribs, err := s.world.RoverAttributes(inst); err != nil {
+	} else if id, err := uuid.Parse(inst); err != nil {
+		response.Error = fmt.Sprintf("Account had invalid rover id: %s", err)
+
+	} else if attribs, err := s.world.RoverAttributes(id); err != nil {
 		response.Error = fmt.Sprintf("Error getting radar from rover: %s", err)
 
 	} else {

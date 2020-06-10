@@ -43,7 +43,7 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 	}
 }
 
-func TestAccountant_AssignGetRover(t *testing.T) {
+func TestAccountant_AssignGetData(t *testing.T) {
 	accountant := NewAccountant()
 	if len(accountant.Accounts) != 0 {
 		t.Error("New accountant created with non-zero account number")
@@ -55,16 +55,12 @@ func TestAccountant_AssignGetRover(t *testing.T) {
 		t.Error(err)
 	}
 
-	inst := uuid.New()
-
-	err = accountant.AssignRover(a.Name, inst)
+	err = accountant.AssignData(a.Name, "key", "value")
 	if err != nil {
-		t.Error("Failed to set rover for created account")
-	} else if accountant.Accounts[a.Name].Rover != inst {
-		t.Error("Rover for assigned account is incorrect")
-	} else if id, err := accountant.GetRover(a.Name); err != nil {
-		t.Error("Failed to get rover for account")
-	} else if id != inst {
-		t.Error("Fetched rover is incorrect for account")
+		t.Error("Failed to set data for created account")
+	} else if id, err := accountant.GetData(a.Name, "key"); err != nil {
+		t.Error("Failed to get data for account")
+	} else if id != "value" {
+		t.Error("Fetched data is incorrect for account")
 	}
 }
