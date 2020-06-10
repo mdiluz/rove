@@ -101,10 +101,12 @@ func InnerMain(command string) error {
 	// Handle all the commands
 	switch command {
 	case "status":
-		if response, err := server.Status(); err != nil {
+		response, err := server.Status()
+		switch {
+		case err != nil:
 			return err
 
-		} else {
+		default:
 			fmt.Printf("Ready: %t\n", response.Ready)
 			fmt.Printf("Version: %s\n", response.Version)
 			fmt.Printf("Tick: %d\n", response.Tick)
@@ -115,13 +117,15 @@ func InnerMain(command string) error {
 		d := rove.RegisterData{
 			Name: *name,
 		}
-		if response, err := server.Register(d); err != nil {
+		response, err := server.Register(d)
+		switch {
+		case err != nil:
 			return err
 
-		} else if !response.Success {
+		case !response.Success:
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
-		} else {
+		default:
 			fmt.Printf("Registered account with id: %s\n", response.Id)
 			config.Accounts[config.Host] = response.Id
 		}
@@ -129,13 +133,17 @@ func InnerMain(command string) error {
 		d := rove.SpawnData{}
 		if err := verifyId(account); err != nil {
 			return err
-		} else if response, err := server.Spawn(account, d); err != nil {
+		}
+
+		response, err := server.Spawn(account, d)
+		switch {
+		case err != nil:
 			return err
 
-		} else if !response.Success {
+		case !response.Success:
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
-		} else {
+		default:
 			fmt.Printf("Spawned rover with attributes %+v\n", response.Attributes)
 		}
 
@@ -152,26 +160,34 @@ func InnerMain(command string) error {
 
 		if err := verifyId(account); err != nil {
 			return err
-		} else if response, err := server.Command(account, d); err != nil {
+		}
+
+		response, err := server.Command(account, d)
+		switch {
+		case err != nil:
 			return err
 
-		} else if !response.Success {
+		case !response.Success:
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
-		} else {
+		default:
 			fmt.Printf("Request succeeded\n")
 		}
 
 	case "radar":
 		if err := verifyId(account); err != nil {
 			return err
-		} else if response, err := server.Radar(account); err != nil {
+		}
+
+		response, err := server.Radar(account)
+		switch {
+		case err != nil:
 			return err
 
-		} else if !response.Success {
+		case !response.Success:
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
-		} else {
+		default:
 			// Print out the radar
 			game.PrintTiles(response.Tiles)
 		}
@@ -179,13 +195,17 @@ func InnerMain(command string) error {
 	case "rover":
 		if err := verifyId(account); err != nil {
 			return err
-		} else if response, err := server.Rover(account); err != nil {
+		}
+		response, err := server.Rover(account)
+
+		switch {
+		case err != nil:
 			return err
 
-		} else if !response.Success {
+		case !response.Success:
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
-		} else {
+		default:
 			fmt.Printf("attributes: %+v\n", response.Attributes)
 		}
 
@@ -198,10 +218,8 @@ func InnerMain(command string) error {
 	// Save out the persistent file
 	if b, err := json.MarshalIndent(config, "", "\t"); err != nil {
 		return fmt.Errorf("failed to marshal data error: %s", err)
-	} else {
-		if err := ioutil.WriteFile(*data, b, os.ModePerm); err != nil {
-			return fmt.Errorf("failed to save file %s error: %s", *data, err)
-		}
+	} else if err := ioutil.WriteFile(*data, b, os.ModePerm); err != nil {
+		return fmt.Errorf("failed to save file %s error: %s", *data, err)
 	}
 
 	return nil

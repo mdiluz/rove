@@ -29,7 +29,7 @@ type Atlas struct {
 }
 
 // NewAtlas creates a new empty atlas
-func NewAtlas(size int, chunkSize int) Atlas {
+func NewAtlas(size, chunkSize int) Atlas {
 	if size%2 != 0 {
 		log.Fatal("atlas size must always be even")
 	}
@@ -77,11 +77,11 @@ func (a *Atlas) SpawnWalls() error {
 
 		if err := a.SetTile(vector.Vector{X: i, Y: extent - 1}, TileWall); err != nil { // N
 			return err
-		} else if a.SetTile(vector.Vector{X: extent - 1, Y: i}, TileWall); err != nil { // E
+		} else if err := a.SetTile(vector.Vector{X: extent - 1, Y: i}, TileWall); err != nil { // E
 			return err
-		} else if a.SetTile(vector.Vector{X: i, Y: -extent}, TileWall); err != nil { // S
+		} else if err := a.SetTile(vector.Vector{X: i, Y: -extent}, TileWall); err != nil { // S
 			return err
-		} else if a.SetTile(vector.Vector{X: -extent, Y: i}, TileWall); err != nil { // W
+		} else if err := a.SetTile(vector.Vector{X: -extent, Y: i}, TileWall); err != nil { // W
 			return err
 		}
 	}
@@ -155,7 +155,7 @@ func (a *Atlas) ChunkOrigin(chunk int) vector.Vector {
 }
 
 // GetWorldExtent gets the min and max valid coordinates of world
-func (a *Atlas) GetWorldExtents() (min vector.Vector, max vector.Vector) {
+func (a *Atlas) GetWorldExtents() (min, max vector.Vector) {
 	min = vector.Vector{
 		X: -(a.Size / 2) * a.ChunkSize,
 		Y: -(a.Size / 2) * a.ChunkSize,

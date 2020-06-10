@@ -3,7 +3,6 @@ package game
 import (
 	"testing"
 
-	"github.com/mdiluz/rove/pkg/bearing"
 	"github.com/mdiluz/rove/pkg/vector"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,10 +22,9 @@ func TestCommand_Move(t *testing.T) {
 	err = world.WarpRover(a, pos)
 	assert.NoError(t, err, "Failed to set position for rover")
 
-	bearing := bearing.North
 	duration := 1
 	// Try the move command
-	moveCommand := Command{Command: CommandMove, Bearing: bearing.String(), Duration: duration}
+	moveCommand := Command{Command: CommandMove, Bearing: "N", Duration: duration}
 	assert.NoError(t, world.Enqueue(a, moveCommand), "Failed to execute move command")
 
 	// Tick the world

@@ -36,7 +36,7 @@ type World struct {
 }
 
 // NewWorld creates a new world object
-func NewWorld(size int, chunkSize int) *World {
+func NewWorld(size, chunkSize int) *World {
 	return &World{
 		Rovers:       make(map[uuid.UUID]Rover),
 		CommandQueue: make(map[uuid.UUID]CommandStream),
@@ -183,7 +183,7 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 }
 
 // SetPosition sets an rovers position
-func (w *World) MoveRover(id uuid.UUID, bearing bearing.Bearing) (RoverAttributes, error) {
+func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (RoverAttributes, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -192,7 +192,7 @@ func (w *World) MoveRover(id uuid.UUID, bearing bearing.Bearing) (RoverAttribute
 		distance := i.Attributes.Speed
 
 		// Calculate the full movement based on the bearing
-		move := bearing.Vector().Multiplied(distance)
+		move := b.Vector().Multiplied(distance)
 
 		// Try the new move position
 		newPos := i.Attributes.Pos.Added(move)

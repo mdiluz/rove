@@ -13,12 +13,12 @@ type Server string
 
 // GET performs a GET request
 func (s Server) GET(path string, out interface{}) error {
-	url := url.URL{
+	u := url.URL{
 		Scheme: "http",
 		Host:   string(s),
 		Path:   path,
 	}
-	if resp, err := http.Get(url.String()); err != nil {
+	if resp, err := http.Get(u.String()); err != nil {
 		return err
 
 	} else if resp.StatusCode != http.StatusOK {
@@ -30,8 +30,8 @@ func (s Server) GET(path string, out interface{}) error {
 }
 
 // POST performs a POST request
-func (s Server) POST(path string, in interface{}, out interface{}) error {
-	url := url.URL{
+func (s Server) POST(path string, in, out interface{}) error {
+	u := url.URL{
 		Scheme: "http",
 		Host:   string(s),
 		Path:   path,
@@ -45,7 +45,7 @@ func (s Server) POST(path string, in interface{}, out interface{}) error {
 	}
 
 	// Set up the request
-	req, err := http.NewRequest("POST", url.String(), bytes.NewReader(marshalled))
+	req, err := http.NewRequest("POST", u.String(), bytes.NewReader(marshalled))
 	if err != nil {
 		return err
 	}

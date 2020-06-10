@@ -25,7 +25,7 @@ func Pmod(x, d int) int {
 }
 
 // Max returns the highest int
-func Max(x int, y int) int {
+func Max(x, y int) int {
 	if x < y {
 		return y
 	}
@@ -33,7 +33,7 @@ func Max(x int, y int) int {
 }
 
 // Min returns the lowest int
-func Min(x int, y int) int {
+func Min(x, y int) int {
 	if x > y {
 		return y
 	}

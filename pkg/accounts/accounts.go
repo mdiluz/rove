@@ -59,7 +59,7 @@ func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 }
 
 // AssignRover assigns rover ownership of an rover to an account
-func (a *Accountant) AssignRover(account uuid.UUID, rover uuid.UUID) error {
+func (a *Accountant) AssignRover(account, rover uuid.UUID) error {
 
 	// Find the account matching the ID
 	if this, ok := a.Accounts[account]; ok {

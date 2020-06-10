@@ -12,13 +12,13 @@ import (
 var dataPath = os.TempDir()
 
 // SetPath sets the persistent path for the data storage
-func SetPath(path string) error {
-	if info, err := os.Stat(path); err != nil {
+func SetPath(p string) error {
+	if info, err := os.Stat(p); err != nil {
 		return err
 	} else if !info.IsDir() {
 		return fmt.Errorf("path for persistence is not directory")
 	}
-	dataPath = path
+	dataPath = p
 	return nil
 }
 
@@ -29,40 +29,40 @@ func jsonPath(name string) string {
 
 // Save will serialise the interface into a json file
 func Save(name string, data interface{}) error {
-	path := jsonPath(name)
+	p := jsonPath(name)
 	if b, err := json.MarshalIndent(data, "", "  "); err != nil {
 		return err
 	} else {
-		if err := ioutil.WriteFile(jsonPath(name), b, os.ModePerm); err != nil {
+		if err := ioutil.WriteFile(p, b, os.ModePerm); err != nil {
 			return err
 		}
 	}
 
-	fmt.Printf("Saved %s\n", path)
+	fmt.Printf("Saved %s\n", p)
 	return nil
 }
 
 // Load will load the interface from the json file
 func Load(name string, data interface{}) error {
-	path := jsonPath(name)
+	p := jsonPath(name)
 	// Don't load anything if the file doesn't exist
-	_, err := os.Stat(path)
+	_, err := os.Stat(p)
 	if os.IsNotExist(err) {
-		fmt.Printf("File %s didn't exist, loading with fresh data\n", path)
+		fmt.Printf("File %s didn't exist, loading with fresh data\n", p)
 		return nil
 	}
 
 	// Read and unmarshal the json
-	if b, err := ioutil.ReadFile(path); err != nil {
+	if b, err := ioutil.ReadFile(p); err != nil {
 		return err
 	} else if len(b) == 0 {
-		fmt.Printf("File %s was empty, loading with fresh data\n", path)
+		fmt.Printf("File %s was empty, loading with fresh data\n", p)
 		return nil
 	} else if err := json.Unmarshal(b, data); err != nil {
-		return fmt.Errorf("failed to load file %s error: %s", path, err)
+		return fmt.Errorf("failed to load file %s error: %s", p, err)
 	}
 
-	fmt.Printf("Loaded %s\n", path)
+	fmt.Printf("Loaded %s\n", p)
 	return nil
 }
 
