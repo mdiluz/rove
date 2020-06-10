@@ -59,31 +59,6 @@ func TestHandleRegister(t *testing.T) {
 	}
 }
 
-func TestHandleSpawn(t *testing.T) {
-	s := NewServer()
-	s.Initialise(true)
-	a, err := s.accountant.RegisterAccount("test")
-	assert.NoError(t, err, "Error registering account")
-	data := rove.SpawnData{}
-
-	b, err := json.Marshal(data)
-	assert.NoError(t, err, "Error marshalling data")
-
-	request, _ := http.NewRequest(http.MethodPost, path.Join("/", a.Id.String(), "/spawn"), bytes.NewReader(b))
-	response := httptest.NewRecorder()
-
-	s.router.ServeHTTP(response, request)
-	assert.Equal(t, http.StatusOK, response.Code)
-
-	var status rove.SpawnResponse
-	json.NewDecoder(response.Body).Decode(&status)
-	assert.Equal(t, http.StatusOK, response.Code)
-
-	if status.Success != true {
-		t.Errorf("got false for /spawn: %s", status.Error)
-	}
-}
-
 func TestHandleCommand(t *testing.T) {
 	s := NewServer()
 	s.Initialise(false) // Leave the world empty with no obstacles

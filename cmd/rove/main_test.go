@@ -31,7 +31,6 @@ func Test_InnerMain(t *testing.T) {
 	assert.Error(t, InnerMain("register"))
 
 	// These methods should fail without an account
-	assert.Error(t, InnerMain("spawn"))
 	assert.Error(t, InnerMain("move"))
 	assert.Error(t, InnerMain("radar"))
 	assert.Error(t, InnerMain("rover"))
@@ -41,14 +40,6 @@ func Test_InnerMain(t *testing.T) {
 
 	// Perform the register
 	assert.NoError(t, InnerMain("register"))
-
-	// We've not spawned a rover yet so these should fail
-	assert.Error(t, InnerMain("move"))
-	assert.Error(t, InnerMain("radar"))
-	assert.Error(t, InnerMain("rover"))
-
-	// Spawn a rover
-	assert.NoError(t, InnerMain("spawn"))
 
 	// These should now work
 	assert.NoError(t, InnerMain("radar"))

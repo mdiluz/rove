@@ -47,30 +47,6 @@ type RegisterResponse struct {
 }
 
 // ==============================
-// API: /{account}/spawn method: POST
-
-// Spawn spawns the rover for an account
-// Responds with the position of said rover
-func (s Server) Spawn(account string, d SpawnData) (r SpawnResponse, err error) {
-	err = s.Post(path.Join(account, "spawn"), d, &r)
-	return
-}
-
-// SpawnData is the data to be sent for the spawn command
-type SpawnData struct {
-	// Empty for now, reserved for data
-}
-
-// SpawnResponse is the data to respond with on a spawn command
-type SpawnResponse struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error,omitempty"`
-
-	// The attributes of the spawned entity
-	Attributes game.RoverAttributes `json:"attributes"`
-}
-
-// ==============================
 // API: /{account}/command method: POST
 
 // Command issues a set of commands from the user

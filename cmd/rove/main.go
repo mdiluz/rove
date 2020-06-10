@@ -21,7 +21,6 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "\nCommands:")
 	fmt.Fprintln(os.Stderr, "\tstatus  \tprints the server status")
 	fmt.Fprintln(os.Stderr, "\tregister\tregisters an account and stores it (use with -name)")
-	fmt.Fprintln(os.Stderr, "\tspawn   \tspawns a rover for the current account")
 	fmt.Fprintln(os.Stderr, "\tmove    \tissues move command to rover")
 	fmt.Fprintln(os.Stderr, "\tradar   \tgathers radar data for the current rover")
 	fmt.Fprintln(os.Stderr, "\trover   \tgets data for current rover")
@@ -128,23 +127,6 @@ func InnerMain(command string) error {
 		default:
 			fmt.Printf("Registered account with id: %s\n", response.Id)
 			config.Accounts[config.Host] = response.Id
-		}
-	case "spawn":
-		d := rove.SpawnData{}
-		if err := verifyId(account); err != nil {
-			return err
-		}
-
-		response, err := server.Spawn(account, d)
-		switch {
-		case err != nil:
-			return err
-
-		case !response.Success:
-			return fmt.Errorf("Server returned failure: %s", response.Error)
-
-		default:
-			fmt.Printf("Spawned rover with attributes %+v\n", response.Attributes)
 		}
 
 	case "move":

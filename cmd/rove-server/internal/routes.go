@@ -34,11 +34,6 @@ var Routes = []Route{
 		handler: HandleRegister,
 	},
 	{
-		path:    "/{account}/spawn",
-		method:  http.MethodPost,
-		handler: HandleSpawn,
-	},
-	{
 		path:    "/{account}/command",
 		method:  http.MethodPost,
 		handler: HandleCommand,
@@ -92,8 +87,11 @@ func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Wri
 	} else if acc, err := s.accountant.RegisterAccount(data.Name); err != nil {
 		response.Error = err.Error()
 
+	} else if _, _, err := s.SpawnRoverForAccount(acc.Id); err != nil {
+		response.Error = err.Error()
+
 	} else if err := s.SaveAll(); err != nil {
-		response.Error = fmt.Sprintf("Internal server error when saving accounts: %s", err)
+		response.Error = fmt.Sprintf("Internal server error when saving: %s", err)
 
 	} else {
 		// Save out the new accounts
@@ -102,41 +100,6 @@ func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Wri
 	}
 
 	fmt.Printf("register response:%+v\n", response)
-	return response, nil
-}
-
-// HandleSpawn will spawn the player entity for the associated account
-func HandleSpawn(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
-	var response = rove.SpawnResponse{
-		Success: false,
-	}
-
-	id := vars["account"]
-
-	// Decode the spawn info, verify it and spawn the rover for this account
-	var data rove.SpawnData
-	if err := json.NewDecoder(b).Decode(&data); err != nil {
-		fmt.Printf("Failed to decode json: %s\n", err)
-		response.Error = err.Error()
-
-	} else if len(id) == 0 {
-		response.Error = "No account ID provided"
-
-	} else if id, err := uuid.Parse(id); err != nil {
-		response.Error = "Provided account ID was invalid"
-
-	} else if attribs, _, err := s.SpawnRoverForAccount(id); err != nil {
-		response.Error = err.Error()
-
-	} else if err := s.SaveWorld(); err != nil {
-		response.Error = fmt.Sprintf("Internal server error when saving world: %s", err)
-
-	} else {
-		response.Success = true
-		response.Attributes = attribs
-	}
-
-	fmt.Printf("spawn response \taccount:%s\tresponse:%+v\n", id, response)
 	return response, nil
 }
 
