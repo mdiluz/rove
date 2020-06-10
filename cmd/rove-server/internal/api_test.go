@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
-	"github.com/mdiluz/rove/pkg/server"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,7 +15,7 @@ import (
 var serv rove.Server
 
 func TestMain(m *testing.M) {
-	s := server.NewServer()
+	s := NewServer()
 	if err := s.Initialise(true); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

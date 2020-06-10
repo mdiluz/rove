@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/mdiluz/rove/cmd/rove-server/internal"
 	"github.com/mdiluz/rove/pkg/persistence"
-	"github.com/mdiluz/rove/pkg/server"
 	"github.com/mdiluz/rove/pkg/version"
 )
 
@@ -34,10 +34,10 @@ func InnerMain() {
 	persistence.SetPath(*data)
 
 	// Create the server data
-	s := server.NewServer(
-		server.OptionAddress(*address),
-		server.OptionPersistentData(),
-		server.OptionTick(*tick))
+	s := internal.NewServer(
+		internal.OptionAddress(*address),
+		internal.OptionPersistentData(),
+		internal.OptionTick(*tick))
 
 	// Initialise the server
 	if err := s.Initialise(true); err != nil {

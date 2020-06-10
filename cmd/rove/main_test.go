@@ -1,40 +1,18 @@
+// +build integration
+
 package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"path"
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/mdiluz/rove/pkg/server"
 	"github.com/stretchr/testify/assert"
 )
 
-var address string
-
-func TestMain(m *testing.M) {
-	s := server.NewServer()
-	if err := s.Initialise(true); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	address = s.Addr()
-
-	go s.Run()
-
-	fmt.Printf("Test server hosted on %s", address)
-	code := m.Run()
-
-	if err := s.StopAndClose(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	os.Exit(code)
-}
+var address = "localhost:80"
 
 func Test_InnerMain(t *testing.T) {
 	// Set up the flags to act locally and use a temporary file

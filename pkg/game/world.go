@@ -294,8 +294,11 @@ func (w *World) Enqueue(rover uuid.UUID, commands ...Command) error {
 	defer w.cmdMutex.Unlock()
 
 	// Append the commands to the incoming set
-	cmds := w.Incoming[rover]
-	w.Incoming[rover] = append(cmds, commands...)
+	if cmds, ok := w.Incoming[rover]; ok {
+		w.Incoming[rover] = append(cmds, commands...)
+	} else {
+		w.Incoming[rover] = commands
+	}
 
 	return nil
 }
