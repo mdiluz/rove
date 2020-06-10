@@ -11,8 +11,8 @@ import (
 // Server is a simple wrapper to a server path
 type Server string
 
-// GET performs a GET request
-func (s Server) GET(path string, out interface{}) error {
+// Get performs a Get request
+func (s Server) Get(path string, out interface{}) error {
 	u := url.URL{
 		Scheme: "http",
 		Host:   string(s),
@@ -29,8 +29,8 @@ func (s Server) GET(path string, out interface{}) error {
 	}
 }
 
-// POST performs a POST request
-func (s Server) POST(path string, in, out interface{}) error {
+// Post performs a Post request
+func (s Server) Post(path string, in, out interface{}) error {
 	u := url.URL{
 		Scheme: "http",
 		Host:   string(s),

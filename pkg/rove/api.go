@@ -11,7 +11,7 @@ import (
 
 // Status queries the status of the server
 func (s Server) Status() (r StatusResponse, err error) {
-	s.GET("status", &r)
+	s.Get("status", &r)
 	return
 }
 
@@ -29,7 +29,7 @@ type StatusResponse struct {
 // Register registers a user by name
 // Responds with a unique ID for that user to be used in future requests
 func (s Server) Register(d RegisterData) (r RegisterResponse, err error) {
-	err = s.POST("register", d, &r)
+	err = s.Post("register", d, &r)
 	return
 }
 
@@ -52,7 +52,7 @@ type RegisterResponse struct {
 // Spawn spawns the rover for an account
 // Responds with the position of said rover
 func (s Server) Spawn(account string, d SpawnData) (r SpawnResponse, err error) {
-	err = s.POST(path.Join(account, "spawn"), d, &r)
+	err = s.Post(path.Join(account, "spawn"), d, &r)
 	return
 }
 
@@ -75,7 +75,7 @@ type SpawnResponse struct {
 
 // Command issues a set of commands from the user
 func (s Server) Command(account string, d CommandData) (r CommandResponse, err error) {
-	err = s.POST(path.Join(account, "command"), d, &r)
+	err = s.Post(path.Join(account, "command"), d, &r)
 	return
 }
 
@@ -95,7 +95,7 @@ type CommandResponse struct {
 
 // Radar queries the current radar for the user
 func (s Server) Radar(account string) (r RadarResponse, err error) {
-	err = s.GET(path.Join(account, "radar"), &r)
+	err = s.Get(path.Join(account, "radar"), &r)
 	return
 }
 
@@ -114,7 +114,7 @@ type RadarResponse struct {
 
 // Rover queries the current state of the rover
 func (s Server) Rover(account string) (r RoverResponse, err error) {
-	err = s.GET(path.Join(account, "rover"), &r)
+	err = s.Get(path.Join(account, "rover"), &r)
 	return
 }
 
