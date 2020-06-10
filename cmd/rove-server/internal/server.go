@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -16,7 +17,10 @@ import (
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/persistence"
 	"github.com/robfig/cron"
+	"google.golang.org/grpc"
 )
+
+var accountantAddress = flag.String("accountant", "", "address of the accountant to connect to")
 
 const (
 	// PersistentData will allow the server to load and save it's state
@@ -30,8 +34,11 @@ const (
 type Server struct {
 
 	// Internal state
-	accountant *accounts.Accountant
-	world      *game.World
+	world *game.World
+
+	// Accountant server
+	accountant accounts.AccountantClient
+	clientConn *grpc.ClientConn
 
 	// HTTP server
 	listener net.Listener
@@ -96,9 +103,6 @@ func NewServer(opts ...ServerOption) *Server {
 	// Set up the server object
 	s.server = &http.Server{Addr: s.address, Handler: s.router}
 
-	// Create the accountant
-	s.accountant = accounts.NewAccountant()
-
 	// Start small, we can grow the world later
 	s.world = game.NewWorld(4, 8)
 
@@ -111,13 +115,21 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 	// Add to our sync
 	s.sync.Add(1)
 
+	// Connect to the accountant
+	fmt.Printf("Dialing accountant on %s\n", *accountantAddress)
+	clientConn, err := grpc.Dial(*accountantAddress, grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	s.accountant = accounts.NewAccountantClient(clientConn)
+
 	// Spawn a border on the default world
 	if err := s.world.SpawnWorld(fillWorld); err != nil {
 		return err
 	}
 
-	// Load the accounts if requested
-	if err := s.LoadAll(); err != nil {
+	// Load the world file
+	if err := s.LoadWorld(); err != nil {
 		return err
 	}
 
@@ -183,6 +195,11 @@ func (s *Server) Stop() error {
 		return err
 	}
 
+	// Close the accountant connection
+	if err := s.clientConn.Close(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -192,7 +209,7 @@ func (s *Server) Close() error {
 	s.sync.Wait()
 
 	// Save and return
-	return s.SaveAll()
+	return s.SaveWorld()
 }
 
 // Close waits until the server is finished and closes up shop
@@ -218,36 +235,12 @@ func (s *Server) SaveWorld() error {
 	return nil
 }
 
-// SaveAccounts will save out the accounts file
-func (s *Server) SaveAccounts() error {
-	if s.persistence == PersistentData {
-		if err := persistence.SaveAll("accounts", s.accountant); err != nil {
-			return fmt.Errorf("failed to save out persistent data: %s", err)
-		}
-	}
-	return nil
-}
-
-// SaveAll will save out all server files
-func (s *Server) SaveAll() error {
-	// Save the accounts if requested
-	if s.persistence == PersistentData {
-		s.world.RLock()
-		defer s.world.RUnlock()
-
-		if err := persistence.SaveAll("accounts", s.accountant, "world", s.world); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// LoadAll will load all persistent data
-func (s *Server) LoadAll() error {
+// LoadWorld will load all persistent data
+func (s *Server) LoadWorld() error {
 	if s.persistence == PersistentData {
 		s.world.Lock()
 		defer s.world.Unlock()
-		if err := persistence.LoadAll("accounts", &s.accountant, "world", &s.world); err != nil {
+		if err := persistence.LoadAll("world", &s.world); err != nil {
 			return err
 		}
 	}
@@ -289,7 +282,11 @@ func (s *Server) SpawnRoverForAccount(account string) (game.RoverAttributes, uui
 		return game.RoverAttributes{}, uuid.UUID{}, fmt.Errorf("No attributes found for created rover: %s", err)
 
 	} else {
-		if err := s.accountant.AssignData(account, "rover", inst.String()); err != nil {
+		keyval := accounts.DataKeyValue{Account: account, Key: "rover", Value: inst.String()}
+		resp, err := s.accountant.AssignValue(context.Background(), &keyval)
+		if err != nil || !resp.Success {
+			fmt.Printf("Failed to assign rover to account, %s, %s", err, resp.Error)
+
 			// Try and clear up the rover
 			if err := s.world.DestroyRover(inst); err != nil {
 				fmt.Printf("Failed to destroy rover after failed rover assign: %s", err)

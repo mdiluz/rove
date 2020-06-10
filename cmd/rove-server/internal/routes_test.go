@@ -2,12 +2,14 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"path"
 	"testing"
 
+	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/vector"
@@ -62,11 +64,15 @@ func TestHandleRegister(t *testing.T) {
 func TestHandleCommand(t *testing.T) {
 	s := NewServer()
 	s.Initialise(false) // Leave the world empty with no obstacles
-	a, err := s.accountant.RegisterAccount("test")
+	reg := accounts.RegisterInfo{Name: "test"}
+	acc, err := s.accountant.Register(context.Background(), &reg)
+	assert.NoError(t, err)
+	assert.True(t, acc.Success)
+
 	assert.NoError(t, err, "Error registering account")
 
 	// Spawn the rover rover for the account
-	_, inst, err := s.SpawnRoverForAccount(a.Name)
+	_, inst, err := s.SpawnRoverForAccount("test")
 	assert.NoError(t, s.world.WarpRover(inst, vector.Vector{}))
 
 	attribs, err := s.world.RoverAttributes(inst)
@@ -85,7 +91,7 @@ func TestHandleCommand(t *testing.T) {
 	b, err := json.Marshal(data)
 	assert.NoError(t, err, "Error marshalling data")
 
-	request, _ := http.NewRequest(http.MethodPost, path.Join("/", a.Name, "/command"), bytes.NewReader(b))
+	request, _ := http.NewRequest(http.MethodPost, path.Join("/", "test", "/command"), bytes.NewReader(b))
 	response := httptest.NewRecorder()
 
 	s.router.ServeHTTP(response, request)
@@ -114,11 +120,14 @@ func TestHandleCommand(t *testing.T) {
 func TestHandleRadar(t *testing.T) {
 	s := NewServer()
 	s.Initialise(false) // Spawn a clean world
-	a, err := s.accountant.RegisterAccount("test")
+	reg := accounts.RegisterInfo{Name: "test"}
+	acc, err := s.accountant.Register(context.Background(), &reg)
+	assert.NoError(t, err)
+	assert.True(t, acc.Success)
 	assert.NoError(t, err, "Error registering account")
 
 	// Spawn the rover rover for the account
-	attrib, id, err := s.SpawnRoverForAccount(a.Name)
+	attrib, id, err := s.SpawnRoverForAccount("test")
 	assert.NoError(t, err)
 
 	// Warp this rover to 0,0
@@ -134,7 +143,7 @@ func TestHandleRadar(t *testing.T) {
 	assert.NoError(t, s.world.Atlas.SetTile(rockPos, game.TileRock))
 	assert.NoError(t, s.world.Atlas.SetTile(emptyPos, game.TileEmpty))
 
-	request, _ := http.NewRequest(http.MethodGet, path.Join("/", a.Name, "/radar"), nil)
+	request, _ := http.NewRequest(http.MethodGet, path.Join("/", "test", "/radar"), nil)
 	response := httptest.NewRecorder()
 
 	s.router.ServeHTTP(response, request)
@@ -168,14 +177,16 @@ func TestHandleRadar(t *testing.T) {
 func TestHandleRover(t *testing.T) {
 	s := NewServer()
 	s.Initialise(true)
-	a, err := s.accountant.RegisterAccount("test")
-	assert.NoError(t, err, "Error registering account")
+	reg := accounts.RegisterInfo{Name: "test"}
+	acc, err := s.accountant.Register(context.Background(), &reg)
+	assert.NoError(t, err)
+	assert.True(t, acc.Success)
 
 	// Spawn one rover for the account
-	attribs, _, err := s.SpawnRoverForAccount(a.Name)
+	attribs, _, err := s.SpawnRoverForAccount("test")
 	assert.NoError(t, err)
 
-	request, _ := http.NewRequest(http.MethodGet, path.Join("/", a.Name, "/rover"), nil)
+	request, _ := http.NewRequest(http.MethodGet, path.Join("/", "test", "/rover"), nil)
 	response := httptest.NewRecorder()
 
 	s.router.ServeHTTP(response, request)

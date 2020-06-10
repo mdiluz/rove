@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+option go_package = "github.com/mdiluz/rove/pkg/accounts";
+
+package accounts;
+
+service Accountant {
+    rpc Register(RegisterInfo) returns (RegisterResponse) {}
+    rpc AssignValue(DataKeyValue) returns (Response) {}
+    rpc GetValue(DataKey) returns (DataResponse) {}
+}
+
+message RegisterInfo {
+    string name = 1;
+}
+
+message RegisterResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+message DataKeyValue {
+    string account = 1;
+    string key = 2;
+    string value = 3;
+}
+
+message Response {
+    bool success = 1;
+    string error = 2;
+}
+
+message DataKey {
+    string account = 1;
+    string key = 2;
+}
+
+message DataResponse {
+    bool success = 1;
+    string error = 2;
+
+    string value = 3;
+}

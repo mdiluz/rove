@@ -1,4 +1,4 @@
-package accounts
+package internal
 
 import (
 	"testing"
@@ -58,7 +58,7 @@ func TestAccountant_AssignGetData(t *testing.T) {
 	err = accountant.AssignData(a.Name, "key", "value")
 	if err != nil {
 		t.Error("Failed to set data for created account")
-	} else if id, err := accountant.GetData(a.Name, "key"); err != nil {
+	} else if id, err := accountant.GetValue(a.Name, "key"); err != nil {
 		t.Error("Failed to get data for account")
 	} else if id != "value" {
 		t.Error("Fetched data is incorrect for account")

@@ -113,6 +113,9 @@ func InnerMain(command string) error {
 		}
 
 	case "register":
+		if len(*name) == 0 {
+			return fmt.Errorf("must set name with -name")
+		}
 		d := rove.RegisterData{
 			Name: *name,
 		}
@@ -125,8 +128,8 @@ func InnerMain(command string) error {
 			return fmt.Errorf("Server returned failure: %s", response.Error)
 
 		default:
-			fmt.Printf("Registered account with id: %s\n", d.Name)
-			config.Accounts[config.Host] = d.Name
+			fmt.Printf("Registered account with id: %s\n", *name)
+			config.Accounts[config.Host] = *name
 		}
 
 	case "move":

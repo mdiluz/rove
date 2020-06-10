@@ -1,4 +1,4 @@
-package accounts
+package internal
 
 import (
 	"fmt"
@@ -36,6 +36,7 @@ func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 
 	// Set the account name
 	acc.Name = name
+	acc.Data = make(map[string]string)
 
 	// Verify this acount isn't already registered
 	for _, a := range a.Accounts {
@@ -65,7 +66,7 @@ func (a *Accountant) AssignData(account string, key string, value string) error 
 }
 
 // GetRover gets the rover rover for the account
-func (a *Accountant) GetData(account string, key string) (string, error) {
+func (a *Accountant) GetValue(account string, key string) (string, error) {
 	// Find the account matching the ID
 	if this, ok := a.Accounts[account]; !ok {
 		return "", fmt.Errorf("no account found for id: %s", account)

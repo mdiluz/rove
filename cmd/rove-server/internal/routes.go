@@ -1,12 +1,14 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
 )
@@ -84,14 +86,19 @@ func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Wri
 	} else if len(data.Name) == 0 {
 		response.Error = "Cannot register empty name"
 
-	} else if acc, err := s.accountant.RegisterAccount(data.Name); err != nil {
+	}
+	reg := accounts.RegisterInfo{Name: data.Name}
+	if acc, err := s.accountant.Register(context.Background(), &reg); err != nil {
 		response.Error = err.Error()
 
-	} else if _, _, err := s.SpawnRoverForAccount(acc.Name); err != nil {
+	} else if !acc.Success {
+		response.Error = acc.Error
+
+	} else if _, _, err := s.SpawnRoverForAccount(data.Name); err != nil {
 		response.Error = err.Error()
 
-	} else if err := s.SaveAll(); err != nil {
-		response.Error = fmt.Sprintf("Internal server error when saving: %s", err)
+	} else if err := s.SaveWorld(); err != nil {
+		response.Error = fmt.Sprintf("Internal server error when saving world: %s", err)
 
 	} else {
 		// Save out the new accounts
@@ -116,13 +123,19 @@ func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writ
 		fmt.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
 
-	} else if len(id) == 0 {
+	}
+
+	key := accounts.DataKey{Account: id, Key: "rover"}
+	if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if inst, err := s.accountant.GetData(id, "rover"); err != nil {
+	} else if resp, err := s.accountant.GetValue(context.Background(), &key); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
-	} else if id, err := uuid.Parse(inst); err != nil {
+	} else if !resp.Success {
+		response.Error = resp.Error
+
+	} else if id, err := uuid.Parse(resp.Value); err != nil {
 		response.Error = fmt.Sprintf("Account had invalid rover id: %s", err)
 
 	} else if err := s.world.Enqueue(id, data.Commands...); err != nil {
@@ -143,13 +156,17 @@ func HandleRadar(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 	}
 
 	id := vars["account"]
+	key := accounts.DataKey{Account: id, Key: "rover"}
 	if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if inst, err := s.accountant.GetData(id, "rover"); err != nil {
+	} else if resp, err := s.accountant.GetValue(context.Background(), &key); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
-	} else if id, err := uuid.Parse(inst); err != nil {
+	} else if !resp.Success {
+		response.Error = resp.Error
+
+	} else if id, err := uuid.Parse(resp.Value); err != nil {
 		response.Error = fmt.Sprintf("Account had invalid rover id: %s", err)
 
 	} else if attrib, err := s.world.RoverAttributes(id); err != nil {
@@ -175,13 +192,17 @@ func HandleRover(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 	}
 
 	id := vars["account"]
+	key := accounts.DataKey{Account: id, Key: "rover"}
 	if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if inst, err := s.accountant.GetData(id, "rover"); err != nil {
+	} else if resp, err := s.accountant.GetValue(context.Background(), &key); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
-	} else if id, err := uuid.Parse(inst); err != nil {
+	} else if !resp.Success {
+		response.Error = resp.Error
+
+	} else if id, err := uuid.Parse(resp.Value); err != nil {
 		response.Error = fmt.Sprintf("Account had invalid rover id: %s", err)
 
 	} else if attribs, err := s.world.RoverAttributes(id); err != nil {

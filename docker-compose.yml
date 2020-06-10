@@ -11,6 +11,17 @@ services:
     image: rove-server:latest
     ports:
       - "80:80"
-    command: ./rove-server --address ":80" --data=/mnt/rove-server ${ROVE_ARGS}
+    command: ./rove-server --address ":80" --data=/mnt/rove-server ${ROVE_ARGS} --accountant "rove-accountant:8081"
+    volumes:
+      - persistent-data:/mnt/rove-server:rw
+
+  rove-accountant:
+    build:
+      context: .
+      dockerfile: cmd/rove-accountant/Dockerfile
+    image: rove-accountant:latest
+    ports:
+      - "8081:8081"
+    command: ./rove-accountant --address ":8081" --data=/mnt/rove-server
     volumes:
       - persistent-data:/mnt/rove-server:rw

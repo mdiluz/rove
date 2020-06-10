@@ -8,6 +8,9 @@ install:
 	go mod download
 	go install -ldflags="-X 'github.com/mdiluz/rove/pkg/version.Version=${VERSION}'" ./...
 
+gen:
+	protoc --proto_path pkg/accounts --go_out=plugins=grpc:pkg/accounts/ --go_opt=paths=source_relative  pkg/accounts/accounts.proto
+
 test:
 	go mod download
 	go build ./...
