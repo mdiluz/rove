@@ -17,7 +17,6 @@ For a proof of concept we'll implement a very small subset of the final features
 
 * Rover inventory
 * Rover internals
-* Basic time mechanics
 * Basic survival mechanics
 
 ### Key missing features
