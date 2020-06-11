@@ -90,7 +90,7 @@ func main() {
 	persistence.SetPath(data)
 
 	// Initialise and load the accountant
-	accountant := &internal.Accountant{}
+	accountant := internal.NewAccountant()
 	if err := persistence.Load("accounts", accountant); err != nil {
 		log.Fatalf("failed to load account data: %s", err)
 	}
