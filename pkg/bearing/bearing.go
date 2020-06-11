@@ -56,7 +56,7 @@ func FromString(s string) (Bearing, error) {
 			return Bearing(i), nil
 		}
 	}
-	return -1, fmt.Errorf("Unknown bearing: %s", s)
+	return -1, fmt.Errorf("unknown bearing: %s", s)
 }
 
 var bearingVectors = []vector.Vector{

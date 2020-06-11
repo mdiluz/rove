@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 )
@@ -38,7 +39,7 @@ func Save(name string, data interface{}) error {
 		}
 	}
 
-	fmt.Printf("Saved %s\n", p)
+	log.Printf("Saved %s\n", p)
 	return nil
 }
 
@@ -48,7 +49,7 @@ func Load(name string, data interface{}) error {
 	// Don't load anything if the file doesn't exist
 	_, err := os.Stat(p)
 	if os.IsNotExist(err) {
-		fmt.Printf("File %s didn't exist, loading with fresh data\n", p)
+		log.Printf("File %s didn't exist, loading with fresh data\n", p)
 		return nil
 	}
 
@@ -56,13 +57,13 @@ func Load(name string, data interface{}) error {
 	if b, err := ioutil.ReadFile(p); err != nil {
 		return err
 	} else if len(b) == 0 {
-		fmt.Printf("File %s was empty, loading with fresh data\n", p)
+		log.Printf("File %s was empty, loading with fresh data\n", p)
 		return nil
 	} else if err := json.Unmarshal(b, data); err != nil {
 		return fmt.Errorf("failed to load file %s error: %s", p, err)
 	}
 
-	fmt.Printf("Loaded %s\n", p)
+	log.Printf("Loaded %s\n", p)
 	return nil
 }
 
@@ -76,7 +77,7 @@ func doAll(f saveLoadFunc, args ...interface{}) error {
 			var ok bool
 			name, ok = a.(string)
 			if !ok {
-				return fmt.Errorf("Incorrect args")
+				return fmt.Errorf("incorrect args")
 			}
 		} else {
 			if err := f(name, a); err != nil {

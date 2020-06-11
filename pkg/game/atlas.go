@@ -174,7 +174,7 @@ func (a *Atlas) Grow(size int) error {
 	}
 	delta := size - a.Size
 	if delta < 0 {
-		return fmt.Errorf("Cannot shrink an atlas")
+		return fmt.Errorf("cannot shrink an atlas")
 	} else if delta == 0 {
 		return nil
 	}

@@ -125,7 +125,7 @@ func InnerMain(command string) error {
 			return err
 
 		case !response.Success:
-			return fmt.Errorf("Server returned failure: %s", response.Error)
+			return fmt.Errorf("server returned failure: %s", response.Error)
 
 		default:
 			fmt.Printf("Registered account with id: %s\n", *name)
@@ -153,7 +153,7 @@ func InnerMain(command string) error {
 			return err
 
 		case !response.Success:
-			return fmt.Errorf("Server returned failure: %s", response.Error)
+			return fmt.Errorf("server returned failure: %s", response.Error)
 
 		default:
 			fmt.Printf("Request succeeded\n")
@@ -170,7 +170,7 @@ func InnerMain(command string) error {
 			return err
 
 		case !response.Success:
-			return fmt.Errorf("Server returned failure: %s", response.Error)
+			return fmt.Errorf("server returned failure: %s", response.Error)
 
 		default:
 			// Print out the radar
@@ -188,7 +188,7 @@ func InnerMain(command string) error {
 			return err
 
 		case !response.Success:
-			return fmt.Errorf("Server returned failure: %s", response.Error)
+			return fmt.Errorf("server returned failure: %s", response.Error)
 
 		default:
 			fmt.Printf("attributes: %+v\n", response.Attributes)

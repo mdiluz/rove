@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -82,7 +83,7 @@ func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Wri
 	var data rove.RegisterData
 	err := json.NewDecoder(b).Decode(&data)
 	if err != nil {
-		fmt.Printf("Failed to decode json: %s\n", err)
+		log.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
 
 	} else if len(data.Name) == 0 {
@@ -109,7 +110,7 @@ func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Wri
 		response.Success = true
 	}
 
-	fmt.Printf("register response:%+v\n", response)
+	log.Printf("register response:%+v\n", response)
 	return response, nil
 }
 
@@ -124,7 +125,7 @@ func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writ
 	// Decode the commands, verify them and the account, and execute the commands
 	var data rove.CommandData
 	if err := json.NewDecoder(b).Decode(&data); err != nil {
-		fmt.Printf("Failed to decode json: %s\n", err)
+		log.Printf("Failed to decode json: %s\n", err)
 		response.Error = err.Error()
 
 	}
@@ -151,7 +152,7 @@ func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writ
 		response.Success = true
 	}
 
-	fmt.Printf("command response \taccount:%s\tresponse:%+v\n", id, response)
+	log.Printf("command response \taccount:%s\tresponse:%+v\n", id, response)
 	return response, nil
 }
 
@@ -189,7 +190,7 @@ func HandleRadar(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 		response.Success = true
 	}
 
-	fmt.Printf("radar response \taccount:%s\tresponse:%+v\n", id, response)
+	log.Printf("radar response \taccount:%s\tresponse:%+v\n", id, response)
 	return response, nil
 }
 
@@ -223,6 +224,6 @@ func HandleRover(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 		response.Success = true
 	}
 
-	fmt.Printf("rover response \taccount:%s\tresponse:%+v\n", id, response)
+	log.Printf("rover response \taccount:%s\tresponse:%+v\n", id, response)
 	return response, nil
 }

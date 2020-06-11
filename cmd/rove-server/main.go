@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -32,11 +31,11 @@ func InnerMain() {
 
 	// Print the version if requested
 	if *ver {
-		fmt.Println(version.Version)
+		log.Println(version.Version)
 		return
 	}
 
-	fmt.Printf("Initialising version %s...\n", version.Version)
+	log.Printf("Initialising version %s...\n", version.Version)
 
 	// Set the persistence path
 	persistence.SetPath(data)
@@ -67,7 +66,7 @@ func InnerMain() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		fmt.Println("Quit requested, exiting...")
+		log.Println("Quit requested, exiting...")
 		if err := s.Stop(); err != nil {
 			panic(err)
 		}
@@ -82,7 +81,7 @@ func InnerMain() {
 	}
 
 	// Run the server
-	fmt.Printf("Serving HTTP on %s\n", s.Addr())
+	log.Printf("Serving HTTP on %s\n", s.Addr())
 	s.Run()
 
 	// Close the server

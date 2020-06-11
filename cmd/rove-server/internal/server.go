@@ -116,7 +116,7 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 	s.sync.Add(1)
 
 	// Connect to the accountant
-	fmt.Printf("Dialing accountant on %s\n", accountantAddress)
+	log.Printf("Dialing accountant on %s\n", accountantAddress)
 	s.clientConn, err = grpc.Dial(accountantAddress, grpc.WithInsecure())
 	if err != nil {
 		return err
@@ -139,7 +139,7 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 	}
 
 	// Start the listen
-	fmt.Printf("Listening on %s\n", s.server.Addr)
+	log.Printf("Listening on %s\n", s.server.Addr)
 	if s.listener, err = net.Listen("tcp", s.server.Addr); err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func (s *Server) Run() {
 			s.sync.Add(1)
 			defer s.sync.Done()
 
-			fmt.Println("Executing server tick")
+			log.Println("Executing server tick")
 
 			// Run the command queues
 			s.world.ExecuteCommandQueues()
@@ -175,7 +175,7 @@ func (s *Server) Run() {
 			log.Fatal(err)
 		}
 		s.schedule.Start()
-		fmt.Printf("First server tick scheduled for %s\n", s.schedule.Entries()[0].Next.Format("15:04:05"))
+		log.Printf("First server tick scheduled for %s\n", s.schedule.Entries()[0].Next.Format("15:04:05"))
 	}
 
 	// Serve the http requests
@@ -252,7 +252,7 @@ func (s *Server) LoadWorld() error {
 func (s *Server) wrapHandler(method string, handler Handler) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Log the request
-		fmt.Printf("%s\t%s\n", r.Method, r.RequestURI)
+		log.Printf("%s\t%s\n", r.Method, r.RequestURI)
 
 		vars := mux.Vars(r)
 
@@ -261,11 +261,11 @@ func (s *Server) wrapHandler(method string, handler Handler) func(w http.Respons
 			w.WriteHeader(http.StatusMethodNotAllowed)
 
 		} else if val, err := handler(s, vars, r.Body, w); err != nil {
-			fmt.Printf("Failed to handle http request: %s", err)
+			log.Printf("Failed to handle http request: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 
 		} else if err := json.NewEncoder(w).Encode(val); err != nil {
-			fmt.Printf("Failed to encode reply to json: %s", err)
+			log.Printf("Failed to encode reply to json: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 
 		} else {
@@ -280,17 +280,17 @@ func (s *Server) SpawnRoverForAccount(account string) (game.RoverAttributes, uui
 		return game.RoverAttributes{}, uuid.UUID{}, err
 
 	} else if attribs, err := s.world.RoverAttributes(inst); err != nil {
-		return game.RoverAttributes{}, uuid.UUID{}, fmt.Errorf("No attributes found for created rover: %s", err)
+		return game.RoverAttributes{}, uuid.UUID{}, fmt.Errorf("no attributes found for created rover: %s", err)
 
 	} else {
 		keyval := accounts.DataKeyValue{Account: account, Key: "rover", Value: inst.String()}
 		resp, err := s.accountant.AssignValue(context.Background(), &keyval)
 		if err != nil || !resp.Success {
-			fmt.Printf("Failed to assign rover to account, %s, %s", err, resp.Error)
+			log.Printf("Failed to assign rover to account, %s, %s", err, resp.Error)
 
 			// Try and clear up the rover
 			if err := s.world.DestroyRover(inst); err != nil {
-				fmt.Printf("Failed to destroy rover after failed rover assign: %s", err)
+				log.Printf("Failed to destroy rover after failed rover assign: %s", err)
 			}
 
 			return game.RoverAttributes{}, uuid.UUID{}, err

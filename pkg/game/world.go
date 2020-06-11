@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"math/rand"
 	"strings"
@@ -101,7 +102,7 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 		return uuid.Nil, err
 	}
 
-	fmt.Printf("Spawned rover at %+v\n", rover.Attributes.Pos)
+	log.Printf("Spawned rover at %+v\n", rover.Attributes.Pos)
 
 	// Append the rover to the list
 	w.Rovers[rover.Id] = rover
@@ -167,7 +168,7 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 		if tile, err := w.Atlas.GetTile(pos); err != nil {
 			return fmt.Errorf("coudln't get state of destination rover tile: %s", err)
 		} else if tile == TileRover {
-			return fmt.Errorf("Can't warp rover to occupied tile, check before warping")
+			return fmt.Errorf("can't warp rover to occupied tile, check before warping")
 		} else if err := w.Atlas.SetTile(pos, TileRover); err != nil {
 			return fmt.Errorf("coudln't set rover tile: %s", err)
 		} else if err := w.Atlas.SetTile(i.Attributes.Pos, TileEmpty); err != nil {
@@ -328,7 +329,7 @@ func (w *World) ExecuteCommandQueues() {
 			// Execute the command and clear up if requested
 			if done, err := w.ExecuteCommand(&c, rover); err != nil {
 				w.CommandQueue[rover] = cmds[1:]
-				fmt.Println(err)
+				log.Println(err)
 			} else if done {
 				w.CommandQueue[rover] = cmds[1:]
 			} else {
@@ -349,7 +350,7 @@ func (w *World) ExecuteCommandQueues() {
 
 // ExecuteCommand will execute a single command
 func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err error) {
-	fmt.Printf("Executing command: %+v\n", *c)
+	log.Printf("Executing command: %+v\n", *c)
 
 	switch c.Command {
 	case "move":
@@ -380,7 +381,7 @@ func PrintTiles(tiles []Tile) {
 	num := int(math.Sqrt(float64(len(tiles))))
 	for j := num - 1; j >= 0; j-- {
 		for i := 0; i < num; i++ {
-			fmt.Printf("%d", tiles[i+num*j])
+			log.Printf("%d", tiles[i+num*j])
 		}
 		fmt.Print("\n")
 	}
