@@ -42,7 +42,9 @@ services:
     environment:
       - ACCOUNTANT_ADDRESS=rove-accountant:8081
       - ROVE_SERVER_ADDRESS=rove-server:80
-    command: [ "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/tmp/c.out", "-count", "1" ]
+    command: [ "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/mnt/coverage-data/c.out", "-count", "1" ]
+    volumes:
+      - /tmp/coverage-data:/mnt/coverage-data:rw
 
 
   
