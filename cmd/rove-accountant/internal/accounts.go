@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"time"
 )
 
 const kAccountsFileName = "rove-accounts.json"
@@ -44,6 +45,9 @@ func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 			return Account{}, fmt.Errorf("Account name already registered")
 		}
 	}
+
+	// Set the creation time
+	acc.Data["created"] = time.Now().String()
 
 	// Simply add the account to the map
 	a.Accounts[acc.Name] = acc
