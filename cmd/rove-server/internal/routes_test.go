@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/accounts"
+	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/vector"
@@ -144,10 +145,10 @@ func TestHandleRadar(t *testing.T) {
 	wallPos2 := vector.Vector{X: 1, Y: 1}
 	rockPos := vector.Vector{X: 1, Y: 3}
 	emptyPos := vector.Vector{X: -2, Y: -3}
-	assert.NoError(t, s.world.Atlas.SetTile(wallPos1, game.TileWall))
-	assert.NoError(t, s.world.Atlas.SetTile(wallPos2, game.TileWall))
-	assert.NoError(t, s.world.Atlas.SetTile(rockPos, game.TileRock))
-	assert.NoError(t, s.world.Atlas.SetTile(emptyPos, game.TileEmpty))
+	assert.NoError(t, s.world.Atlas.SetTile(wallPos1, atlas.TileWall))
+	assert.NoError(t, s.world.Atlas.SetTile(wallPos2, atlas.TileWall))
+	assert.NoError(t, s.world.Atlas.SetTile(rockPos, atlas.TileRock))
+	assert.NoError(t, s.world.Atlas.SetTile(emptyPos, atlas.TileEmpty))
 
 	request, _ := http.NewRequest(http.MethodGet, path.Join("/", name, "/radar"), nil)
 	response := httptest.NewRecorder()
@@ -166,17 +167,17 @@ func TestHandleRadar(t *testing.T) {
 	radarOrigin := vector.Vector{X: -attrib.Range, Y: -attrib.Range}
 
 	// Make sure the rover tile is correct
-	assert.Equal(t, game.TileRover, status.Tiles[len(status.Tiles)/2])
+	assert.Equal(t, atlas.TileRover, status.Tiles[len(status.Tiles)/2])
 
 	// Check our other tiles
 	wallPos1.Add(radarOrigin.Negated())
 	wallPos2.Add(radarOrigin.Negated())
 	rockPos.Add(radarOrigin.Negated())
 	emptyPos.Add(radarOrigin.Negated())
-	assert.Equal(t, game.TileWall, status.Tiles[wallPos1.X+wallPos1.Y*scope])
-	assert.Equal(t, game.TileWall, status.Tiles[wallPos2.X+wallPos2.Y*scope])
-	assert.Equal(t, game.TileRock, status.Tiles[rockPos.X+rockPos.Y*scope])
-	assert.Equal(t, game.TileEmpty, status.Tiles[emptyPos.X+emptyPos.Y*scope])
+	assert.Equal(t, atlas.TileWall, status.Tiles[wallPos1.X+wallPos1.Y*scope])
+	assert.Equal(t, atlas.TileWall, status.Tiles[wallPos2.X+wallPos2.Y*scope])
+	assert.Equal(t, atlas.TileRock, status.Tiles[rockPos.X+rockPos.Y*scope])
+	assert.Equal(t, atlas.TileEmpty, status.Tiles[emptyPos.X+emptyPos.Y*scope])
 
 }
 

@@ -3,6 +3,7 @@ package rove
 import (
 	"path"
 
+	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/game"
 )
 
@@ -78,8 +79,8 @@ type RadarResponse struct {
 	Error   string `json:"error,omitempty"`
 
 	// The set of positions for nearby non-empty tiles
-	Range int         `json:"range"`
-	Tiles []game.Tile `json:"tiles"`
+	Range int          `json:"range"`
+	Tiles []atlas.Tile `json:"tiles"`
 }
 
 // ================

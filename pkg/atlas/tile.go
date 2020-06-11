@@ -1,4 +1,4 @@
-package game
+package atlas
 
 // Tile represents the type of a tile on the map
 type Tile byte

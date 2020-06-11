@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/bearing"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/vector"
@@ -21,7 +22,7 @@ type World struct {
 	Rovers map[uuid.UUID]Rover `json:"rovers"`
 
 	// Atlas represends the world map of chunks and tiles
-	Atlas Atlas `json:"atlas"`
+	Atlas atlas.Atlas `json:"atlas"`
 
 	// Mutex to lock around all world operations
 	worldMutex sync.RWMutex
@@ -42,7 +43,7 @@ func NewWorld(size, chunkSize int) *World {
 		Rovers:       make(map[uuid.UUID]Rover),
 		CommandQueue: make(map[uuid.UUID]CommandStream),
 		Incoming:     make(map[uuid.UUID]CommandStream),
-		Atlas:        NewAtlas(size, chunkSize),
+		Atlas:        atlas.NewAtlas(size, chunkSize),
 	}
 }
 
@@ -88,7 +89,7 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 		if tile, err := w.Atlas.GetTile(rover.Attributes.Pos); err != nil {
 			return uuid.Nil, err
 		} else {
-			if tile == TileEmpty {
+			if tile == atlas.TileEmpty {
 				break
 			} else {
 				// Try and spawn to the east of the blockage
@@ -98,7 +99,7 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 	}
 
 	// Set the world tile to a rover
-	if err := w.Atlas.SetTile(rover.Attributes.Pos, TileRover); err != nil {
+	if err := w.Atlas.SetTile(rover.Attributes.Pos, atlas.TileRover); err != nil {
 		return uuid.Nil, err
 	}
 
@@ -117,7 +118,7 @@ func (w *World) DestroyRover(id uuid.UUID) error {
 
 	if i, ok := w.Rovers[id]; ok {
 		// Clear the tile
-		if err := w.Atlas.SetTile(i.Attributes.Pos, TileEmpty); err != nil {
+		if err := w.Atlas.SetTile(i.Attributes.Pos, atlas.TileEmpty); err != nil {
 			return fmt.Errorf("coudln't clear old rover tile: %s", err)
 		}
 		delete(w.Rovers, id)
@@ -167,11 +168,11 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 		// Update the world tile
 		if tile, err := w.Atlas.GetTile(pos); err != nil {
 			return fmt.Errorf("coudln't get state of destination rover tile: %s", err)
-		} else if tile == TileRover {
+		} else if tile == atlas.TileRover {
 			return fmt.Errorf("can't warp rover to occupied tile, check before warping")
-		} else if err := w.Atlas.SetTile(pos, TileRover); err != nil {
+		} else if err := w.Atlas.SetTile(pos, atlas.TileRover); err != nil {
 			return fmt.Errorf("coudln't set rover tile: %s", err)
-		} else if err := w.Atlas.SetTile(i.Attributes.Pos, TileEmpty); err != nil {
+		} else if err := w.Atlas.SetTile(i.Attributes.Pos, atlas.TileEmpty); err != nil {
 			return fmt.Errorf("coudln't clear old rover tile: %s", err)
 		}
 
@@ -201,11 +202,11 @@ func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (RoverAttributes, err
 		// Get the tile and verify it's empty
 		if tile, err := w.Atlas.GetTile(newPos); err != nil {
 			return i.Attributes, fmt.Errorf("couldn't get tile for new position: %s", err)
-		} else if tile == TileEmpty {
+		} else if tile == atlas.TileEmpty {
 			// Set the world tiles
-			if err := w.Atlas.SetTile(newPos, TileRover); err != nil {
+			if err := w.Atlas.SetTile(newPos, atlas.TileRover); err != nil {
 				return i.Attributes, fmt.Errorf("coudln't set rover tile: %s", err)
-			} else if err := w.Atlas.SetTile(i.Attributes.Pos, TileEmpty); err != nil {
+			} else if err := w.Atlas.SetTile(i.Attributes.Pos, atlas.TileEmpty); err != nil {
 				return i.Attributes, fmt.Errorf("coudln't clear old rover tile: %s", err)
 			}
 
@@ -221,7 +222,7 @@ func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (RoverAttributes, err
 }
 
 // RadarFromRover can be used to query what a rover can currently see
-func (w *World) RadarFromRover(id uuid.UUID) ([]Tile, error) {
+func (w *World) RadarFromRover(id uuid.UUID) ([]atlas.Tile, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
@@ -252,7 +253,7 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]Tile, error) {
 		}
 
 		// Gather up all tiles within the range
-		var radar = make([]Tile, radarSpan*radarSpan)
+		var radar = make([]atlas.Tile, radarSpan*radarSpan)
 		for j := scanMin.Y; j <= scanMax.Y; j++ {
 			for i := scanMin.X; i <= scanMax.X; i++ {
 				q := vector.Vector{X: i, Y: j}
@@ -377,7 +378,7 @@ func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err 
 }
 
 // PrintTiles simply prints the input tiles directly for debug
-func PrintTiles(tiles []Tile) {
+func PrintTiles(tiles []atlas.Tile) {
 	num := int(math.Sqrt(float64(len(tiles))))
 	for j := num - 1; j >= 0; j-- {
 		for i := 0; i < num; i++ {
