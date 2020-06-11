@@ -381,7 +381,7 @@ func PrintTiles(tiles []Tile) {
 	num := int(math.Sqrt(float64(len(tiles))))
 	for j := num - 1; j >= 0; j-- {
 		for i := 0; i < num; i++ {
-			log.Printf("%d", tiles[i+num*j])
+			fmt.Printf("%d", tiles[i+num*j])
 		}
 		fmt.Print("\n")
 	}
