@@ -24,7 +24,9 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+// RegisterInfo contains the information needed to register an account
 type RegisterInfo struct {
+	// The name for the account, must be unique
 	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -63,7 +65,9 @@ func (m *RegisterInfo) GetName() string {
 	return ""
 }
 
+// RegisterResponse is the response information from registering an account
 type RegisterResponse struct {
+	// The error value should only be populated if success is false
 	Success              bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Error                string   `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -110,8 +114,11 @@ func (m *RegisterResponse) GetError() string {
 	return ""
 }
 
+// DataKeyValue represents a simple key value pair to assign to an account
 type DataKeyValue struct {
-	Account              string   `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
+	// The account to assign the new key value pair to
+	Account string `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
+	// The key value pair to assign
 	Key                  string   `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 	Value                string   `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -165,7 +172,9 @@ func (m *DataKeyValue) GetValue() string {
 	return ""
 }
 
+// Response is a simple response with success and error
 type Response struct {
+	// error should only be populated if success is false
 	Success              bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Error                string   `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -212,8 +221,11 @@ func (m *Response) GetError() string {
 	return ""
 }
 
+// DataKey describes a simple key value with an account, for fetching
 type DataKey struct {
-	Account              string   `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
+	// The account to fetch data for
+	Account string `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
+	// The key to fetch
 	Key                  string   `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -259,9 +271,12 @@ func (m *DataKey) GetKey() string {
 	return ""
 }
 
+// DataResponse describes a data fetch response
 type DataResponse struct {
-	Success              bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Error                string   `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	// error should only be populated if success is false
+	Success bool   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Error   string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	// The value of the key
 	Value                string   `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -362,8 +377,12 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type AccountantClient interface {
+	// Register should create a new account in the database
+	// It will return an error if the account already exists
 	Register(ctx context.Context, in *RegisterInfo, opts ...grpc.CallOption) (*RegisterResponse, error)
+	// AssignValue assigns a key-value pair to an account, or overwrites an existing key
 	AssignValue(ctx context.Context, in *DataKeyValue, opts ...grpc.CallOption) (*Response, error)
+	// GetValue will get the value for a key for an account
 	GetValue(ctx context.Context, in *DataKey, opts ...grpc.CallOption) (*DataResponse, error)
 }
 
@@ -404,8 +423,12 @@ func (c *accountantClient) GetValue(ctx context.Context, in *DataKey, opts ...gr
 
 // AccountantServer is the server API for Accountant service.
 type AccountantServer interface {
+	// Register should create a new account in the database
+	// It will return an error if the account already exists
 	Register(context.Context, *RegisterInfo) (*RegisterResponse, error)
+	// AssignValue assigns a key-value pair to an account, or overwrites an existing key
 	AssignValue(context.Context, *DataKeyValue) (*Response, error)
+	// GetValue will get the value for a key for an account
 	GetValue(context.Context, *DataKey) (*DataResponse, error)
 }
 
