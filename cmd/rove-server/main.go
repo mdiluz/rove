@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -15,9 +17,15 @@ import (
 
 var ver = flag.Bool("version", false, "Display version number")
 var quit = flag.Int("quit", 0, "Quit after n seconds, useful for testing")
-var address = flag.String("address", "", "The address to host on, automatically selected if empty")
-var data = flag.String("data", "", "Directory to store persistant data, no storage if empty")
-var tick = flag.Int("tick", 5, "Number of minutes per server tick (0 for no tick)")
+
+// Address to host the server on, automatically selected if empty
+var address = os.Getenv("HOST_ADDRESS")
+
+// Path for persistent storage
+var data = os.Getenv("DATA_PATH")
+
+// The tick rate of the server in seconds
+var tick = os.Getenv("TICK_RATE")
 
 func InnerMain() {
 	flag.Parse()
@@ -31,13 +39,23 @@ func InnerMain() {
 	fmt.Printf("Initialising version %s...\n", version.Version)
 
 	// Set the persistence path
-	persistence.SetPath(*data)
+	persistence.SetPath(data)
+
+	// Convert the tick rate
+	tickRate := 5
+	if len(tick) > 0 {
+		var err error
+		tickRate, err = strconv.Atoi(tick)
+		if err != nil {
+			log.Fatalf("TICK_RATE not set to valid int: %s", err)
+		}
+	}
 
 	// Create the server data
 	s := internal.NewServer(
-		internal.OptionAddress(*address),
+		internal.OptionAddress(address),
 		internal.OptionPersistentData(),
-		internal.OptionTick(*tick))
+		internal.OptionTick(tickRate))
 
 	// Initialise the server
 	if err := s.Initialise(true); err != nil {
@@ -74,6 +92,5 @@ func InnerMain() {
 }
 
 func main() {
-	flag.Parse()
 	InnerMain()
 }

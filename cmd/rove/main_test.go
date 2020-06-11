@@ -12,9 +12,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var address = "localhost:80"
+const (
+	defaultAddress = "localhost:80"
+)
 
 func Test_InnerMain(t *testing.T) {
+
+	var address = os.Getenv("ROVE_SERVER_ADDRESS")
+	if len(address) == 0 {
+		address = defaultAddress
+	}
+
 	// Set up the flags to act locally and use a temporary file
 	flag.Set("data", path.Join(os.TempDir(), uuid.New().String()))
 

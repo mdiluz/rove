@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -17,8 +16,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-var address = flag.String("address", "", "port to server the accountant on")
-var data = flag.String("data", os.TempDir(), "path to persistent data")
+var address = os.Getenv("HOST_ADDRESS")
+var data = os.Getenv("DATA_PATH")
 
 // accountantServer is the internal object to manage the requests
 type accountantServer struct {
@@ -83,14 +82,12 @@ func (a *accountantServer) GetValue(_ context.Context, in *accounts.DataKey) (*a
 
 // main
 func main() {
-	flag.Parse()
-
 	// Verify the input
-	if len(*address) == 0 {
-		log.Fatal("No address set with --address")
+	if len(address) == 0 {
+		log.Fatal("No address set with $HOST_ADDRESS")
 	}
 
-	persistence.SetPath(*data)
+	persistence.SetPath(data)
 
 	// Initialise and load the accountant
 	accountant := &internal.Accountant{}
@@ -99,7 +96,7 @@ func main() {
 	}
 
 	// Set up the RPC server and register
-	lis, err := net.Listen("tcp", *address)
+	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -118,7 +115,7 @@ func main() {
 	}()
 
 	// Serve the RPC server
-	fmt.Printf("Serving accountant on %s\n", *address)
+	fmt.Printf("Serving accountant on %s\n", address)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to server gRPC: %s", err)
 	}

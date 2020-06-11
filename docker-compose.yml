@@ -4,24 +4,45 @@ volumes:
   persistent-data:
 
 services:
-  rove-server:
-    build:
-      context: .
-      dockerfile: cmd/rove-server/Dockerfile
-    image: rove-server:latest
-    ports:
-      - "80:80"
-    command: ./rove-server --address ":80" --data=/mnt/rove-server ${ROVE_ARGS} --accountant "rove-accountant:8081"
-    volumes:
-      - persistent-data:/mnt/rove-server:rw
-
   rove-accountant:
     build:
       context: .
-      dockerfile: cmd/rove-accountant/Dockerfile
-    image: rove-accountant:latest
+      dockerfile: Dockerfile
+    image: rove:latest
     ports:
       - "8081:8081"
-    command: ./rove-accountant --address ":8081" --data=/mnt/rove-server
+    environment:
+      - HOST_ADDRESS=:8081
+      - DATA_PATH=/mnt/rove-server
     volumes:
       - persistent-data:/mnt/rove-server:rw
+    command: [ ./rove-accountant ]
+
+  rove-server:
+    depends_on: [ rove-accountant ]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rove:latest
+    ports:
+      - "80:80"
+    environment:
+      - HOST_ADDRESS=:80
+      - DATA_PATH=/mnt/rove-server
+      - ACCOUNTANT_ADDRESS=rove-accountant:8081
+    volumes:
+      - persistent-data:/mnt/rove-server:rw
+
+  rove-tests:
+    depends_on: [ rove-server ]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rove:latest
+    environment:
+      - ACCOUNTANT_ADDRESS=rove-accountant:8081
+      - ROVE_SERVER_ADDRESS=rove-server:80
+    command: [ "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/tmp/c.out", "-count", "1" ]
+
+
+  

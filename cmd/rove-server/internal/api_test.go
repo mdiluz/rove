@@ -1,7 +1,8 @@
+// +build integration
+
 package internal
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -11,30 +12,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// To be set by the main function
-var serv rove.Server
+const (
+	defaultAddress = "localhost:80"
+)
 
-func TestMain(m *testing.M) {
-	s := NewServer()
-	if err := s.Initialise(true); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+var serv = func() rove.Server {
+	var address = os.Getenv("ROVE_SERVER_ADDRESS")
+	if len(address) == 0 {
+		address = defaultAddress
 	}
-
-	serv = rove.Server(s.Addr())
-
-	go s.Run()
-
-	fmt.Printf("Test server hosted on %s", serv)
-	code := m.Run()
-
-	if err := s.StopAndClose(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	os.Exit(code)
-}
+	return rove.Server(address)
+}()
 
 func TestServer_Status(t *testing.T) {
 	status, err := serv.Status()

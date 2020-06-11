@@ -3,11 +3,11 @@ package internal
 import (
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -20,7 +20,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-var accountantAddress = flag.String("accountant", "", "address of the accountant to connect to")
+var accountantAddress = os.Getenv("ACCOUNTANT_ADDRESS")
 
 const (
 	// PersistentData will allow the server to load and save it's state
@@ -116,12 +116,12 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 	s.sync.Add(1)
 
 	// Connect to the accountant
-	fmt.Printf("Dialing accountant on %s\n", *accountantAddress)
-	clientConn, err := grpc.Dial(*accountantAddress, grpc.WithInsecure())
+	fmt.Printf("Dialing accountant on %s\n", accountantAddress)
+	s.clientConn, err = grpc.Dial(accountantAddress, grpc.WithInsecure())
 	if err != nil {
 		return err
 	}
-	s.accountant = accounts.NewAccountantClient(clientConn)
+	s.accountant = accounts.NewAccountantClient(s.clientConn)
 
 	// Spawn a border on the default world
 	if err := s.world.SpawnWorld(fillWorld); err != nil {
@@ -139,6 +139,7 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 	}
 
 	// Start the listen
+	fmt.Printf("Listening on %s\n", s.server.Addr)
 	if s.listener, err = net.Listen("tcp", s.server.Addr); err != nil {
 		return err
 	}

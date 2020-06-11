@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
+	"google.golang.org/grpc"
 )
 
 // Handler describes a function that handles any incoming request and can respond
@@ -87,8 +89,10 @@ func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Wri
 		response.Error = "Cannot register empty name"
 
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 	reg := accounts.RegisterInfo{Name: data.Name}
-	if acc, err := s.accountant.Register(context.Background(), &reg); err != nil {
+	if acc, err := s.accountant.Register(ctx, &reg, grpc.WaitForReady(true)); err != nil {
 		response.Error = err.Error()
 
 	} else if !acc.Success {
@@ -125,11 +129,13 @@ func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writ
 
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 	key := accounts.DataKey{Account: id, Key: "rover"}
 	if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if resp, err := s.accountant.GetValue(context.Background(), &key); err != nil {
+	} else if resp, err := s.accountant.GetValue(ctx, &key); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
 	} else if !resp.Success {
@@ -155,12 +161,14 @@ func HandleRadar(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 		Success: false,
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 	id := vars["account"]
 	key := accounts.DataKey{Account: id, Key: "rover"}
 	if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if resp, err := s.accountant.GetValue(context.Background(), &key); err != nil {
+	} else if resp, err := s.accountant.GetValue(ctx, &key); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
 	} else if !resp.Success {
@@ -191,12 +199,14 @@ func HandleRover(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 		Success: false,
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 	id := vars["account"]
 	key := accounts.DataKey{Account: id, Key: "rover"}
 	if len(id) == 0 {
 		response.Error = "No account ID provided"
 
-	} else if resp, err := s.accountant.GetValue(context.Background(), &key); err != nil {
+	} else if resp, err := s.accountant.GetValue(ctx, &key); err != nil {
 		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
 
 	} else if !resp.Success {
