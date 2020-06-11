@@ -24,6 +24,7 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "\tmove    \tissues move command to rover")
 	fmt.Fprintln(os.Stderr, "\tradar   \tgathers radar data for the current rover")
 	fmt.Fprintln(os.Stderr, "\trover   \tgets data for current rover")
+	fmt.Fprintln(os.Stderr, "\tconfig  \toutputs the local config info")
 	fmt.Fprintln(os.Stderr, "\nOptions:")
 	flag.PrintDefaults()
 }
@@ -93,9 +94,6 @@ func InnerMain(command string) error {
 
 	// Grab the account
 	var account = config.Accounts[config.Host]
-
-	// Print the config info
-	fmt.Printf("host: %s\taccount: %s\n", config.Host, account)
 
 	// Handle all the commands
 	switch command {
@@ -193,11 +191,14 @@ func InnerMain(command string) error {
 		default:
 			fmt.Printf("attributes: %+v\n", response.Attributes)
 		}
+	case "config":
+		fmt.Printf("host: %s\taccount: %s\n", config.Host, account)
 
 	default:
 		// Print the usage
-		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
+		fmt.Fprintf(os.Stderr, "Error: unknown command %s\n", command)
 		Usage()
+		os.Exit(1)
 	}
 
 	// Save out the persistent file
@@ -213,6 +214,13 @@ func InnerMain(command string) error {
 // Simple main
 func main() {
 	flag.Usage = Usage
+
+	// Bail without any args
+	if len(os.Args) == 1 {
+		Usage()
+		os.Exit(1)
+	}
+
 	flag.CommandLine.Parse(os.Args[2:])
 
 	// Print the version if requested
