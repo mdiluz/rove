@@ -91,12 +91,12 @@ func (a *Atlas) SpawnWalls() error {
 
 // SetTile sets an individual tile's kind
 func (a *Atlas) SetTile(v vector.Vector, tile Tile) error {
-	chunk := a.ToChunk(v)
+	chunk := a.toChunk(v)
 	if chunk >= len(a.Chunks) {
 		return fmt.Errorf("location outside of allocated atlas")
 	}
 
-	local := a.ToChunkLocal(v)
+	local := a.toChunkLocal(v)
 	tileId := local.X + local.Y*a.ChunkSize
 	if tileId >= len(a.Chunks[chunk].Tiles) {
 		return fmt.Errorf("location outside of allocated chunk")
@@ -107,12 +107,12 @@ func (a *Atlas) SetTile(v vector.Vector, tile Tile) error {
 
 // GetTile will return an individual tile
 func (a *Atlas) GetTile(v vector.Vector) (Tile, error) {
-	chunk := a.ToChunk(v)
+	chunk := a.toChunk(v)
 	if chunk >= len(a.Chunks) {
 		return 0, fmt.Errorf("location outside of allocated atlas")
 	}
 
-	local := a.ToChunkLocal(v)
+	local := a.toChunkLocal(v)
 	tileId := local.X + local.Y*a.ChunkSize
 	if tileId >= len(a.Chunks[chunk].Tiles) {
 		return 0, fmt.Errorf("location outside of allocated chunk")
@@ -121,19 +121,14 @@ func (a *Atlas) GetTile(v vector.Vector) (Tile, error) {
 	return a.Chunks[chunk].Tiles[tileId], nil
 }
 
-// ToChunkLocal gets a chunk local coordinate for a tile
-func (a *Atlas) ToChunkLocal(v vector.Vector) vector.Vector {
+// toChunkLocal gets a chunk local coordinate for a tile
+func (a *Atlas) toChunkLocal(v vector.Vector) vector.Vector {
 	return vector.Vector{X: maths.Pmod(v.X, a.ChunkSize), Y: maths.Pmod(v.Y, a.ChunkSize)}
 }
 
-// GetChunkLocal gets a chunk local coordinate for a tile
-func (a *Atlas) ToWorld(local vector.Vector, chunk int) vector.Vector {
-	return a.ChunkOrigin(chunk).Added(local)
-}
-
 // GetChunkID gets the chunk ID for a position in the world
-func (a *Atlas) ToChunk(v vector.Vector) int {
-	local := a.ToChunkLocal(v)
+func (a *Atlas) toChunk(v vector.Vector) int {
+	local := a.toChunkLocal(v)
 	// Get the chunk origin itself
 	origin := v.Added(local.Negated())
 	// Divided it by the number of chunks
@@ -144,8 +139,8 @@ func (a *Atlas) ToChunk(v vector.Vector) int {
 	return (a.Size * origin.Y) + origin.X
 }
 
-// ChunkOrigin gets the chunk origin for a given chunk index
-func (a *Atlas) ChunkOrigin(chunk int) vector.Vector {
+// chunkOrigin gets the chunk origin for a given chunk index
+func (a *Atlas) chunkOrigin(chunk int) vector.Vector {
 	v := vector.Vector{
 		X: maths.Pmod(chunk, a.Size) - (a.Size / 2),
 		Y: (chunk / a.Size) - (a.Size / 2),
@@ -185,7 +180,7 @@ func (a *Atlas) Grow(size int) error {
 	// Copy old chunks into new chunks
 	for index, chunk := range a.Chunks {
 		// Calculate the new chunk location and copy over the data
-		newAtlas.Chunks[newAtlas.ToChunk(a.ChunkOrigin(index))] = chunk
+		newAtlas.Chunks[newAtlas.toChunk(a.chunkOrigin(index))] = chunk
 	}
 
 	// Copy the new atlas data into this one

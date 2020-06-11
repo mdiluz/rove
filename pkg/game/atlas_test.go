@@ -23,19 +23,19 @@ func TestAtlas_NewAtlas(t *testing.T) {
 	assert.Equal(t, 16, len(a.Chunks))
 }
 
-func TestAtlas_ToChunk(t *testing.T) {
+func TestAtlas_toChunk(t *testing.T) {
 	a := NewAtlas(2, 1)
 	assert.NotNil(t, a)
 	// Tiles should look like: 2 | 3
 	//  -----
 	//  0 | 1
-	tile := a.ToChunk(vector.Vector{X: 0, Y: 0})
+	tile := a.toChunk(vector.Vector{X: 0, Y: 0})
 	assert.Equal(t, 3, tile)
-	tile = a.ToChunk(vector.Vector{X: 0, Y: -1})
+	tile = a.toChunk(vector.Vector{X: 0, Y: -1})
 	assert.Equal(t, 1, tile)
-	tile = a.ToChunk(vector.Vector{X: -1, Y: -1})
+	tile = a.toChunk(vector.Vector{X: -1, Y: -1})
 	assert.Equal(t, 0, tile)
-	tile = a.ToChunk(vector.Vector{X: -1, Y: 0})
+	tile = a.toChunk(vector.Vector{X: -1, Y: 0})
 	assert.Equal(t, 2, tile)
 
 	a = NewAtlas(2, 2)
@@ -44,13 +44,13 @@ func TestAtlas_ToChunk(t *testing.T) {
 	// 2 | 3
 	// -----
 	// 0 | 1
-	tile = a.ToChunk(vector.Vector{X: 1, Y: 1})
+	tile = a.toChunk(vector.Vector{X: 1, Y: 1})
 	assert.Equal(t, 3, tile)
-	tile = a.ToChunk(vector.Vector{X: 1, Y: -2})
+	tile = a.toChunk(vector.Vector{X: 1, Y: -2})
 	assert.Equal(t, 1, tile)
-	tile = a.ToChunk(vector.Vector{X: -2, Y: -2})
+	tile = a.toChunk(vector.Vector{X: -2, Y: -2})
 	assert.Equal(t, 0, tile)
-	tile = a.ToChunk(vector.Vector{X: -2, Y: 1})
+	tile = a.toChunk(vector.Vector{X: -2, Y: 1})
 	assert.Equal(t, 2, tile)
 
 	a = NewAtlas(4, 2)
@@ -63,13 +63,13 @@ func TestAtlas_ToChunk(t *testing.T) {
 	//  4 | 5 || 6 | 7
 	// ----------------
 	//  0 | 1 || 2 | 3
-	tile = a.ToChunk(vector.Vector{X: 1, Y: 3})
+	tile = a.toChunk(vector.Vector{X: 1, Y: 3})
 	assert.Equal(t, 14, tile)
-	tile = a.ToChunk(vector.Vector{X: 1, Y: -3})
+	tile = a.toChunk(vector.Vector{X: 1, Y: -3})
 	assert.Equal(t, 2, tile)
-	tile = a.ToChunk(vector.Vector{X: -1, Y: -1})
+	tile = a.toChunk(vector.Vector{X: -1, Y: -1})
 	assert.Equal(t, 5, tile)
-	tile = a.ToChunk(vector.Vector{X: -2, Y: 2})
+	tile = a.toChunk(vector.Vector{X: -2, Y: 2})
 	assert.Equal(t, 13, tile)
 }
 
