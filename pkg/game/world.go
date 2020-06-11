@@ -99,6 +99,7 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 	}
 
 	// Set the world tile to a rover
+	// TODO: Don't do this, the atlas shouldn't know about rovers
 	if err := w.Atlas.SetTile(rover.Attributes.Pos, atlas.TileRover); err != nil {
 		return uuid.Nil, err
 	}
@@ -166,6 +167,7 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 		}
 
 		// Update the world tile
+		// TODO: Don't do this, the atlas shouldn't know about rovers
 		if tile, err := w.Atlas.GetTile(pos); err != nil {
 			return fmt.Errorf("coudln't get state of destination rover tile: %s", err)
 		} else if tile == atlas.TileRover {
@@ -204,6 +206,7 @@ func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (RoverAttributes, err
 			return i.Attributes, fmt.Errorf("couldn't get tile for new position: %s", err)
 		} else if tile == atlas.TileEmpty {
 			// Set the world tiles
+			// TODO: Don't do this, the atlas shouldn't know about rovers
 			if err := w.Atlas.SetTile(newPos, atlas.TileRover); err != nil {
 				return i.Attributes, fmt.Errorf("coudln't set rover tile: %s", err)
 			} else if err := w.Atlas.SetTile(i.Attributes.Pos, atlas.TileEmpty); err != nil {
