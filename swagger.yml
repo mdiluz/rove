@@ -242,6 +242,5 @@ definitions:
       attributes:
           description: The attributes of the given rover
           type: object
-          properties:
-            schema:
-              $ref: '#/definitions/rover-attributes'
+          $ref: '#/definitions/rover-attributes'
+              
