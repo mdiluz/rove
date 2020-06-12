@@ -168,6 +168,7 @@ definitions:
   command:
     properties:
       command:
+        description: "The command to execute, currently only accepts move, which requires a bearing and a duration."
         type: string
         example: move
       bearing:
