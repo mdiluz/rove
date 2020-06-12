@@ -1,0 +1,318 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "rove/rove.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/commands": {
+      "post": {
+        "summary": "Send commands to rover",
+        "description": "Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent",
+        "operationId": "RoveServer_Commands",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/roveCommandsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RoveServer"
+        ]
+      }
+    },
+    "/radar": {
+      "get": {
+        "summary": "Get radar information",
+        "description": "Gets the radar output for the given rover",
+        "operationId": "RoveServer_Radar",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/roveRadarResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "account",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RoveServer"
+        ]
+      }
+    },
+    "/register": {
+      "post": {
+        "summary": "Register an account",
+        "description": "Tries to register an account with the given name",
+        "operationId": "RoveServer_Register",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/roveRegisterRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RoveServer"
+        ]
+      }
+    },
+    "/rover": {
+      "get": {
+        "summary": "Get rover information",
+        "description": "Gets information for the account's rover",
+        "operationId": "RoveServer_Rover",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/roveRoverResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "account",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RoveServer"
+        ]
+      }
+    },
+    "/status": {
+      "get": {
+        "summary": "Server status",
+        "description": "Responds with various details about the current server status",
+        "operationId": "RoveServer_Status",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/roveStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "tags": [
+          "RoveServer"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "gatewayruntimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "roveCommand": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "The command to execute, currently only accepts move, which requires a bearing and a duration."
+        },
+        "bearing": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "roveCommandsRequest": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/roveCommand"
+          }
+        }
+      }
+    },
+    "roveRadarResponse": {
+      "type": "object",
+      "properties": {
+        "range": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The range in tiles from the rover of the radar data"
+        },
+        "tiles": {
+          "type": "string",
+          "format": "byte",
+          "title": "A 1D array representing range*2 + 1 squared set of tiles, origin bottom left and in row-\u003ecolumn order"
+        }
+      }
+    },
+    "roveRegisterRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "roveRoverResponse": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "The name of the rover"
+        },
+        "position": {
+          "$ref": "#/definitions/roveVector",
+          "title": "Position of the rover in world coordinates"
+        },
+        "range": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The range of this rover's radar"
+        },
+        "speed": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The speed the rover can move per tick"
+        }
+      }
+    },
+    "roveStatusResponse": {
+      "type": "object",
+      "properties": {
+        "next_tick": {
+          "type": "string",
+          "title": "The time the next tick will occur"
+        },
+        "ready": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Whether the server is ready to accept requests"
+        },
+        "tick": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The tick rate of the server in minutes (how many minutes per tick)"
+        },
+        "version": {
+          "type": "string",
+          "title": "The version of the server in v{major}.{minor}-{delta}-{sha} form"
+        }
+      }
+    },
+    "roveVector": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "y": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  }
+}

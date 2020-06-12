@@ -2,33 +2,58 @@ syntax = "proto3";
 
 package rove;
 
+option go_package = "github.com/mdiluz/rove/pkg/rove";
+
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
-service RoverServer {
-    // Send commands to rover
+service RoveServer {
+    // Server status
     // 
-    // Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent
-    rpc Commands(CommandsRequest) returns (google.protobuf.Empty) {}
-
-    // Get radar information
-    // 
-    // Gets the radar output for the given rover
-    rpc Radar(RadarRequest) returns (RadarResponse) {}
+    // Responds with various details about the current server status
+    rpc Status(google.protobuf.Empty) returns (StatusResponse) {
+        option (google.api.http) = {
+            get: "/status"
+          };
+    }
 
     // Register an account
     // 
     // Tries to register an account with the given name
-    rpc Register(RegisterRequest) returns (google.protobuf.Empty) {}
+    rpc Register(RegisterRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/register"
+            body: "*"
+          };
+    }
+
+    // Send commands to rover
+    // 
+    // Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent
+    rpc Commands(CommandsRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/commands"
+            body: "*"
+          };
+    }
+
+    // Get radar information
+    // 
+    // Gets the radar output for the given rover
+    rpc Radar(RadarRequest) returns (RadarResponse) {
+        option (google.api.http) = {
+            get: "/radar"
+          };
+    }
 
     // Get rover information
     // 
     // Gets information for the account's rover
-    rpc Rover(RoverRequest) returns (RoverResponse) {}
-
-    // Server status
-    // 
-    // Responds with various details about the current server status
-    rpc Status(google.protobuf.Empty) returns (StatusResponse) {}
+    rpc Rover(RoverRequest) returns (RoverResponse) {
+        option (google.api.http) = {
+            get: "/rover"
+          };
+    }
 }
 
 message Command {
