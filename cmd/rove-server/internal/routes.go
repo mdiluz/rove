@@ -17,7 +17,7 @@ import (
 )
 
 // Handler describes a function that handles any incoming request and can respond
-type Handler func(*Server, map[string]string, io.ReadCloser, io.Writer) (interface{}, error)
+type Handler func(*Server, map[string]string, io.ReadCloser) (interface{}, error)
 
 // Route defines the information for a single path->function route
 type Route struct {
@@ -56,7 +56,7 @@ var Routes = []Route{
 }
 
 // HandleStatus handles the /status request
-func HandleStatus(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
+func HandleStatus(s *Server, vars map[string]string, b io.ReadCloser) (interface{}, error) {
 
 	// Simply return the current server status
 	response := rove.StatusResponse{
@@ -74,40 +74,35 @@ func HandleStatus(s *Server, vars map[string]string, b io.ReadCloser, w io.Write
 }
 
 // HandleRegister handles /register endpoint
-func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
-	var response = rove.RegisterResponse{
-		Success: false,
-	}
+func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser) (interface{}, error) {
+	var response = rove.RegisterResponse{}
 
 	// Decode the registration info, verify it and register the account
 	var data rove.RegisterData
 	err := json.NewDecoder(b).Decode(&data)
 	if err != nil {
 		log.Printf("Failed to decode json: %s\n", err)
-		response.Error = err.Error()
+		return BadRequestError{Error: err.Error()}, nil
 
 	} else if len(data.Name) == 0 {
-		response.Error = "Cannot register empty name"
+		return BadRequestError{Error: "cannot register empty name"}, nil
 
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	reg := accounts.RegisterInfo{Name: data.Name}
 	if acc, err := s.accountant.Register(ctx, &reg, grpc.WaitForReady(true)); err != nil {
-		response.Error = err.Error()
+		return nil, fmt.Errorf("gRPC failed to contact accountant: %s", err)
 
 	} else if !acc.Success {
-		response.Error = acc.Error
+		return BadRequestError{Error: acc.Error}, nil
 
 	} else if _, _, err := s.SpawnRoverForAccount(data.Name); err != nil {
-		response.Error = err.Error()
+		return nil, fmt.Errorf("failed to spawn rover for account: %s", err)
 
 	} else if err := s.SaveWorld(); err != nil {
-		response.Error = fmt.Sprintf("Internal server error when saving world: %s", err)
+		return nil, fmt.Errorf("internal server error when saving world: %s", err)
 
-	} else {
-		// Save out the new accounts
-		response.Success = true
 	}
 
 	log.Printf("register response:%+v\n", response)
@@ -115,10 +110,8 @@ func HandleRegister(s *Server, vars map[string]string, b io.ReadCloser, w io.Wri
 }
 
 // HandleSpawn will spawn the player entity for the associated account
-func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
-	var response = rove.CommandResponse{
-		Success: false,
-	}
+func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser) (interface{}, error) {
+	var response = rove.CommandResponse{}
 
 	id := vars["account"]
 
@@ -126,7 +119,7 @@ func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writ
 	var data rove.CommandData
 	if err := json.NewDecoder(b).Decode(&data); err != nil {
 		log.Printf("Failed to decode json: %s\n", err)
-		response.Error = err.Error()
+		return BadRequestError{Error: err.Error()}, nil
 
 	}
 
@@ -134,22 +127,20 @@ func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writ
 	defer cancel()
 	key := accounts.DataKey{Account: id, Key: "rover"}
 	if len(id) == 0 {
-		response.Error = "No account ID provided"
+		return BadRequestError{Error: "no account ID provided"}, nil
 
 	} else if resp, err := s.accountant.GetValue(ctx, &key); err != nil {
-		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
+		return nil, fmt.Errorf("gRPC failed to contact accountant: %s", err)
 
 	} else if !resp.Success {
-		response.Error = resp.Error
+		return BadRequestError{Error: resp.Error}, nil
 
 	} else if id, err := uuid.Parse(resp.Value); err != nil {
-		response.Error = fmt.Sprintf("Account had invalid rover id: %s", err)
+		return nil, fmt.Errorf("account had invalid rover ID: %s", resp.Value)
 
 	} else if err := s.world.Enqueue(id, data.Commands...); err != nil {
-		response.Error = fmt.Sprintf("Failed to execute commands: %s", err)
+		return BadRequestError{Error: err.Error()}, nil
 
-	} else {
-		response.Success = true
 	}
 
 	log.Printf("command response \taccount:%s\tresponse:%+v\n", id, response)
@@ -157,37 +148,34 @@ func HandleCommand(s *Server, vars map[string]string, b io.ReadCloser, w io.Writ
 }
 
 // HandleRadar handles the radar request
-func HandleRadar(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
-	var response = rove.RadarResponse{
-		Success: false,
-	}
+func HandleRadar(s *Server, vars map[string]string, b io.ReadCloser) (interface{}, error) {
+	var response = rove.RadarResponse{}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	id := vars["account"]
 	key := accounts.DataKey{Account: id, Key: "rover"}
 	if len(id) == 0 {
-		response.Error = "No account ID provided"
+		return BadRequestError{Error: "no account ID provided"}, nil
 
 	} else if resp, err := s.accountant.GetValue(ctx, &key); err != nil {
-		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
+		return nil, fmt.Errorf("gRPC failed to contact accountant: %s", err)
 
 	} else if !resp.Success {
-		response.Error = resp.Error
+		return BadRequestError{Error: resp.Error}, nil
 
 	} else if id, err := uuid.Parse(resp.Value); err != nil {
-		response.Error = fmt.Sprintf("Account had invalid rover id: %s", err)
+		return nil, fmt.Errorf("account had invalid rover ID: %s", resp.Value)
 
 	} else if attrib, err := s.world.RoverAttributes(id); err != nil {
-		response.Error = fmt.Sprintf("Error getting rover attributes: %s", err)
+		return nil, fmt.Errorf("error getting rover attributes: %s", err)
 
 	} else if radar, err := s.world.RadarFromRover(id); err != nil {
-		response.Error = fmt.Sprintf("Error getting radar from rover: %s", err)
+		return nil, fmt.Errorf("error getting radar from rover: %s", err)
 
 	} else {
 		response.Tiles = radar
 		response.Range = attrib.Range
-		response.Success = true
 	}
 
 	log.Printf("radar response \taccount:%s\tresponse:%+v\n", id, response)
@@ -195,33 +183,30 @@ func HandleRadar(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer
 }
 
 // HandleRover handles the rover request
-func HandleRover(s *Server, vars map[string]string, b io.ReadCloser, w io.Writer) (interface{}, error) {
-	var response = rove.RoverResponse{
-		Success: false,
-	}
+func HandleRover(s *Server, vars map[string]string, b io.ReadCloser) (interface{}, error) {
+	var response = rove.RoverResponse{}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	id := vars["account"]
 	key := accounts.DataKey{Account: id, Key: "rover"}
 	if len(id) == 0 {
-		response.Error = "No account ID provided"
+		return BadRequestError{Error: "no account ID provided"}, nil
 
 	} else if resp, err := s.accountant.GetValue(ctx, &key); err != nil {
-		response.Error = fmt.Sprintf("Provided account has no rover: %s", err)
+		return nil, fmt.Errorf("gRPC failed to contact accountant: %s", err)
 
 	} else if !resp.Success {
-		response.Error = resp.Error
+		return BadRequestError{Error: resp.Error}, nil
 
 	} else if id, err := uuid.Parse(resp.Value); err != nil {
-		response.Error = fmt.Sprintf("Account had invalid rover id: %s", err)
+		return nil, fmt.Errorf("account had invalid rover ID: %s", resp.Value)
 
-	} else if attribs, err := s.world.RoverAttributes(id); err != nil {
-		response.Error = fmt.Sprintf("Error getting radar from rover: %s", err)
+	} else if attrib, err := s.world.RoverAttributes(id); err != nil {
+		return nil, fmt.Errorf("error getting rover attributes: %s", err)
 
 	} else {
-		response.Attributes = attribs
-		response.Success = true
+		response.Attributes = attrib
 	}
 
 	log.Printf("rover response \taccount:%s\tresponse:%+v\n", id, response)

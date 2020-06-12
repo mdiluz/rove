@@ -248,6 +248,11 @@ func (s *Server) LoadWorld() error {
 	return nil
 }
 
+// used as the type for the return struct
+type BadRequestError struct {
+	Error string `json:"error"`
+}
+
 // wrapHandler wraps a request handler in http checks
 func (s *Server) wrapHandler(method string, handler Handler) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -259,12 +264,20 @@ func (s *Server) wrapHandler(method string, handler Handler) func(w http.Respons
 		// Verify the method, call the handler, and encode the return
 		if r.Method != method {
 			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
 
-		} else if val, err := handler(s, vars, r.Body, w); err != nil {
+		val, err := handler(s, vars, r.Body)
+		if err != nil {
 			log.Printf("Failed to handle http request: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 
-		} else if err := json.NewEncoder(w).Encode(val); err != nil {
+		} else if _, ok := val.(BadRequestError); ok {
+			w.WriteHeader(http.StatusBadRequest)
+		}
+
+		if err := json.NewEncoder(w).Encode(val); err != nil {
 			log.Printf("Failed to encode reply to json: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 

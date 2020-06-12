@@ -117,13 +117,10 @@ func InnerMain(command string) error {
 		d := rove.RegisterData{
 			Name: *name,
 		}
-		response, err := server.Register(d)
+		_, err := server.Register(d)
 		switch {
 		case err != nil:
 			return err
-
-		case !response.Success:
-			return fmt.Errorf("server returned failure: %s", response.Error)
 
 		default:
 			fmt.Printf("Registered account with id: %s\n", *name)
@@ -145,13 +142,10 @@ func InnerMain(command string) error {
 			return err
 		}
 
-		response, err := server.Command(account, d)
+		_, err := server.Command(account, d)
 		switch {
 		case err != nil:
 			return err
-
-		case !response.Success:
-			return fmt.Errorf("server returned failure: %s", response.Error)
 
 		default:
 			fmt.Printf("Request succeeded\n")
@@ -167,9 +161,6 @@ func InnerMain(command string) error {
 		case err != nil:
 			return err
 
-		case !response.Success:
-			return fmt.Errorf("server returned failure: %s", response.Error)
-
 		default:
 			// Print out the radar
 			game.PrintTiles(response.Tiles)
@@ -184,9 +175,6 @@ func InnerMain(command string) error {
 		switch {
 		case err != nil:
 			return err
-
-		case !response.Success:
-			return fmt.Errorf("server returned failure: %s", response.Error)
 
 		default:
 			fmt.Printf("attributes: %+v\n", response.Attributes)

@@ -45,9 +45,15 @@ paths:
             $ref: '#/definitions/register-data'
       responses:
         "200":
-          description: "Successfully attempted to create account, check success value in body"
+          description: "Successfully created account"
+        "400":
+          description: "Bad request, typically due to duplicate name"
           schema:
-            $ref: '#/definitions/register-response'
+            $ref: '#/definitions/error'
+        "500":
+          description: "Server encountered error, please report this as a bug"
+          schema:
+            $ref: '#/definitions/error'
 
   /{account}/commands:
     post:
@@ -67,9 +73,15 @@ paths:
             $ref: '#/definitions/commands-data'
       responses:
         "200":
-          description: "Recieved commands, check success value in body"
+          description: "Successfully queued commands"
+        "400":
+          description: "Bad request, typically due to duplicate name"
           schema:
-            $ref: '#/definitions/commands-response'
+            $ref: '#/definitions/error'
+        "500":
+          description: "Server encountered error, please report this as a bug"
+          schema:
+            $ref: '#/definitions/error'
 
   /{account}/radar:
     get:
@@ -85,9 +97,17 @@ paths:
           type: string
       responses:
         "200":
-          description: "Recieved request, check success value in body"
+          description: "Successfully returned rover radar"
           schema:
             $ref: '#/definitions/radar-response'
+        "400":
+          description: "Bad request, typically due to duplicate name"
+          schema:
+            $ref: '#/definitions/error'
+        "500":
+          description: "Server encountered error, please report this as a bug"
+          schema:
+            $ref: '#/definitions/error'
 
   /{account}/rover:
     get:
@@ -103,13 +123,20 @@ paths:
           type: string
       responses:
         "200":
-          description: "Recieved request, check success value in body"
+          description: "Successfully returned rover information"
           schema:
             $ref: '#/definitions/rover-response'
+        "400":
+          description: "Bad request, typically due to duplicate name"
+          schema:
+            $ref: '#/definitions/error'
+        "500":
+          description: "Server encountered error, please report this as a bug"
+          schema:
+            $ref: '#/definitions/error'
 
 definitions:
   status:
-
     properties:
       ready:
         type: boolean
@@ -124,6 +151,12 @@ definitions:
         type: string
         example: "15:30:00"
 
+  error:
+    properties:
+      error:
+        type: string
+        example: "account not found"
+
   register-data:
     properties:
       name:
@@ -131,15 +164,6 @@ definitions:
         example: "myname"
     required:
       - name
-
-  register-response:
-    properties:
-      success:
-        type: boolean
-        example: false
-      error:
-        type: string
-        example: "account with name already existed"
 
   command:
     properties:
@@ -166,23 +190,8 @@ definitions:
         type: string
         example: "account with name already existed"
 
-  commands-response:
-    properties:
-      success:
-        type: boolean
-        example: false
-      error:
-        type: string
-        example: "invalid bearing 'SN'"
-
   radar-response:
     properties:
-      success:
-        type: boolean
-        example: false
-      error:
-        type: string
-        example: "unknown account"
       range:
         type: integer
         example: 5
@@ -219,12 +228,6 @@ definitions:
 
   rover-response:
     properties:
-      success:
-        type: boolean
-        example: false
-      error:
-        type: string
-        example: "unknown account"
       attributes:
           type: object
           properties:

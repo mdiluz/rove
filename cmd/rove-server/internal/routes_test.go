@@ -31,7 +31,8 @@ func TestHandleStatus(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.Code)
 
 	var status rove.StatusResponse
-	json.NewDecoder(response.Body).Decode(&status)
+	err := json.NewDecoder(response.Body).Decode(&status)
+	assert.NoError(t, err)
 
 	if status.Ready != true {
 		t.Errorf("got false for /status")
@@ -58,11 +59,8 @@ func TestHandleRegister(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.Code)
 
 	var status rove.RegisterResponse
-	json.NewDecoder(response.Body).Decode(&status)
-
-	if status.Success != true {
-		t.Errorf("got false for /register: %s", status.Error)
-	}
+	err = json.NewDecoder(response.Body).Decode(&status)
+	assert.NoError(t, err)
 }
 
 func TestHandleCommand(t *testing.T) {
@@ -104,11 +102,8 @@ func TestHandleCommand(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.Code)
 
 	var status rove.CommandResponse
-	json.NewDecoder(response.Body).Decode(&status)
-
-	if status.Success != true {
-		t.Errorf("got false for /command: %s", status.Error)
-	}
+	err = json.NewDecoder(response.Body).Decode(&status)
+	assert.NoError(t, err)
 
 	attrib, err := s.world.RoverAttributes(inst)
 	assert.NoError(t, err, "Couldn't get rover attribs")
@@ -157,11 +152,8 @@ func TestHandleRadar(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.Code)
 
 	var status rove.RadarResponse
-	json.NewDecoder(response.Body).Decode(&status)
-
-	if status.Success != true {
-		t.Errorf("got false for /radar: %s", status.Error)
-	}
+	err = json.NewDecoder(response.Body).Decode(&status)
+	assert.NoError(t, err)
 
 	scope := attrib.Range*2 + 1
 	radarOrigin := vector.Vector{X: -attrib.Range, Y: -attrib.Range}
@@ -201,11 +193,10 @@ func TestHandleRover(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.Code)
 
 	var status rove.RoverResponse
-	json.NewDecoder(response.Body).Decode(&status)
+	err = json.NewDecoder(response.Body).Decode(&status)
+	assert.NoError(t, err)
 
-	if status.Success != true {
-		t.Errorf("got false for /rover: %s", status.Error)
-	} else if attribs != status.Attributes {
+	if attribs != status.Attributes {
 		t.Errorf("Missmatched attributes: %+v, !=%+v", attribs, status.Attributes)
 	}
 }

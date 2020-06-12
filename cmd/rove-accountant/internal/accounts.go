@@ -42,7 +42,7 @@ func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 	// Verify this acount isn't already registered
 	for _, a := range a.Accounts {
 		if a.Name == acc.Name {
-			return Account{}, fmt.Errorf("account name already registered")
+			return Account{}, fmt.Errorf("account name already registered: %s", a.Name)
 		}
 	}
 

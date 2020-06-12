@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 )
@@ -22,7 +23,11 @@ func (s Server) Get(path string, out interface{}) error {
 		return err
 
 	} else if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("http.Get returned status %d: %s", resp.StatusCode, resp.Status)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read response body to code %d", resp.StatusCode)
+		}
+		return fmt.Errorf("http returned status %d: %s", resp.StatusCode, string(body))
 
 	} else {
 		return json.NewDecoder(resp.Body).Decode(out)
@@ -56,7 +61,11 @@ func (s Server) Post(path string, in, out interface{}) error {
 		return err
 
 	} else if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("http returned status %d", resp.StatusCode)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read response body to code %d", resp.StatusCode)
+		}
+		return fmt.Errorf("http returned status %d: %s", resp.StatusCode, string(body))
 
 	} else {
 		return json.NewDecoder(resp.Body).Decode(out)

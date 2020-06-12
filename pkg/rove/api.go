@@ -40,8 +40,7 @@ type RegisterData struct {
 
 // RegisterResponse describes the response to a register request
 type RegisterResponse struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error,omitempty"`
+	// Placeholder for future information
 }
 
 // ==============================
@@ -60,8 +59,7 @@ type CommandData struct {
 
 // CommandResponse is the response to be sent back
 type CommandResponse struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error,omitempty"`
+	// Placeholder for future information
 }
 
 // ================
@@ -75,9 +73,6 @@ func (s Server) Radar(account string) (r RadarResponse, err error) {
 
 // RadarResponse describes the response to a /radar call
 type RadarResponse struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error,omitempty"`
-
 	// The set of positions for nearby non-empty tiles
 	Range int          `json:"range"`
 	Tiles []atlas.Tile `json:"tiles"`
@@ -94,9 +89,6 @@ func (s Server) Rover(account string) (r RoverResponse, err error) {
 
 // RoverResponse includes information about the rover in question
 type RoverResponse struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error,omitempty"`
-
 	// The current position of this rover
 	Attributes game.RoverAttributes `json:"attributes"`
 }
