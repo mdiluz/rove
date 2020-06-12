@@ -3,7 +3,7 @@ info:
   description: "Rove is an asychronous nomadic game about exploring a planet as part of a loose community"
   version: "0.1"
   title: "Rove Server"
-host: "api.rove-game.com"
+host: "rove-game.com:8080"
 basePath: "/"
 tags:
 - name: "server"
