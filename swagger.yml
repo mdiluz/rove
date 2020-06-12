@@ -1,0 +1,232 @@
+swagger: "2.0"
+info:
+  description: "Rove is an asychronous nomadic game about exploring a planet as part of a loose community"
+  version: "0.1"
+  title: "Rove Server"
+host: "api.rove-game.com"
+basePath: "/"
+tags:
+- name: "server"
+  description: "Interactions with the server itself"
+- name: "accounts"
+  description: "Access to accounts"
+- name: "rove"
+  description: "Operations for the game"
+schemes:
+- "http"
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /status:
+    get:
+      tags:
+      - "server"
+      summary: "Server status"
+      description: "Responds with various details about the current server status"
+      operationId: "Status"
+      responses:
+        "200":
+          description: "Server is active"
+          schema:
+            $ref: '#/definitions/status'
+  /register:
+    post:
+      tags:
+        - "accounts"
+      summary: "Register an account"
+      description: "Tries to register an account with the given name"
+      operationId: "Register"
+      parameters:
+        - in: body
+          name: name
+          schema:
+            $ref: '#/definitions/register-data'
+      responses:
+        "200":
+          description: "Successfully attempted to create account, check success value in body"
+          schema:
+            $ref: '#/definitions/register-response'
+
+  /{account}/commands:
+    post:
+      tags:
+        - rove
+      summary: Send commands to rover
+      description: "Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent"
+      operationId: "Commands"
+      parameters:
+        - in: path
+          name: account
+          required: true
+          type: string
+        - in: body
+          name: commands
+          schema:
+            $ref: '#/definitions/commands-data'
+      responses:
+        "200":
+          description: "Recieved commands, check success value in body"
+          schema:
+            $ref: '#/definitions/commands-response'
+
+  /{account}/radar:
+    get:
+      tags:
+        - rove
+      summary: Get radar information
+      description: "Gets the radar output for the given rover"
+      operationId: "Radar"
+      parameters:
+        - in: path
+          name: account
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Recieved request, check success value in body"
+          schema:
+            $ref: '#/definitions/radar-response'
+
+  /{account}/rover:
+    get:
+      tags:
+        - rove
+      summary: Get rover information
+      description: "Gets information for the account's rover"
+      operationId: "Rover"
+      parameters:
+        - in: path
+          name: account
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Recieved request, check success value in body"
+          schema:
+            $ref: '#/definitions/rover-response'
+
+definitions:
+  status:
+
+    properties:
+      ready:
+        type: boolean
+        example: true
+      version:
+        type: string
+        example: "v0.12-1-g7d1a2d7"
+      tick:
+        type: integer
+        example: 5
+      nexttick:
+        type: string
+        example: "15:30:00"
+
+  register-data:
+    properties:
+      name:
+        type: string
+        example: "myname"
+    required:
+      - name
+
+  register-response:
+    properties:
+      success:
+        type: boolean
+        example: false
+      error:
+        type: string
+        example: "account with name already existed"
+
+  command:
+    properties:
+      command:
+        type: string
+        example: move
+      bearing:
+        type: string
+        example: NE
+      duration:
+        type: integer
+        example: 5
+
+  commands-data:
+    properties:
+      commands:
+        type: array
+        items:
+          type: object
+          properties:
+            schema:
+              $ref: '#/definitions/command'
+      error:
+        type: string
+        example: "account with name already existed"
+
+  commands-response:
+    properties:
+      success:
+        type: boolean
+        example: false
+      error:
+        type: string
+        example: "invalid bearing 'SN'"
+
+  radar-response:
+    properties:
+      success:
+        type: boolean
+        example: false
+      error:
+        type: string
+        example: "unknown account"
+      range:
+        type: integer
+        example: 5
+      tiles:
+        type: array
+        items:
+          type: integer
+
+  vector:
+    properties:
+      'x':
+        type: integer
+        example: 1
+      'y':
+        type: integer
+        example: 2
+
+  rover-attributes:
+    properties:
+      speed:
+        type: integer
+        example: 1
+      range:
+        type: integer
+        example: 5
+      name:
+        type: string
+        example: rover-one
+      position:
+        type: object
+        properties:
+          schema:
+            $ref: '#/definitions/vector'
+
+  rover-response:
+    properties:
+      success:
+        type: boolean
+        example: false
+      error:
+        type: string
+        example: "unknown account"
+      attributes:
+          type: object
+          properties:
+            schema:
+              $ref: '#/definitions/rover-attributes'
