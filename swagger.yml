@@ -75,7 +75,7 @@ paths:
         "200":
           description: "Successfully queued commands"
         "400":
-          description: "Bad request, typically due to duplicate name"
+          description: "Bad request, typically due to unknown command parameters"
           schema:
             $ref: '#/definitions/error'
         "500":
@@ -101,7 +101,7 @@ paths:
           schema:
             $ref: '#/definitions/radar-response'
         "400":
-          description: "Bad request, typically due to duplicate name"
+          description: "Bad request, typically due to unknown account"
           schema:
             $ref: '#/definitions/error'
         "500":
@@ -127,7 +127,7 @@ paths:
           schema:
             $ref: '#/definitions/rover-response'
         "400":
-          description: "Bad request, typically due to duplicate name"
+          description: "Bad request, typically due to unknown account"
           schema:
             $ref: '#/definitions/error'
         "500":
