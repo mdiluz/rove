@@ -139,27 +139,33 @@ definitions:
   status:
     properties:
       ready:
+        description: Whether the server is ready to accept requests
         type: boolean
         example: true
       version:
+        description: The version of the server in v{major}.{minor}-{delta}-{sha} form
         type: string
         example: "v0.12-1-g7d1a2d7"
       tick:
+        description: The tick rate of the server in minutes (how many minutes per tick)
         type: integer
         example: 5
       nexttick:
+        description: The time the next tick will occur
         type: string
         example: "15:30:00"
 
   error:
     properties:
       error:
+        description: An explanation for the HTTP error returned
         type: string
         example: "account not found"
 
   register-data:
     properties:
       name:
+        description: The account name
         type: string
         example: "myname"
     required:
@@ -181,22 +187,22 @@ definitions:
   commands-data:
     properties:
       commands:
+        description: A set of commands to exectute in the order given
         type: array
         items:
           type: object
           properties:
             schema:
               $ref: '#/definitions/command'
-      error:
-        type: string
-        example: "account with name already existed"
 
   radar-response:
     properties:
       range:
+        description: The range in tiles from the rover of the radar data
         type: integer
         example: 5
       tiles:
+        description: A 1D array representing range*2 + 1 squared set of tiles, origin bottom left and in row->column order
         type: array
         items:
           type: integer
@@ -213,15 +219,19 @@ definitions:
   rover-attributes:
     properties:
       speed:
+        description: The speed the rover can move per tick
         type: integer
         example: 1
       range:
+        description: The range of this rover's radar
         type: integer
         example: 5
       name:
+        description: The name of the rover
         type: string
         example: rover-one
       position:
+        description: Position of the rover in world coordinates
         type: object
         properties:
           schema:
@@ -230,6 +240,7 @@ definitions:
   rover-response:
     properties:
       attributes:
+          description: The attributes of the given rover
           type: object
           properties:
             schema:
