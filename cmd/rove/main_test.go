@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultAddress = "localhost:80"
+	defaultAddress = "localhost:8080"
 )
 
 func Test_InnerMain(t *testing.T) {

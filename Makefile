@@ -18,6 +18,9 @@ test:
 	@echo Integration tests
 	docker-compose up --build --exit-code-from=rove-tests --abort-on-container-exit rove-tests
 	go tool cover -html=/tmp/coverage-data/c.out -o /tmp/coverage.html
+
+	@echo Validating swagger spec
+	swagger validate swagger.yml
 	
 	@echo Done, coverage data can be found in /tmp/coverage.html
 

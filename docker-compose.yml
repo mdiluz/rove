@@ -18,16 +18,26 @@ services:
       - persistent-data:/mnt/rove-server:rw
     command: [ ./rove-accountant ]
 
+  rove-docs:
+    build:
+      context: .
+      dockerfile: Dockerfile.docs
+    image: rove-docs:latest
+    ports:
+      - "80:80"
+    environment: 
+      - PORT=80
+
   rove-server:
-    depends_on: [ rove-accountant ]
+    depends_on: [ rove-accountant, rove-docs ]
     build:
       context: .
       dockerfile: Dockerfile
     image: rove:latest
     ports:
-      - "80:80"
+      - "8080:8080"
     environment:
-      - HOST_ADDRESS=:80
+      - HOST_ADDRESS=:8080
       - DATA_PATH=/mnt/rove-server
       - ACCOUNTANT_ADDRESS=rove-accountant:8081
     volumes:
@@ -41,7 +51,7 @@ services:
     image: rove:latest
     environment:
       - ACCOUNTANT_ADDRESS=rove-accountant:8081
-      - ROVE_SERVER_ADDRESS=rove-server:80
+      - ROVE_SERVER_ADDRESS=rove-server:8080
     command: [ "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/mnt/coverage-data/c.out", "-count", "1" ]
     volumes:
       - /tmp/coverage-data:/mnt/coverage-data:rw

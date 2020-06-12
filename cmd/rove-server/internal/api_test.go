@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultAddress = "localhost:80"
+	defaultAddress = "localhost:8080"
 )
 
 var serv = func() rove.Server {
