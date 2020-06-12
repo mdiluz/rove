@@ -10,5 +10,6 @@ require (
 	github.com/robfig/cron v1.2.0
 	github.com/stretchr/testify v1.6.0
 	github.com/tjarratt/babble v0.0.0-20191209142150-eecdf8c2339d
+	golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
 	google.golang.org/grpc v1.29.1
 )

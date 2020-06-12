@@ -10,7 +10,7 @@ service Accountant {
     rpc Register(RegisterInfo) returns (RegisterResponse) {}
 
     // AssignValue assigns a key-value pair to an account, or overwrites an existing key
-    rpc AssignValue(DataKeyValue) returns (Response) {}
+    rpc AssignValue(DataKeyValue) returns (DataKeyResponse) {}
 
     // GetValue will get the value for a key for an account
     rpc GetValue(DataKey) returns (DataResponse) {}
@@ -23,11 +23,7 @@ message RegisterInfo {
 }
 
 // RegisterResponse is the response information from registering an account
-message RegisterResponse {
-    // The error value should only be populated if success is false
-    bool success = 1;
-    string error = 2;
-}
+message RegisterResponse {}
 
 // DataKeyValue represents a simple key value pair to assign to an account
 message DataKeyValue {
@@ -39,12 +35,8 @@ message DataKeyValue {
     string value = 3;
 }
 
-// Response is a simple response with success and error
-message Response {
-    // error should only be populated if success is false
-    bool success = 1;
-    string error = 2;
-}
+// DataKeyResponse is a simple response
+message DataKeyResponse {}
 
 // DataKey describes a simple key value with an account, for fetching
 message DataKey {
@@ -57,10 +49,6 @@ message DataKey {
 
 // DataResponse describes a data fetch response
 message DataResponse {
-    // error should only be populated if success is false
-    bool success = 1;
-    string error = 2;
-
     // The value of the key
     string value = 3;
 }

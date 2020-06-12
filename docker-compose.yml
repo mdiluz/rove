@@ -18,18 +18,8 @@ services:
       - persistent-data:/mnt/rove-server:rw
     command: [ ./rove-accountant ]
 
-  rove-docs:
-    build:
-      context: .
-      dockerfile: Dockerfile.docs
-    image: rove-docs:latest
-    ports:
-      - "80:80"
-    environment: 
-      - PORT=80
-
   rove-server:
-    depends_on: [ rove-accountant, rove-docs ]
+    depends_on: [ rove-accountant ]
     build:
       context: .
       dockerfile: Dockerfile

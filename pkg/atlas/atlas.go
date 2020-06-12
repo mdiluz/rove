@@ -12,7 +12,7 @@ import (
 // Chunk represents a fixed square grid of tiles
 type Chunk struct {
 	// Tiles represents the tiles within the chunk
-	Tiles []Tile `json:"tiles"`
+	Tiles []byte `json:"tiles"`
 }
 
 // Atlas represents a grid of Chunks
@@ -43,7 +43,7 @@ func NewAtlas(size, chunkSize int) Atlas {
 	// Initialise all the chunks
 	for i := range a.Chunks {
 		a.Chunks[i] = Chunk{
-			Tiles: make([]Tile, chunkSize*chunkSize),
+			Tiles: make([]byte, chunkSize*chunkSize),
 		}
 	}
 
@@ -90,7 +90,7 @@ func (a *Atlas) SpawnWalls() error {
 }
 
 // SetTile sets an individual tile's kind
-func (a *Atlas) SetTile(v vector.Vector, tile Tile) error {
+func (a *Atlas) SetTile(v vector.Vector, tile byte) error {
 	chunk := a.toChunk(v)
 	if chunk >= len(a.Chunks) {
 		return fmt.Errorf("location outside of allocated atlas")
@@ -106,7 +106,7 @@ func (a *Atlas) SetTile(v vector.Vector, tile Tile) error {
 }
 
 // GetTile will return an individual tile
-func (a *Atlas) GetTile(v vector.Vector) (Tile, error) {
+func (a *Atlas) GetTile(v vector.Vector) (byte, error) {
 	chunk := a.toChunk(v)
 	if chunk >= len(a.Chunks) {
 		return 0, fmt.Errorf("location outside of allocated atlas")

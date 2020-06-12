@@ -225,7 +225,7 @@ func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (RoverAttributes, err
 }
 
 // RadarFromRover can be used to query what a rover can currently see
-func (w *World) RadarFromRover(id uuid.UUID) ([]atlas.Tile, error) {
+func (w *World) RadarFromRover(id uuid.UUID) ([]byte, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
@@ -256,7 +256,7 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]atlas.Tile, error) {
 		}
 
 		// Gather up all tiles within the range
-		var radar = make([]atlas.Tile, radarSpan*radarSpan)
+		var radar = make([]byte, radarSpan*radarSpan)
 		for j := scanMin.Y; j <= scanMax.Y; j++ {
 			for i := scanMin.X; i <= scanMax.X; i++ {
 				q := vector.Vector{X: i, Y: j}
@@ -381,7 +381,7 @@ func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err 
 }
 
 // PrintTiles simply prints the input tiles directly for debug
-func PrintTiles(tiles []atlas.Tile) {
+func PrintTiles(tiles []byte) {
 	num := int(math.Sqrt(float64(len(tiles))))
 	for j := num - 1; j >= 0; j-- {
 		for i := 0; i < num; i++ {

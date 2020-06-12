@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package rove;
+
+import "google/protobuf/empty.proto";
+
+service RoverServer {
+    // Send commands to rover
+    // 
+    // Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent
+    rpc Commands(CommandsRequest) returns (google.protobuf.Empty) {}
+
+    // Get radar information
+    // 
+    // Gets the radar output for the given rover
+    rpc Radar(RadarRequest) returns (RadarResponse) {}
+
+    // Register an account
+    // 
+    // Tries to register an account with the given name
+    rpc Register(RegisterRequest) returns (google.protobuf.Empty) {}
+
+    // Get rover information
+    // 
+    // Gets information for the account's rover
+    rpc Rover(RoverRequest) returns (RoverResponse) {}
+
+    // Server status
+    // 
+    // Responds with various details about the current server status
+    rpc Status(google.protobuf.Empty) returns (StatusResponse) {}
+}
+
+message Command {
+    // The command to execute, currently only accepts move, which requires a bearing and a duration.
+    string command = 1;
+
+    string bearing = 2;
+    int32 duration = 3;
+}
+
+message CommandsRequest {
+    string account = 1;
+    repeated Command commands = 2;
+}
+
+message Error {
+    // An explanation for the HTTP error returned
+    string error = 1;
+}
+
+message RadarRequest {
+    string account = 1;
+}
+
+message RadarResponse {
+    // The range in tiles from the rover of the radar data
+    int32 range = 1;
+
+    // A 1D array representing range*2 + 1 squared set of tiles, origin bottom left and in row->column order
+    bytes tiles = 2;
+}
+
+message RegisterRequest {
+    string name = 1;
+}
+
+message RoverRequest {
+    string account = 1;
+}
+
+message RoverResponse {
+    // The name of the rover
+    string name = 1;
+
+    // Position of the rover in world coordinates
+    Vector position = 2;
+
+    // The range of this rover's radar
+    int32 range = 3;
+
+    // The speed the rover can move per tick
+    int32 speed = 4;
+}
+
+message StatusResponse {
+    // The time the next tick will occur
+    string next_tick = 1;
+
+    // Whether the server is ready to accept requests
+    bool ready = 2;
+
+    // The tick rate of the server in minutes (how many minutes per tick)
+    int32 tick = 3;
+
+    // The version of the server in v{major}.{minor}-{delta}-{sha} form
+    string version = 4;
+}
+
+message Vector {
+    int32 x = 1;
+    int32 y = 2;
+}

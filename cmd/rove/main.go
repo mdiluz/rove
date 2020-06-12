@@ -7,10 +7,14 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"time"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
 var USAGE = ""
@@ -90,7 +94,13 @@ func InnerMain(command string) error {
 	}
 
 	// Set up the server
-	var server = rove.Server(config.Host)
+	clientConn, err := grpc.Dial(config.Host, grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	var client = rove.NewRoverServerClient(clientConn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	// Grab the account
 	var account = config.Accounts[config.Host]
@@ -98,7 +108,7 @@ func InnerMain(command string) error {
 	// Handle all the commands
 	switch command {
 	case "status":
-		response, err := server.Status()
+		response, err := client.Status(ctx, &empty.Empty{})
 		switch {
 		case err != nil:
 			return err
@@ -114,10 +124,10 @@ func InnerMain(command string) error {
 		if len(*name) == 0 {
 			return fmt.Errorf("must set name with -name")
 		}
-		d := rove.RegisterData{
+		d := rove.RegisterRequest{
 			Name: *name,
 		}
-		_, err := server.Register(d)
+		_, err := client.Register(ctx, &d)
 		switch {
 		case err != nil:
 			return err
@@ -128,11 +138,12 @@ func InnerMain(command string) error {
 		}
 
 	case "move":
-		d := rove.CommandData{
-			Commands: []game.Command{
+		d := rove.CommandsRequest{
+			Account: account,
+			Commands: []*rove.Command{
 				{
 					Command:  game.CommandMove,
-					Duration: *duration,
+					Duration: int32(*duration),
 					Bearing:  *bearing,
 				},
 			},
@@ -142,7 +153,7 @@ func InnerMain(command string) error {
 			return err
 		}
 
-		_, err := server.Command(account, d)
+		_, err := client.Commands(ctx, &d)
 		switch {
 		case err != nil:
 			return err
@@ -152,11 +163,12 @@ func InnerMain(command string) error {
 		}
 
 	case "radar":
+		dat := rove.RadarRequest{Account: account}
 		if err := verifyId(account); err != nil {
 			return err
 		}
 
-		response, err := server.Radar(account)
+		response, err := client.Radar(ctx, &dat)
 		switch {
 		case err != nil:
 			return err
@@ -167,17 +179,18 @@ func InnerMain(command string) error {
 		}
 
 	case "rover":
+		req := rove.RoverRequest{Account: account}
 		if err := verifyId(account); err != nil {
 			return err
 		}
-		response, err := server.Rover(account)
+		response, err := client.Rover(ctx, &req)
 
 		switch {
 		case err != nil:
 			return err
 
 		default:
-			fmt.Printf("attributes: %+v\n", response.Attributes)
+			fmt.Printf("attributes: %+v\n", response)
 		}
 	case "config":
 		fmt.Printf("host: %s\taccount: %s\n", config.Host, account)

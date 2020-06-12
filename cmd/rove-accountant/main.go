@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -34,20 +33,20 @@ func (a *accountantServer) Register(ctx context.Context, in *accounts.RegisterIn
 	log.Printf("Registering account: %s\n", in.Name)
 	if _, err := a.accountant.RegisterAccount(in.Name); err != nil {
 		log.Printf("Error: %s\n", err)
-		return &accounts.RegisterResponse{Success: false, Error: fmt.Sprintf("error registering account: %s", err)}, nil
+		return nil, err
 	}
 
 	// Save out the accounts
 	if err := persistence.Save("accounts", a.accountant); err != nil {
 		log.Printf("Error: %s\n", err)
-		return &accounts.RegisterResponse{Success: false, Error: fmt.Sprintf("failed to save accounts: %s", err)}, nil
+		return nil, err
 	}
 
-	return &accounts.RegisterResponse{Success: true}, nil
+	return &accounts.RegisterResponse{}, nil
 }
 
 // AssignData assigns a key value pair to an account
-func (a *accountantServer) AssignValue(_ context.Context, in *accounts.DataKeyValue) (*accounts.Response, error) {
+func (a *accountantServer) AssignValue(_ context.Context, in *accounts.DataKeyValue) (*accounts.DataKeyResponse, error) {
 	a.sync.RLock()
 	defer a.sync.RUnlock()
 
@@ -56,10 +55,10 @@ func (a *accountantServer) AssignValue(_ context.Context, in *accounts.DataKeyVa
 	err := a.accountant.AssignData(in.Account, in.Key, in.Value)
 	if err != nil {
 		log.Printf("Error: %s\n", err)
-		return &accounts.Response{Success: false, Error: err.Error()}, nil
+		return nil, err
 	}
 
-	return &accounts.Response{Success: true}, nil
+	return &accounts.DataKeyResponse{}, nil
 
 }
 
@@ -73,10 +72,10 @@ func (a *accountantServer) GetValue(_ context.Context, in *accounts.DataKey) (*a
 	data, err := a.accountant.GetValue(in.Account, in.Key)
 	if err != nil {
 		log.Printf("Error: %s\n", err)
-		return &accounts.DataResponse{Success: false, Error: err.Error()}, nil
+		return nil, err
 	}
 
-	return &accounts.DataResponse{Success: true, Value: data}, nil
+	return &accounts.DataResponse{Value: data}, nil
 
 }
 
@@ -117,7 +116,7 @@ func main() {
 	// Serve the RPC server
 	log.Printf("Serving accountant on %s\n", address)
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("failed to server gRPC: %s", err)
+		log.Fatalf("failed to serve gRPC: %s", err)
 	}
 
 	// Save out the accountant data

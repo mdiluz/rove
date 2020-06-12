@@ -10,6 +10,7 @@ install:
 
 gen:
 	protoc --proto_path pkg/accounts --go_out=plugins=grpc:pkg/accounts/ --go_opt=paths=source_relative  pkg/accounts/accounts.proto
+	protoc --proto_path pkg/rove --go_out=plugins=grpc:pkg/rove/ --go_opt=paths=source_relative  pkg/rove/rove.proto
 
 test:
 	@echo Unit tests
@@ -18,9 +19,6 @@ test:
 	@echo Integration tests
 	docker-compose up --build --exit-code-from=rove-tests --abort-on-container-exit rove-tests
 	go tool cover -html=/tmp/coverage-data/c.out -o /tmp/coverage.html
-
-	@echo Validating swagger spec
-	swagger validate swagger.yml
 	
 	@echo Done, coverage data can be found in /tmp/coverage.html
 

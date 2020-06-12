@@ -1,12 +1,9 @@
 package atlas
 
-// Tile represents the type of a tile on the map
-type Tile byte
-
 const (
-	TileEmpty = Tile(0)
-	TileRover = Tile(1)
+	TileEmpty = byte(0)
+	TileRover = byte(1)
 
-	TileWall = Tile(2)
-	TileRock = Tile(3)
+	TileWall = byte(2)
+	TileRock = byte(3)
 )

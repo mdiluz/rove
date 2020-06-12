@@ -2,20 +2,17 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/persistence"
+	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/robfig/cron"
 	"google.golang.org/grpc"
 )
@@ -40,10 +37,9 @@ type Server struct {
 	accountant accounts.AccountantClient
 	clientConn *grpc.ClientConn
 
-	// HTTP server
-	listener net.Listener
-	server   *http.Server
-	router   *mux.Router
+	// gRPC server
+	netListener net.Listener
+	grpcServ    *grpc.Server
 
 	// Config settings
 	address     string
@@ -85,13 +81,10 @@ func OptionTick(minutes int) ServerOption {
 // NewServer sets up a new server
 func NewServer(opts ...ServerOption) *Server {
 
-	router := mux.NewRouter().StrictSlash(true)
-
 	// Set up the default server
 	s := &Server{
 		address:     "",
 		persistence: EphemeralData,
-		router:      router,
 		schedule:    cron.New(),
 	}
 
@@ -99,9 +92,6 @@ func NewServer(opts ...ServerOption) *Server {
 	for _, o := range opts {
 		o(s)
 	}
-
-	// Set up the server object
-	s.server = &http.Server{Addr: s.address, Handler: s.router}
 
 	// Start small, we can grow the world later
 	s.world = game.NewWorld(4, 8)
@@ -133,18 +123,14 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 		return err
 	}
 
-	// Set up the handlers
-	for _, route := range Routes {
-		s.router.HandleFunc(route.path, s.wrapHandler(route.method, route.handler))
+	// Set up the RPC server and register
+	s.netListener, err = net.Listen("tcp", s.address)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
 	}
+	s.grpcServ = grpc.NewServer()
+	rove.RegisterRoverServerServer(s.grpcServ, s)
 
-	// Start the listen
-	log.Printf("Listening on %s\n", s.server.Addr)
-	if s.listener, err = net.Listen("tcp", s.server.Addr); err != nil {
-		return err
-	}
-
-	s.address = s.listener.Addr().String()
 	return nil
 }
 
@@ -178,9 +164,10 @@ func (s *Server) Run() {
 		log.Printf("First server tick scheduled for %s\n", s.schedule.Entries()[0].Next.Format("15:04:05"))
 	}
 
-	// Serve the http requests
-	if err := s.server.Serve(s.listener); err != nil && err != http.ErrServerClosed {
-		log.Fatal(err)
+	// Serve the RPC server
+	log.Printf("Serving rove on %s\n", s.address)
+	if err := s.grpcServ.Serve(s.netListener); err != nil && err != grpc.ErrServerStopped {
+		log.Fatalf("failed to serve gRPC: %s", err)
 	}
 }
 
@@ -189,12 +176,8 @@ func (s *Server) Stop() error {
 	// Stop the cron
 	s.schedule.Stop()
 
-	// Try and shut down the http server
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := s.server.Shutdown(ctx); err != nil {
-		return err
-	}
+	// Stop the gRPC
+	s.grpcServ.Stop()
 
 	// Close the accountant connection
 	if err := s.clientConn.Close(); err != nil {
@@ -206,7 +189,7 @@ func (s *Server) Stop() error {
 
 // Close waits until the server is finished and closes up shop
 func (s *Server) Close() error {
-	// Wait until the server has shut down
+	// Wait until the world has shut down
 	s.sync.Wait()
 
 	// Save and return
@@ -253,40 +236,6 @@ type BadRequestError struct {
 	Error string `json:"error"`
 }
 
-// wrapHandler wraps a request handler in http checks
-func (s *Server) wrapHandler(method string, handler Handler) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Log the request
-		log.Printf("%s\t%s\n", r.Method, r.RequestURI)
-
-		vars := mux.Vars(r)
-
-		// Verify the method, call the handler, and encode the return
-		if r.Method != method {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-
-		val, err := handler(s, vars, r.Body)
-		if err != nil {
-			log.Printf("Failed to handle http request: %s", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-
-		} else if _, ok := val.(BadRequestError); ok {
-			w.WriteHeader(http.StatusBadRequest)
-		}
-
-		if err := json.NewEncoder(w).Encode(val); err != nil {
-			log.Printf("Failed to encode reply to json: %s", err)
-			w.WriteHeader(http.StatusInternalServerError)
-
-		} else {
-			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		}
-	}
-}
-
 // SpawnRoverForAccount spawns the rover rover for an account
 func (s *Server) SpawnRoverForAccount(account string) (game.RoverAttributes, uuid.UUID, error) {
 	if inst, err := s.world.SpawnRover(); err != nil {
@@ -297,9 +246,9 @@ func (s *Server) SpawnRoverForAccount(account string) (game.RoverAttributes, uui
 
 	} else {
 		keyval := accounts.DataKeyValue{Account: account, Key: "rover", Value: inst.String()}
-		resp, err := s.accountant.AssignValue(context.Background(), &keyval)
-		if err != nil || !resp.Success {
-			log.Printf("Failed to assign rover to account, %s, %s", err, resp.Error)
+		_, err := s.accountant.AssignValue(context.Background(), &keyval)
+		if err != nil {
+			log.Printf("Failed to assign rover to account, %s", err)
 
 			// Try and clear up the rover
 			if err := s.world.DestroyRover(inst); err != nil {
