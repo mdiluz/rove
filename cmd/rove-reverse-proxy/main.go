@@ -26,7 +26,7 @@ func run() error {
 	fmt.Printf("Hosting reverse-proxy on %s for %s\n", address, endpoint)
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err := rove.RegisterRoveServerHandlerFromEndpoint(ctx, mux, endpoint, opts)
+	err := rove.RegisterRoveHandlerFromEndpoint(ctx, mux, endpoint, opts)
 	if err != nil {
 		return err
 	}
