@@ -69,6 +69,8 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 				X: int32(attrib.Pos.X),
 				Y: int32(attrib.Pos.Y),
 			},
+			Speed: int32(attrib.Speed),
+			Range: int32(attrib.Range),
 		}
 	}
 	return response, nil

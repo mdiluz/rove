@@ -13,7 +13,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/rove"
+	"github.com/stretchr/testify/assert"
 )
 
 // Server is a simple wrapper to a server path
@@ -68,13 +70,59 @@ func TestServer_Status(t *testing.T) {
 }
 
 func TestServer_Register(t *testing.T) {
+	req := &rove.RegisterRequest{Name: uuid.New().String()}
+	resp := &rove.RegisterResponse{}
+	err := serv.Request("POST", "register", req, resp)
+	assert.NoError(t, err, "First register attempt should pass")
+	err = serv.Request("POST", "register", req, resp)
+	assert.Error(t, err, "Second identical register attempt should fail")
 }
 
 func TestServer_Command(t *testing.T) {
+	acc := uuid.New().String()
+	err := serv.Request("POST", "register", &rove.RegisterRequest{Name: acc}, &rove.RegisterResponse{})
+	assert.NoError(t, err, "First register attempt should pass")
+
+	err = serv.Request("POST", "commands", &rove.CommandsRequest{
+		Account: acc,
+		Commands: []*rove.Command{
+			{
+				Command:  "move",
+				Bearing:  "NE",
+				Duration: 1,
+			},
+		},
+	}, &rove.CommandsResponse{})
+	assert.NoError(t, err, "Commands should should pass")
 }
 
 func TestServer_Radar(t *testing.T) {
+	acc := uuid.New().String()
+	err := serv.Request("POST", "register", &rove.RegisterRequest{Name: acc}, &rove.RegisterResponse{})
+	assert.NoError(t, err, "First register attempt should pass")
+
+	resp := &rove.RadarResponse{}
+	err = serv.Request("POST", "radar", &rove.RadarRequest{
+		Account: acc,
+	}, resp)
+	assert.NoError(t, err, "Radar sould pass should pass")
+	assert.NotZero(t, resp.Range, "Radar should return valid range")
+	w := int(resp.Range*2 + 1)
+	assert.Equal(t, w*w, len(resp.Tiles), "radar should return correct number of tiles")
 }
 
 func TestServer_Rover(t *testing.T) {
+	acc := uuid.New().String()
+	err := serv.Request("POST", "register", &rove.RegisterRequest{Name: acc}, &rove.RegisterResponse{})
+	assert.NoError(t, err, "First register attempt should pass")
+
+	resp := &rove.RoverResponse{}
+	err = serv.Request("POST", "rover", &rove.RoverRequest{
+		Account: acc,
+	}, resp)
+	assert.NoError(t, err, "Rover sould pass should pass")
+	assert.NotZero(t, resp.Range, "Rover should return valid range")
+	assert.NotZero(t, len(resp.Name), "Rover should return valid name")
+	assert.NotZero(t, resp.Speed, "Rover should return valid speed")
+	assert.NotZero(t, resp.Position, "Rover should return valid position")
 }

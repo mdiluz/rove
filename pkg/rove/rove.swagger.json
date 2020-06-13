@@ -46,7 +46,7 @@
       }
     },
     "/radar": {
-      "get": {
+      "post": {
         "summary": "Get radar information",
         "description": "Gets the radar output for the given rover",
         "operationId": "Rove_Radar",
@@ -66,11 +66,12 @@
         },
         "parameters": [
           {
-            "name": "account",
-            "description": "The account for this request.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/roveRadarRequest"
+            }
           }
         ],
         "tags": [
@@ -113,7 +114,7 @@
       }
     },
     "/rover": {
-      "get": {
+      "post": {
         "summary": "Get rover information",
         "description": "Gets information for the account's rover",
         "operationId": "Rove_Rover",
@@ -133,11 +134,12 @@
         },
         "parameters": [
           {
-            "name": "account",
-            "description": "The account for this request.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/roveRoverRequest"
+            }
           }
         ],
         "tags": [
@@ -242,6 +244,15 @@
       "type": "object",
       "title": "Empty placeholder"
     },
+    "roveRadarRequest": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": "string",
+          "title": "The account for this request"
+        }
+      }
+    },
     "roveRadarResponse": {
       "type": "object",
       "properties": {
@@ -269,6 +280,15 @@
     "roveRegisterResponse": {
       "type": "object",
       "title": "Empty placeholder"
+    },
+    "roveRoverRequest": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": "string",
+          "title": "The account for this request"
+        }
+      }
     },
     "roveRoverResponse": {
       "type": "object",

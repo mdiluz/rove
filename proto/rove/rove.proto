@@ -41,7 +41,8 @@ service Rove {
     // Gets the radar output for the given rover
     rpc Radar(RadarRequest) returns (RadarResponse) {
         option (google.api.http) = {
-            get: "/radar"
+            post: "/radar"
+            body: "*"
           };
     }
 
@@ -50,7 +51,8 @@ service Rove {
     // Gets information for the account's rover
     rpc Rover(RoverRequest) returns (RoverResponse) {
         option (google.api.http) = {
-            get: "/rover"
+            post: "/rover"
+            body: "*"
           };
     }
 }
