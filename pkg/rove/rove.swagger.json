@@ -15,7 +15,7 @@
       "post": {
         "summary": "Send commands to rover",
         "description": "Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent",
-        "operationId": "RoveServer_Commands",
+        "operationId": "Rove_Commands",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -41,7 +41,7 @@
           }
         ],
         "tags": [
-          "RoveServer"
+          "Rove"
         ]
       }
     },
@@ -49,7 +49,7 @@
       "get": {
         "summary": "Get radar information",
         "description": "Gets the radar output for the given rover",
-        "operationId": "RoveServer_Radar",
+        "operationId": "Rove_Radar",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -73,7 +73,7 @@
           }
         ],
         "tags": [
-          "RoveServer"
+          "Rove"
         ]
       }
     },
@@ -81,7 +81,7 @@
       "post": {
         "summary": "Register an account",
         "description": "Tries to register an account with the given name",
-        "operationId": "RoveServer_Register",
+        "operationId": "Rove_Register",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -107,7 +107,7 @@
           }
         ],
         "tags": [
-          "RoveServer"
+          "Rove"
         ]
       }
     },
@@ -115,7 +115,7 @@
       "get": {
         "summary": "Get rover information",
         "description": "Gets information for the account's rover",
-        "operationId": "RoveServer_Rover",
+        "operationId": "Rove_Rover",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -139,7 +139,7 @@
           }
         ],
         "tags": [
-          "RoveServer"
+          "Rove"
         ]
       }
     },
@@ -147,7 +147,7 @@
       "get": {
         "summary": "Server status",
         "description": "Responds with various details about the current server status",
-        "operationId": "RoveServer_Status",
+        "operationId": "Rove_Status",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -163,7 +163,7 @@
           }
         },
         "tags": [
-          "RoveServer"
+          "Rove"
         ]
       }
     }
