@@ -22,6 +22,7 @@ test:
 
 	@echo Integration tests
 	docker-compose up --build --exit-code-from=rove-tests --abort-on-container-exit rove-tests
+	docker-compose down
 	go tool cover -html=/tmp/coverage-data/c.out -o /tmp/coverage.html
 	
 	@echo Done, coverage data can be found in /tmp/coverage.html

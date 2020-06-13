@@ -7,42 +7,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"testing"
+
+	"github.com/mdiluz/rove/pkg/rove"
 )
 
 // Server is a simple wrapper to a server path
 type Server string
 
-// Get performs a Get request
-func (s Server) Get(path string, out interface{}) error {
+// Request performs a HTTP
+func (s Server) Request(method, path string, in, out interface{}) error {
 	u := url.URL{
 		Scheme: "http",
-		Host:   string(s),
-		Path:   path,
-	}
-	if resp, err := http.Get(u.String()); err != nil {
-		return err
-
-	} else if resp.StatusCode != http.StatusOK {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("failed to read response body to code %d", resp.StatusCode)
-		}
-		return fmt.Errorf("http returned status %d: %s", resp.StatusCode, string(body))
-
-	} else {
-		return json.NewDecoder(resp.Body).Decode(out)
-	}
-}
-
-// Post performs a Post request
-func (s Server) Post(path string, in, out interface{}) error {
-	u := url.URL{
-		Scheme: "http",
-		Host:   string(s),
+		Host:   fmt.Sprintf("%s:8080", string(s)),
 		Path:   path,
 	}
 	client := &http.Client{}
@@ -54,7 +35,7 @@ func (s Server) Post(path string, in, out interface{}) error {
 	}
 
 	// Set up the request
-	req, err := http.NewRequest("POST", u.String(), bytes.NewReader(marshalled))
+	req, err := http.NewRequest(method, u.String(), bytes.NewReader(marshalled))
 	if err != nil {
 		return err
 	}
@@ -76,9 +57,14 @@ func (s Server) Post(path string, in, out interface{}) error {
 	}
 }
 
-var serv = Server(os.Getenv("ROVE_GRPC"))
+var serv = Server(os.Getenv("ROVE_HTTP"))
 
 func TestServer_Status(t *testing.T) {
+	req := &rove.StatusRequest{}
+	resp := &rove.StatusResponse{}
+	if err := serv.Request("GET", "status", req, resp); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func TestServer_Register(t *testing.T) {

@@ -18,18 +18,6 @@ services:
       - persistent-data:/mnt/rove-server:rw
     command: [ ./rove-accountant ]
 
-  rove-reverse-proxy:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: rove:latest
-    ports:
-      - "8080:8080"
-    environment:
-      - PORT=8080
-      - ROVE_GRPC=rove-server:9090
-    command: [ ./rove-reverse-proxy ]
-
   rove-docs:
     build:
       context: .
@@ -41,7 +29,7 @@ services:
       - PORT=80
 
   rove-server:
-    depends_on: [ rove-accountant, rove-reverse-proxy, rove-docs]
+    depends_on: [ rove-accountant ]
     build:
       context: .
       dockerfile: Dockerfile
@@ -54,17 +42,32 @@ services:
       - ROVE_ACCOUNTANT_GRPC=rove-accountant:9091
     volumes:
       - persistent-data:/mnt/rove-server:rw
+    command: [ "./script/wait-for-it.sh", "rove-accountant:9091", "--", "./rove-server"]
+
+  rove:
+    depends_on: [ rove-server, rove-docs ]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rove:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - ROVE_GRPC=rove-server:9090
+    command: [ "./script/wait-for-it.sh", "rove-server:9090", "--", "./rove-reverse-proxy" ]
 
   rove-tests:
-    depends_on: [ rove-server ]
+    depends_on: [ rove ]
     build:
       context: .
       dockerfile: Dockerfile
     image: rove:latest
     environment:
       - ROVE_ACCOUNTANT_GRPC=rove-accountant:9091
+      - ROVE_HTTP=rove
       - ROVE_GRPC=rove-server
-    command: [ "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/mnt/coverage-data/c.out", "-count", "1" ]
+    command: [ "./script/wait-for-it.sh", "rove:8080", "--", "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/mnt/coverage-data/c.out", "-count", "1" ]
     volumes:
       - /tmp/coverage-data:/mnt/coverage-data:rw
 
