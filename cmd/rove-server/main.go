@@ -35,6 +35,10 @@ func InnerMain() {
 		return
 	}
 
+	if len(address) == 0 {
+		log.Fatalf("Must set HOST_ADDRESS")
+	}
+
 	log.Printf("Initialising version %s...\n", version.Version)
 
 	// Set the persistence path

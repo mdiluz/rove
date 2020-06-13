@@ -106,6 +106,9 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 	s.sync.Add(1)
 
 	// Connect to the accountant
+	if len(accountantAddress) == 0 {
+		log.Fatal("must set ACCOUNTANT_ADDRESS")
+	}
 	log.Printf("Dialing accountant on %s\n", accountantAddress)
 	s.clientConn, err = grpc.Dial(accountantAddress, grpc.WithInsecure())
 	if err != nil {
