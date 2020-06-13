@@ -63,7 +63,7 @@ services:
     image: rove:latest
     environment:
       - ROVE_ACCOUNTANT_GRPC=rove-accountant:9091
-      - ROVE_GRPC=rove-server:9090
+      - ROVE_GRPC=rove-server
     command: [ "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/mnt/coverage-data/c.out", "-count", "1" ]
     volumes:
       - /tmp/coverage-data:/mnt/coverage-data:rw
