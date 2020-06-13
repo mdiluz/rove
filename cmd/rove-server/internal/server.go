@@ -168,7 +168,7 @@ func (s *Server) Run() {
 	}
 
 	// Serve the RPC server
-	log.Printf("Serving rove on %s\n", s.address)
+	log.Printf("Serving gRPC on %s\n", s.address)
 	if err := s.grpcServ.Serve(s.netListener); err != nil && err != grpc.ErrServerStopped {
 		log.Fatalf("failed to serve gRPC: %s", err)
 	}

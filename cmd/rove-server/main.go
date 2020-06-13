@@ -85,7 +85,6 @@ func InnerMain() {
 	}
 
 	// Run the server
-	log.Printf("Serving HTTP on %s\n", s.Addr())
 	s.Run()
 
 	// Close the server
