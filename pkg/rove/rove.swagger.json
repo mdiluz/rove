@@ -20,7 +20,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "properties": {}
+              "$ref": "#/definitions/roveCommandsResponse"
             }
           },
           "default": {
@@ -67,6 +67,7 @@
         "parameters": [
           {
             "name": "account",
+            "description": "The account for this request.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -86,7 +87,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "properties": {}
+              "$ref": "#/definitions/roveRegisterResponse"
             }
           },
           "default": {
@@ -133,6 +134,7 @@
         "parameters": [
           {
             "name": "account",
+            "description": "The account for this request.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -210,11 +212,13 @@
           "description": "The command to execute, currently only accepts move, which requires a bearing and a duration."
         },
         "bearing": {
-          "type": "string"
+          "type": "string",
+          "title": "The bearing, example: NE"
         },
         "duration": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "title": "The duration in ticks, example: 5"
         }
       }
     },
@@ -222,15 +226,21 @@
       "type": "object",
       "properties": {
         "account": {
-          "type": "string"
+          "type": "string",
+          "title": "The account to execture these commands"
         },
         "commands": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/roveCommand"
-          }
+          },
+          "title": "The set of desired commands"
         }
       }
+    },
+    "roveCommandsResponse": {
+      "type": "object",
+      "title": "Empty placeholder"
     },
     "roveRadarResponse": {
       "type": "object",
@@ -251,9 +261,14 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "title": "The desired account name"
         }
       }
+    },
+    "roveRegisterResponse": {
+      "type": "object",
+      "title": "Empty placeholder"
     },
     "roveRoverResponse": {
       "type": "object",

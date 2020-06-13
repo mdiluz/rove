@@ -9,7 +9,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
@@ -108,7 +107,7 @@ func InnerMain(command string) error {
 	// Handle all the commands
 	switch command {
 	case "status":
-		response, err := client.Status(ctx, &empty.Empty{})
+		response, err := client.Status(ctx, &rove.StatusRequest{})
 		switch {
 		case err != nil:
 			return err

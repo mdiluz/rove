@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/game"
@@ -13,7 +12,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (s *Server) Status(context.Context, *empty.Empty) (*rove.StatusResponse, error) {
+func (s *Server) Status(context.Context, *rove.StatusRequest) (*rove.StatusResponse, error) {
 	response := &rove.StatusResponse{
 		Ready:   true,
 		Version: version.Version,
@@ -30,7 +29,7 @@ func (s *Server) Status(context.Context, *empty.Empty) (*rove.StatusResponse, er
 	return response, nil
 }
 
-func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*empty.Empty, error) {
+func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove.RegisterResponse, error) {
 	if len(req.Name) == 0 {
 		return nil, fmt.Errorf("empty account name")
 	}
@@ -46,7 +45,7 @@ func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*empt
 
 	}
 
-	return &empty.Empty{}, nil
+	return &rove.RegisterResponse{}, nil
 }
 
 func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.RoverResponse, error) {
@@ -104,7 +103,7 @@ func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.Radar
 	return response, nil
 }
 
-func (s *Server) Commands(ctx context.Context, req *rove.CommandsRequest) (*empty.Empty, error) {
+func (s *Server) Commands(ctx context.Context, req *rove.CommandsRequest) (*rove.CommandsResponse, error) {
 	if len(req.Account) == 0 {
 		return nil, fmt.Errorf("empty account")
 	}
@@ -131,5 +130,5 @@ func (s *Server) Commands(ctx context.Context, req *rove.CommandsRequest) (*empt
 		return nil, err
 	}
 
-	return &empty.Empty{}, nil
+	return &rove.CommandsResponse{}, nil
 }

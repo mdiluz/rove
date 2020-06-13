@@ -4,14 +4,13 @@ package rove;
 
 option go_package = "github.com/mdiluz/rove/pkg/rove";
 
-import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 
 service Rove {
     // Server status
     // 
     // Responds with various details about the current server status
-    rpc Status(google.protobuf.Empty) returns (StatusResponse) {
+    rpc Status(StatusRequest) returns (StatusResponse) {
         option (google.api.http) = {
             get: "/status"
           };
@@ -20,7 +19,7 @@ service Rove {
     // Register an account
     // 
     // Tries to register an account with the given name
-    rpc Register(RegisterRequest) returns (google.protobuf.Empty) {
+    rpc Register(RegisterRequest) returns (RegisterResponse) {
         option (google.api.http) = {
             post: "/register"
             body: "*"
@@ -30,7 +29,7 @@ service Rove {
     // Send commands to rover
     // 
     // Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent
-    rpc Commands(CommandsRequest) returns (google.protobuf.Empty) {
+    rpc Commands(CommandsRequest) returns (CommandsResponse) {
         option (google.api.http) = {
             post: "/commands"
             body: "*"
@@ -60,14 +59,23 @@ message Command {
     // The command to execute, currently only accepts move, which requires a bearing and a duration.
     string command = 1;
 
+    // The bearing, example: NE
     string bearing = 2;
+
+    // The duration in ticks, example: 5
     int32 duration = 3;
 }
 
 message CommandsRequest {
+    // The account to execture these commands
     string account = 1;
+
+    // The set of desired commands
     repeated Command commands = 2;
 }
+
+// Empty placeholder
+message CommandsResponse {}
 
 message Error {
     // An explanation for the HTTP error returned
@@ -75,6 +83,7 @@ message Error {
 }
 
 message RadarRequest {
+    // The account for this request
     string account = 1;
 }
 
@@ -86,11 +95,16 @@ message RadarResponse {
     bytes tiles = 2;
 }
 
+// Empty placeholder
+message RegisterResponse{}
+
 message RegisterRequest {
+    // The desired account name
     string name = 1;
 }
 
 message RoverRequest {
+    // The account for this request
     string account = 1;
 }
 
@@ -107,6 +121,9 @@ message RoverResponse {
     // The speed the rover can move per tick
     int32 speed = 4;
 }
+
+// Empty placeholder
+message StatusRequest {}
 
 message StatusResponse {
     // The time the next tick will occur
