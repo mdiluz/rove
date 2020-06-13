@@ -132,7 +132,7 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s.grpcServ = grpc.NewServer()
-	rove.RegisterRoveServerServer(s.grpcServ, s)
+	rove.RegisterRoveServer(s.grpcServ, s)
 
 	return nil
 }

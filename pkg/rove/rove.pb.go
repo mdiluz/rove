@@ -651,33 +651,33 @@ var file_rove_rove_proto_rawDesc = []byte{
 	0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x24, 0x0a, 0x06, 0x56, 0x65,
 	0x63, 0x74, 0x6f, 0x72, 0x12, 0x0c, 0x0a, 0x01, 0x78, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52,
 	0x01, 0x78, 0x12, 0x0c, 0x0a, 0x01, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x01, 0x79,
-	0x32, 0xfb, 0x02, 0x0a, 0x0a, 0x52, 0x6f, 0x76, 0x65, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x12,
-	0x47, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67,
-	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74,
-	0x79, 0x1a, 0x14, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x0f, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x09, 0x12,
-	0x07, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x4f, 0x0a, 0x08, 0x52, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x65, 0x72, 0x12, 0x15, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f,
-	0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d,
-	0x70, 0x74, 0x79, 0x22, 0x14, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x0e, 0x22, 0x09, 0x2f, 0x72, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x3a, 0x01, 0x2a, 0x12, 0x4f, 0x0a, 0x08, 0x43, 0x6f, 0x6d,
-	0x6d, 0x61, 0x6e, 0x64, 0x73, 0x12, 0x15, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x43, 0x6f, 0x6d,
-	0x6d, 0x61, 0x6e, 0x64, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67,
-	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45,
-	0x6d, 0x70, 0x74, 0x79, 0x22, 0x14, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x0e, 0x22, 0x09, 0x2f, 0x63,
-	0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x3a, 0x01, 0x2a, 0x12, 0x40, 0x0a, 0x05, 0x52, 0x61,
-	0x64, 0x61, 0x72, 0x12, 0x12, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x61, 0x64, 0x61, 0x72,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x13, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52,
-	0x61, 0x64, 0x61, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x0e, 0x82, 0xd3,
-	0xe4, 0x93, 0x02, 0x08, 0x12, 0x06, 0x2f, 0x72, 0x61, 0x64, 0x61, 0x72, 0x12, 0x40, 0x0a, 0x05,
-	0x52, 0x6f, 0x76, 0x65, 0x72, 0x12, 0x12, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x6f, 0x76,
-	0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x13, 0x2e, 0x72, 0x6f, 0x76, 0x65,
-	0x2e, 0x52, 0x6f, 0x76, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x0e,
-	0x82, 0xd3, 0xe4, 0x93, 0x02, 0x08, 0x12, 0x06, 0x2f, 0x72, 0x6f, 0x76, 0x65, 0x72, 0x42, 0x21,
-	0x5a, 0x1f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x64, 0x69,
-	0x6c, 0x75, 0x7a, 0x2f, 0x72, 0x6f, 0x76, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x72, 0x6f, 0x76,
-	0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x32, 0xf5, 0x02, 0x0a, 0x04, 0x52, 0x6f, 0x76, 0x65, 0x12, 0x47, 0x0a, 0x06, 0x53, 0x74, 0x61,
+	0x74, 0x75, 0x73, 0x12, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x14, 0x2e, 0x72, 0x6f,
+	0x76, 0x65, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x0f, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x09, 0x12, 0x07, 0x2f, 0x73, 0x74, 0x61, 0x74,
+	0x75, 0x73, 0x12, 0x4f, 0x0a, 0x08, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x12, 0x15,
+	0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x14, 0x82,
+	0xd3, 0xe4, 0x93, 0x02, 0x0e, 0x22, 0x09, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
+	0x3a, 0x01, 0x2a, 0x12, 0x4f, 0x0a, 0x08, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x12,
+	0x15, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x14,
+	0x82, 0xd3, 0xe4, 0x93, 0x02, 0x0e, 0x22, 0x09, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64,
+	0x73, 0x3a, 0x01, 0x2a, 0x12, 0x40, 0x0a, 0x05, 0x52, 0x61, 0x64, 0x61, 0x72, 0x12, 0x12, 0x2e,
+	0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x61, 0x64, 0x61, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x1a, 0x13, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x61, 0x64, 0x61, 0x72, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x0e, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x08, 0x12, 0x06,
+	0x2f, 0x72, 0x61, 0x64, 0x61, 0x72, 0x12, 0x40, 0x0a, 0x05, 0x52, 0x6f, 0x76, 0x65, 0x72, 0x12,
+	0x12, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x6f, 0x76, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x13, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x6f, 0x76, 0x65, 0x72,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x0e, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x08,
+	0x12, 0x06, 0x2f, 0x72, 0x6f, 0x76, 0x65, 0x72, 0x42, 0x21, 0x5a, 0x1f, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x64, 0x69, 0x6c, 0x75, 0x7a, 0x2f, 0x72, 0x6f,
+	0x76, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x72, 0x6f, 0x76, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -709,16 +709,16 @@ var file_rove_rove_proto_goTypes = []interface{}{
 var file_rove_rove_proto_depIdxs = []int32{
 	0,  // 0: rove.CommandsRequest.commands:type_name -> rove.Command
 	9,  // 1: rove.RoverResponse.position:type_name -> rove.Vector
-	10, // 2: rove.RoveServer.Status:input_type -> google.protobuf.Empty
-	5,  // 3: rove.RoveServer.Register:input_type -> rove.RegisterRequest
-	1,  // 4: rove.RoveServer.Commands:input_type -> rove.CommandsRequest
-	3,  // 5: rove.RoveServer.Radar:input_type -> rove.RadarRequest
-	6,  // 6: rove.RoveServer.Rover:input_type -> rove.RoverRequest
-	8,  // 7: rove.RoveServer.Status:output_type -> rove.StatusResponse
-	10, // 8: rove.RoveServer.Register:output_type -> google.protobuf.Empty
-	10, // 9: rove.RoveServer.Commands:output_type -> google.protobuf.Empty
-	4,  // 10: rove.RoveServer.Radar:output_type -> rove.RadarResponse
-	7,  // 11: rove.RoveServer.Rover:output_type -> rove.RoverResponse
+	10, // 2: rove.Rove.Status:input_type -> google.protobuf.Empty
+	5,  // 3: rove.Rove.Register:input_type -> rove.RegisterRequest
+	1,  // 4: rove.Rove.Commands:input_type -> rove.CommandsRequest
+	3,  // 5: rove.Rove.Radar:input_type -> rove.RadarRequest
+	6,  // 6: rove.Rove.Rover:input_type -> rove.RoverRequest
+	8,  // 7: rove.Rove.Status:output_type -> rove.StatusResponse
+	10, // 8: rove.Rove.Register:output_type -> google.protobuf.Empty
+	10, // 9: rove.Rove.Commands:output_type -> google.protobuf.Empty
+	4,  // 10: rove.Rove.Radar:output_type -> rove.RadarResponse
+	7,  // 11: rove.Rove.Rover:output_type -> rove.RoverResponse
 	7,  // [7:12] is the sub-list for method output_type
 	2,  // [2:7] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
@@ -881,10 +881,10 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// RoveServerClient is the client API for RoveServer service.
+// RoveClient is the client API for Rove service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type RoveServerClient interface {
+type RoveClient interface {
 	// Server status
 	//
 	// Responds with various details about the current server status
@@ -907,61 +907,61 @@ type RoveServerClient interface {
 	Rover(ctx context.Context, in *RoverRequest, opts ...grpc.CallOption) (*RoverResponse, error)
 }
 
-type roveServerClient struct {
+type roveClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewRoveServerClient(cc grpc.ClientConnInterface) RoveServerClient {
-	return &roveServerClient{cc}
+func NewRoveClient(cc grpc.ClientConnInterface) RoveClient {
+	return &roveClient{cc}
 }
 
-func (c *roveServerClient) Status(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*StatusResponse, error) {
+func (c *roveClient) Status(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*StatusResponse, error) {
 	out := new(StatusResponse)
-	err := c.cc.Invoke(ctx, "/rove.RoveServer/Status", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/rove.Rove/Status", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *roveServerClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *roveClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/rove.RoveServer/Register", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/rove.Rove/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *roveServerClient) Commands(ctx context.Context, in *CommandsRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *roveClient) Commands(ctx context.Context, in *CommandsRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/rove.RoveServer/Commands", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/rove.Rove/Commands", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *roveServerClient) Radar(ctx context.Context, in *RadarRequest, opts ...grpc.CallOption) (*RadarResponse, error) {
+func (c *roveClient) Radar(ctx context.Context, in *RadarRequest, opts ...grpc.CallOption) (*RadarResponse, error) {
 	out := new(RadarResponse)
-	err := c.cc.Invoke(ctx, "/rove.RoveServer/Radar", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/rove.Rove/Radar", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *roveServerClient) Rover(ctx context.Context, in *RoverRequest, opts ...grpc.CallOption) (*RoverResponse, error) {
+func (c *roveClient) Rover(ctx context.Context, in *RoverRequest, opts ...grpc.CallOption) (*RoverResponse, error) {
 	out := new(RoverResponse)
-	err := c.cc.Invoke(ctx, "/rove.RoveServer/Rover", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/rove.Rove/Rover", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// RoveServerServer is the server API for RoveServer service.
-type RoveServerServer interface {
+// RoveServer is the server API for Rove service.
+type RoveServer interface {
 	// Server status
 	//
 	// Responds with various details about the current server status
@@ -984,143 +984,143 @@ type RoveServerServer interface {
 	Rover(context.Context, *RoverRequest) (*RoverResponse, error)
 }
 
-// UnimplementedRoveServerServer can be embedded to have forward compatible implementations.
-type UnimplementedRoveServerServer struct {
+// UnimplementedRoveServer can be embedded to have forward compatible implementations.
+type UnimplementedRoveServer struct {
 }
 
-func (*UnimplementedRoveServerServer) Status(context.Context, *empty.Empty) (*StatusResponse, error) {
+func (*UnimplementedRoveServer) Status(context.Context, *empty.Empty) (*StatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Status not implemented")
 }
-func (*UnimplementedRoveServerServer) Register(context.Context, *RegisterRequest) (*empty.Empty, error) {
+func (*UnimplementedRoveServer) Register(context.Context, *RegisterRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (*UnimplementedRoveServerServer) Commands(context.Context, *CommandsRequest) (*empty.Empty, error) {
+func (*UnimplementedRoveServer) Commands(context.Context, *CommandsRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Commands not implemented")
 }
-func (*UnimplementedRoveServerServer) Radar(context.Context, *RadarRequest) (*RadarResponse, error) {
+func (*UnimplementedRoveServer) Radar(context.Context, *RadarRequest) (*RadarResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Radar not implemented")
 }
-func (*UnimplementedRoveServerServer) Rover(context.Context, *RoverRequest) (*RoverResponse, error) {
+func (*UnimplementedRoveServer) Rover(context.Context, *RoverRequest) (*RoverResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Rover not implemented")
 }
 
-func RegisterRoveServerServer(s *grpc.Server, srv RoveServerServer) {
-	s.RegisterService(&_RoveServer_serviceDesc, srv)
+func RegisterRoveServer(s *grpc.Server, srv RoveServer) {
+	s.RegisterService(&_Rove_serviceDesc, srv)
 }
 
-func _RoveServer_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Rove_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(empty.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RoveServerServer).Status(ctx, in)
+		return srv.(RoveServer).Status(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rove.RoveServer/Status",
+		FullMethod: "/rove.Rove/Status",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RoveServerServer).Status(ctx, req.(*empty.Empty))
+		return srv.(RoveServer).Status(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RoveServer_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Rove_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RoveServerServer).Register(ctx, in)
+		return srv.(RoveServer).Register(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rove.RoveServer/Register",
+		FullMethod: "/rove.Rove/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RoveServerServer).Register(ctx, req.(*RegisterRequest))
+		return srv.(RoveServer).Register(ctx, req.(*RegisterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RoveServer_Commands_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Rove_Commands_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CommandsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RoveServerServer).Commands(ctx, in)
+		return srv.(RoveServer).Commands(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rove.RoveServer/Commands",
+		FullMethod: "/rove.Rove/Commands",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RoveServerServer).Commands(ctx, req.(*CommandsRequest))
+		return srv.(RoveServer).Commands(ctx, req.(*CommandsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RoveServer_Radar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Rove_Radar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RadarRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RoveServerServer).Radar(ctx, in)
+		return srv.(RoveServer).Radar(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rove.RoveServer/Radar",
+		FullMethod: "/rove.Rove/Radar",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RoveServerServer).Radar(ctx, req.(*RadarRequest))
+		return srv.(RoveServer).Radar(ctx, req.(*RadarRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RoveServer_Rover_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Rove_Rover_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RoverRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RoveServerServer).Rover(ctx, in)
+		return srv.(RoveServer).Rover(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rove.RoveServer/Rover",
+		FullMethod: "/rove.Rove/Rover",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RoveServerServer).Rover(ctx, req.(*RoverRequest))
+		return srv.(RoveServer).Rover(ctx, req.(*RoverRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _RoveServer_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "rove.RoveServer",
-	HandlerType: (*RoveServerServer)(nil),
+var _Rove_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "rove.Rove",
+	HandlerType: (*RoveServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Status",
-			Handler:    _RoveServer_Status_Handler,
+			Handler:    _Rove_Status_Handler,
 		},
 		{
 			MethodName: "Register",
-			Handler:    _RoveServer_Register_Handler,
+			Handler:    _Rove_Register_Handler,
 		},
 		{
 			MethodName: "Commands",
-			Handler:    _RoveServer_Commands_Handler,
+			Handler:    _Rove_Commands_Handler,
 		},
 		{
 			MethodName: "Radar",
-			Handler:    _RoveServer_Radar_Handler,
+			Handler:    _Rove_Radar_Handler,
 		},
 		{
 			MethodName: "Rover",
-			Handler:    _RoveServer_Rover_Handler,
+			Handler:    _Rove_Rover_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

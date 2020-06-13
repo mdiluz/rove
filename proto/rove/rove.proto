@@ -7,7 +7,7 @@ option go_package = "github.com/mdiluz/rove/pkg/rove";
 import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 
-service RoveServer {
+service Rove {
     // Server status
     // 
     // Responds with various details about the current server status

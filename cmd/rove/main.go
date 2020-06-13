@@ -98,7 +98,7 @@ func InnerMain(command string) error {
 	if err != nil {
 		return err
 	}
-	var client = rove.NewRoveServerClient(clientConn)
+	var client = rove.NewRoveClient(clientConn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
