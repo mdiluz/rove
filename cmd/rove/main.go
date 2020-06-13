@@ -17,8 +17,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-var USAGE = ""
-
 // Command usage
 func Usage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s COMMAND [OPTIONS]...\n", os.Args[0])
@@ -35,6 +33,8 @@ func Usage() {
 
 var home = os.Getenv("HOME")
 var filepath = path.Join(home, ".local/share/rove.json")
+
+const gRPCport = 9090
 
 // General usage
 var ver = flag.Bool("version", false, "Display version number")
@@ -94,7 +94,7 @@ func InnerMain(command string) error {
 	}
 
 	// Set up the server
-	clientConn, err := grpc.Dial(config.Host, grpc.WithInsecure())
+	clientConn, err := grpc.Dial(fmt.Sprintf("%s:%d", config.Host, gRPCport), grpc.WithInsecure())
 	if err != nil {
 		return err
 	}

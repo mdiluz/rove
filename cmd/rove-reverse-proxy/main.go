@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
@@ -23,13 +24,17 @@ func main() {
 		log.Fatal("Must set $ROVE_GRPC")
 	}
 
-	var address = os.Getenv("ROVE_HTTP")
-	if len(address) == 0 {
-		log.Fatal("Must set $ROVE_HTTP")
+	var port = os.Getenv("PORT")
+	if len(port) == 0 {
+		log.Fatal("Must set $PORT")
+	}
+	iport, err := strconv.Atoi(port)
+	if err != nil {
+		log.Fatal("$PORT not valid int")
 	}
 
 	// Create a new mux and register it with the gRPC endpoint
-	fmt.Printf("Hosting reverse-proxy on %s for %s\n", address, endpoint)
+	fmt.Printf("Hosting reverse-proxy on %d for %s\n", iport, endpoint)
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	if err := rove.RegisterRoveHandlerFromEndpoint(ctx, mux, endpoint, opts); err != nil {
@@ -37,7 +42,7 @@ func main() {
 	}
 
 	// Start the HTTP server and proxy calls to gRPC endpoint when needed
-	if err := http.ListenAndServe(address, mux); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", iport), mux); err != nil {
 		log.Fatal(err)
 	}
 }

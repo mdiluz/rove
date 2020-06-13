@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
 
@@ -81,9 +83,13 @@ func (a *accountantServer) GetValue(_ context.Context, in *accounts.DataKey) (*a
 // main
 func main() {
 	// Verify the input
-	var address = os.Getenv("ROVE_ACCOUNTANT_GRPC")
-	if len(address) == 0 {
-		log.Fatal("No address set with $ROVE_ACCOUNTANT_GRPC")
+	var port = os.Getenv("PORT")
+	if len(port) == 0 {
+		log.Fatal("Must set $PORT")
+	}
+	iport, err := strconv.Atoi(port)
+	if err != nil {
+		log.Fatal("$PORT not valid int")
 	}
 
 	persistence.SetPath(data)
@@ -95,7 +101,7 @@ func main() {
 	}
 
 	// Set up the RPC server and register
-	lis, err := net.Listen("tcp", address)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", iport))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -114,7 +120,7 @@ func main() {
 	}()
 
 	// Serve the RPC server
-	log.Printf("Serving accountant on %s\n", address)
+	log.Printf("Serving accountant on %s\n", port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve gRPC: %s", err)
 	}

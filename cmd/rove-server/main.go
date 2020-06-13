@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -31,11 +32,14 @@ func InnerMain() {
 	}
 
 	// Address to host the server on, automatically selected if empty
-	var address = os.Getenv("ROVE_GRPC")
-	if len(address) == 0 {
-		log.Fatalf("Must set $ROVE_GRPC")
+	var port = os.Getenv("PORT")
+	if len(port) == 0 {
+		log.Fatal("Must set $PORT")
 	}
-
+	iport, err := strconv.Atoi(port)
+	if err != nil {
+		log.Fatal("$PORT not valid int")
+	}
 	log.Printf("Initialising version %s...\n", version.Version)
 
 	// Set the persistence path
@@ -53,7 +57,7 @@ func InnerMain() {
 
 	// Create the server data
 	s := internal.NewServer(
-		internal.OptionAddress(address),
+		internal.OptionAddress(fmt.Sprintf(":%d", iport)),
 		internal.OptionPersistentData(),
 		internal.OptionTick(tickRate))
 
