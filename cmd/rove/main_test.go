@@ -15,9 +15,9 @@ import (
 
 func Test_InnerMain(t *testing.T) {
 
-	var address = os.Getenv("ROVE_SERVER_ADDRESS")
+	var address = os.Getenv("ROVE_GRPC")
 	if len(address) == 0 {
-		log.Fatal("Must set ROVE_SERVER_ADDRESS")
+		log.Fatal("Must set $ROVE_GRPC")
 	}
 
 	// Set up the flags to act locally and use a temporary file

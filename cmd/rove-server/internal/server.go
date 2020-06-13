@@ -17,8 +17,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-var accountantAddress = os.Getenv("ACCOUNTANT_ADDRESS")
-
 const (
 	// PersistentData will allow the server to load and save it's state
 	PersistentData = iota
@@ -106,8 +104,9 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 	s.sync.Add(1)
 
 	// Connect to the accountant
+	accountantAddress := os.Getenv("ROVE_ACCOUNTANT_GRPC")
 	if len(accountantAddress) == 0 {
-		log.Fatal("must set ACCOUNTANT_ADDRESS")
+		log.Fatal("must set $ROVE_ACCOUNTANT_GRPC")
 	}
 	log.Printf("Dialing accountant on %s\n", accountantAddress)
 	s.clientConn, err = grpc.Dial(accountantAddress, grpc.WithInsecure())

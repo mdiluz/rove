@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
-	"time"
 
 	"github.com/mdiluz/rove/cmd/rove-server/internal"
 	"github.com/mdiluz/rove/pkg/persistence"
@@ -15,10 +14,6 @@ import (
 )
 
 var ver = flag.Bool("version", false, "Display version number")
-var quit = flag.Int("quit", 0, "Quit after n seconds, useful for testing")
-
-// Address to host the server on, automatically selected if empty
-var address = os.Getenv("HOST_ADDRESS")
 
 // Path for persistent storage
 var data = os.Getenv("DATA_PATH")
@@ -35,8 +30,10 @@ func InnerMain() {
 		return
 	}
 
+	// Address to host the server on, automatically selected if empty
+	var address = os.Getenv("ROVE_GRPC")
 	if len(address) == 0 {
-		log.Fatalf("Must set HOST_ADDRESS")
+		log.Fatalf("Must set $ROVE_GRPC")
 	}
 
 	log.Printf("Initialising version %s...\n", version.Version)
@@ -75,14 +72,6 @@ func InnerMain() {
 			panic(err)
 		}
 	}()
-
-	// Quit after a time if requested
-	if *quit != 0 {
-		go func() {
-			time.Sleep(time.Duration(*quit) * time.Second)
-			syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
-		}()
-	}
 
 	// Run the server
 	s.Run()

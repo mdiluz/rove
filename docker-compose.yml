@@ -10,9 +10,9 @@ services:
       dockerfile: Dockerfile
     image: rove:latest
     ports:
-      - "8081:8081"
+      - "9091:9091"
     environment:
-      - HOST_ADDRESS=:8081
+      - ROVE_ACCOUNTANT_GRPC=:9091
       - DATA_PATH=/mnt/rove-server
     volumes:
       - persistent-data:/mnt/rove-server:rw
@@ -26,8 +26,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - HOST_ADDRESS=:8080
-      - GRPC_ENDPOINT=rove-server:8082
+      - ROVE_HTTP=:8080
+      - ROVE_GRPC=:9090
     command: [ ./rove-reverse-proxy ]
 
   rove-docs:
@@ -47,11 +47,11 @@ services:
       dockerfile: Dockerfile
     image: rove:latest
     ports:
-      - "8082:8082"
+      - "9090:9090"
     environment:
-      - HOST_ADDRESS=:8082
+      - ROVE_GRPC=:9090
       - DATA_PATH=/mnt/rove-server
-      - ACCOUNTANT_ADDRESS=rove-accountant:8081
+      - ROVE_ACCOUNTANT_GRPC=:9091
     volumes:
       - persistent-data:/mnt/rove-server:rw
 
@@ -62,8 +62,8 @@ services:
       dockerfile: Dockerfile
     image: rove:latest
     environment:
-      - ACCOUNTANT_ADDRESS=rove-accountant:8081
-      - ROVE_SERVER_ADDRESS=rove-reverse-proxy:8080
+      - ROVE_ACCOUNTANT_GRPC=:9091
+      - ROVE_GRPC=rove-server:9090
     command: [ "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/mnt/coverage-data/c.out", "-count", "1" ]
     volumes:
       - /tmp/coverage-data:/mnt/coverage-data:rw

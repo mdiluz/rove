@@ -15,7 +15,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-var address = os.Getenv("HOST_ADDRESS")
 var data = os.Getenv("DATA_PATH")
 
 // accountantServer is the internal object to manage the requests
@@ -82,8 +81,9 @@ func (a *accountantServer) GetValue(_ context.Context, in *accounts.DataKey) (*a
 // main
 func main() {
 	// Verify the input
+	var address = os.Getenv("ROVE_ACCOUNTANT_GRPC")
 	if len(address) == 0 {
-		log.Fatal("No address set with $HOST_ADDRESS")
+		log.Fatal("No address set with $ROVE_ACCOUNTANT_GRPC")
 	}
 
 	persistence.SetPath(data)
