@@ -4,6 +4,10 @@
 // 	protoc        v3.6.1
 // source: rove/rove.proto
 
+// Rove
+//
+// Rove is an asychronous nomadic game about exploring a planet as part of a loose community
+
 package rove
 
 import (

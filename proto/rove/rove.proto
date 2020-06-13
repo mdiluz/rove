@@ -1,5 +1,8 @@
 syntax = "proto3";
 
+// Rove
+//
+// Rove is an asychronous nomadic game about exploring a planet as part of a loose community
 package rove;
 
 option go_package = "github.com/mdiluz/rove/pkg/rove";

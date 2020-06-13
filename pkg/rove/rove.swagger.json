@@ -1,7 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "rove/rove.proto",
+    "title": "Rove",
+    "description": "Rove is an asychronous nomadic game about exploring a planet as part of a loose community",
     "version": "version not set"
   },
   "consumes": [
