@@ -71,12 +71,9 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 			Range: 5.0,
 
 			// Set the name randomly
-			Name: babble.NewBabbler().Babble(),
+			Name: strings.ReplaceAll(babble.NewBabbler().Babble(), "'s", ""),
 		},
 	}
-
-	// Dictionaries tend to include the possesive
-	strings.ReplaceAll(rover.Attributes.Name, "'s", "")
 
 	// Spawn in a random place near the origin
 	rover.Attributes.Pos = vector.Vector{
