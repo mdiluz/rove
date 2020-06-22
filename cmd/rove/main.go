@@ -17,7 +17,7 @@ import (
 )
 
 // Command usage
-func Usage() {
+func printUsage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s COMMAND [OPTIONS]...\n", os.Args[0])
 	fmt.Fprintln(os.Stderr, "\nCommands:")
 	fmt.Fprintln(os.Stderr, "\tstatus  \tprints the server status")
@@ -31,14 +31,14 @@ func Usage() {
 }
 
 var home = os.Getenv("HOME")
-var filepath = path.Join(home, ".local/share/rove.json")
+var defaultData = path.Join(home, ".local/share/rove.json")
 
 const gRPCport = 9090
 
 // General usage
 var ver = flag.Bool("version", false, "Display version number")
 var host = flag.String("host", "", "path to game host server")
-var data = flag.String("data", filepath, "data file for storage")
+var data = flag.String("data", defaultData, "data file for storage")
 
 // For register command
 var name = flag.String("name", "", "used with status command for the account name")
@@ -53,8 +53,8 @@ type Config struct {
 	Accounts map[string]string `json:"accounts,omitempty"`
 }
 
-// verifyId will verify an account ID
-func verifyId(id string) error {
+// verifyID will verify an account ID
+func verifyID(id string) error {
 	if len(id) == 0 {
 		return fmt.Errorf("no account ID set, must register first")
 	}
@@ -148,7 +148,7 @@ func InnerMain(command string) error {
 			},
 		}
 
-		if err := verifyId(account); err != nil {
+		if err := verifyID(account); err != nil {
 			return err
 		}
 
@@ -163,7 +163,7 @@ func InnerMain(command string) error {
 
 	case "radar":
 		dat := rove.RadarRequest{Account: account}
-		if err := verifyId(account); err != nil {
+		if err := verifyID(account); err != nil {
 			return err
 		}
 
@@ -179,7 +179,7 @@ func InnerMain(command string) error {
 
 	case "rover":
 		req := rove.RoverRequest{Account: account}
-		if err := verifyId(account); err != nil {
+		if err := verifyID(account); err != nil {
 			return err
 		}
 		response, err := client.Rover(ctx, &req)
@@ -197,7 +197,7 @@ func InnerMain(command string) error {
 	default:
 		// Print the usage
 		fmt.Fprintf(os.Stderr, "Error: unknown command %s\n", command)
-		Usage()
+		printUsage()
 		os.Exit(1)
 	}
 
@@ -213,11 +213,11 @@ func InnerMain(command string) error {
 
 // Simple main
 func main() {
-	flag.Usage = Usage
+	flag.Usage = printUsage
 
 	// Bail without any args
 	if len(os.Args) == 1 {
-		Usage()
+		printUsage()
 		os.Exit(1)
 	}
 
