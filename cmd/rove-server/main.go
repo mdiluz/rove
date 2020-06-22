@@ -31,14 +31,17 @@ func InnerMain() {
 		return
 	}
 
-	// Address to host the server on, automatically selected if empty
+	// Address to host the server on
+	var iport int
 	var port = os.Getenv("PORT")
 	if len(port) == 0 {
-		log.Fatal("Must set $PORT")
-	}
-	iport, err := strconv.Atoi(port)
-	if err != nil {
-		log.Fatal("$PORT not valid int")
+		iport = 9090
+	} else {
+		var err error
+		iport, err = strconv.Atoi(port)
+		if err != nil {
+			log.Fatal("$PORT not valid int")
+		}
 	}
 	log.Printf("Initialising version %s...\n", version.Version)
 

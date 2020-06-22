@@ -21,16 +21,19 @@ func main() {
 
 	var endpoint = os.Getenv("ROVE_GRPC")
 	if len(endpoint) == 0 {
-		log.Fatal("Must set $ROVE_GRPC")
+		endpoint = "localhost:9090"
 	}
 
+	var iport int
 	var port = os.Getenv("PORT")
 	if len(port) == 0 {
-		log.Fatal("Must set $PORT")
-	}
-	iport, err := strconv.Atoi(port)
-	if err != nil {
-		log.Fatal("$PORT not valid int")
+		iport = 8080
+	} else {
+		var err error
+		iport, err = strconv.Atoi(port)
+		if err != nil {
+			log.Fatal("$PORT not valid int")
+		}
 	}
 
 	// Create a new mux and register it with the gRPC endpoint

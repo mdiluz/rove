@@ -82,14 +82,17 @@ func (a *accountantServer) GetValue(_ context.Context, in *accounts.DataKey) (*a
 
 // main
 func main() {
-	// Verify the input
+	// Get the port
+	var iport int
 	var port = os.Getenv("PORT")
 	if len(port) == 0 {
-		log.Fatal("Must set $PORT")
-	}
-	iport, err := strconv.Atoi(port)
-	if err != nil {
-		log.Fatal("$PORT not valid int")
+		iport = 9091
+	} else {
+		var err error
+		iport, err = strconv.Atoi(port)
+		if err != nil {
+			log.Fatal("$PORT not valid int")
+		}
 	}
 
 	persistence.SetPath(data)

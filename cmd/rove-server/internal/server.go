@@ -106,7 +106,7 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 	// Connect to the accountant
 	accountantAddress := os.Getenv("ROVE_ACCOUNTANT_GRPC")
 	if len(accountantAddress) == 0 {
-		log.Fatal("must set $ROVE_ACCOUNTANT_GRPC")
+		accountantAddress = "localhost:9091"
 	}
 	log.Printf("Dialing accountant on %s\n", accountantAddress)
 	s.clientConn, err = grpc.Dial(accountantAddress, grpc.WithInsecure())
