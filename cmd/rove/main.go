@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/mdiluz/rove/pkg/game"
@@ -68,17 +69,26 @@ func InnerMain(command string) error {
 	var config = Config{
 		Accounts: make(map[string]string),
 	}
-	_, err := os.Stat(*data)
-	if !os.IsNotExist(err) {
-		if b, err := ioutil.ReadFile(*data); err != nil {
-			return fmt.Errorf("failed to read file %s error: %s", *data, err)
 
-		} else if len(b) == 0 {
-			return fmt.Errorf("file %s was empty, assumin fresh data", *data)
+	// Create the path if needed
+	path := filepath.Dir(*data)
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		os.MkdirAll(path, os.ModePerm)
+	} else {
+		// Read the file
+		_, err = os.Stat(*data)
+		if !os.IsNotExist(err) {
+			if b, err := ioutil.ReadFile(*data); err != nil {
+				return fmt.Errorf("failed to read file %s error: %s", *data, err)
 
-		} else if err := json.Unmarshal(b, &config); err != nil {
-			return fmt.Errorf("failed to unmarshal file %s error: %s", *data, err)
+			} else if len(b) == 0 {
+				return fmt.Errorf("file %s was empty, assumin fresh data", *data)
 
+			} else if err := json.Unmarshal(b, &config); err != nil {
+				return fmt.Errorf("failed to unmarshal file %s error: %s", *data, err)
+
+			}
 		}
 	}
 
