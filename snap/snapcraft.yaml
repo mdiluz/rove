@@ -1,0 +1,25 @@
+name: rove # Nn-registered, use `snap register`
+base: core20
+version: '0.1' # TODO: Set this up programatically
+summary: An asynchronous nomadic game about exploring as part of a loose community.
+# TODO: Add more to the description
+description: |
+  An asynchronous nomadic game about exploring as part of a loose community.
+grade: devel # Upgrade to 'stable' when ready
+confinement: strict
+
+apps:
+  rove:
+    command: bin/rove
+    plugs: 
+      - network # Needed for access to hosted servers
+
+parts:
+  go-rove:
+    plugin: go
+    source-type: local
+    source: .
+    build-packages:
+      - gcc-multilib
+    # TODO: Add version somehow
+    # TODO: Only build cmd/rove with 'go-buildtags'
