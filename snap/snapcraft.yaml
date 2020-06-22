@@ -12,7 +12,22 @@ apps:
   rove:
     command: bin/rove
     plugs: 
-      - network # Needed for access to hosted servers
+      - network
+  rove-server:
+    command: bin/rove-server
+    plugs:
+      - network
+      - network-bind
+  rove-accountant:
+    command: bin/rove-accountant
+    plugs:
+      - network
+      - network-bind
+  rove-rest-server:
+    command: bin/rove-reverse-proxy
+    plugs:
+      - network
+      - network-bind
 
 parts:
   go-rove:
@@ -22,4 +37,4 @@ parts:
     build-packages:
       - gcc-multilib
     # TODO: Add version somehow
-    # TODO: Only build cmd/rove with 'go-buildtags'
+    # TODO: Server needs /usr/share/dict/words
