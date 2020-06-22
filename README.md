@@ -9,7 +9,5 @@ See [api.go](https://github.com/mdiluz/rove/blob/master/pkg/rove/api.go) for the
 
 Build Status
 ------------
-![Build and Test](https://github.com/mdiluz/rove/workflows/Build%20and%20Test/badge.svg)
-
-[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/rove)
+![Build and Test](https://github.com/mdiluz/rove/workflows/Build%20and%20Test/badge.svg) [![rove](https://snapcraft.io//rove/badge.svg)](https://snapcraft.io/rove)
 
