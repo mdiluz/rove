@@ -1,4 +1,4 @@
-name: rove # Nn-registered, use `snap register`
+name: rove
 base: core20
 version: '0.1' # TODO: Set this up programatically
 summary: An asynchronous nomadic game about exploring as part of a loose community.
