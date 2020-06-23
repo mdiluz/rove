@@ -1,8 +1,8 @@
 name: rove
 title: Rove
 base: core20
-license: "MIT"
-architectures: [ "amd64" ]
+license: MIT
+architectures: [ amd64 ]
 version: git
 # TODO icon:
 summary: An asynchronous nomadic game about exploring as part of a loose community.
