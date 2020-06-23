@@ -8,7 +8,6 @@ summary: An asynchronous nomadic game about exploring as part of a loose communi
 # TODO: Add more to the description
 description: |
   An asynchronous nomadic game about exploring as part of a loose community.
-grade: devel # Upgrade to 'stable' when ready
 confinement: strict
 adopt-info: go-rove
 
@@ -43,5 +42,7 @@ parts:
     override-pull: |
       snapcraftctl pull
       snapcraftctl set-version $(git describe --always --long --dirty --tags)
+      git describe --exact-match HEAD 2> /dev/null && snapcraftctl set-grade "stable" || snapcraftctl set-grade "devel"
+      
     # TODO: Add the version into the build itself (currently using ldflags)
     # TODO: Server needs /usr/share/dict/words
