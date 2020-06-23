@@ -1,6 +1,10 @@
 name: rove
+title: Rove
 base: core20
-version: '0.1' # TODO: Set this up programatically
+license: "MIT"
+architectures: [ "amd64" ]
+version: git
+# TODO icon:
 summary: An asynchronous nomadic game about exploring as part of a loose community.
 # TODO: Add more to the description
 description: |
@@ -36,5 +40,5 @@ parts:
     source: .
     build-packages:
       - gcc-multilib
-    # TODO: Add version somehow
+    # TODO: Add the version into the build itself (currently using ldflags)
     # TODO: Server needs /usr/share/dict/words
