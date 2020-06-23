@@ -27,6 +27,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\tradar   \tgathers radar data for the current rover")
 	fmt.Fprintln(os.Stderr, "\trover   \tgets data for current rover")
 	fmt.Fprintln(os.Stderr, "\tconfig  \toutputs the local config info")
+	fmt.Fprintln(os.Stderr, "\tversion  \toutputs version info")
 	fmt.Fprintln(os.Stderr, "\nOptions:")
 	flag.PrintDefaults()
 }
@@ -37,7 +38,6 @@ var defaultData = path.Join(home, ".local/share/rove.json")
 const gRPCport = 9090
 
 // General usage
-var ver = flag.Bool("version", false, "Display version number")
 var host = flag.String("host", "", "path to game host server")
 var data = flag.String("data", defaultData, "data file for storage")
 
@@ -116,6 +116,9 @@ func InnerMain(command string) error {
 
 	// Handle all the commands
 	switch command {
+	case "version":
+		fmt.Println(version.Version)
+
 	case "status":
 		response, err := client.Status(ctx, &rove.StatusRequest{})
 		switch {
@@ -232,12 +235,6 @@ func main() {
 	}
 
 	flag.CommandLine.Parse(os.Args[2:])
-
-	// Print the version if requested
-	if *ver {
-		fmt.Println(version.Version)
-		return
-	}
 
 	// Run the inner main
 	if err := InnerMain(os.Args[1]); err != nil {
