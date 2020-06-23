@@ -92,6 +92,16 @@ func InnerMain(command string) error {
 		}
 	}
 
+	// Early bails
+	switch command {
+	case "version":
+		fmt.Println(version.Version)
+		return nil
+	case "config":
+		fmt.Printf("host: %s\taccount: %s\n", config.Host, config.Accounts[config.Host])
+		return nil
+	}
+
 	// If there's a host set on the command line, override the one in the config
 	if len(*host) != 0 {
 		config.Host = *host
@@ -111,14 +121,8 @@ func InnerMain(command string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Grab the account
-	var account = config.Accounts[config.Host]
-
 	// Handle all the commands
 	switch command {
-	case "version":
-		fmt.Println(version.Version)
-
 	case "status":
 		response, err := client.Status(ctx, &rove.StatusRequest{})
 		switch {
@@ -151,7 +155,7 @@ func InnerMain(command string) error {
 
 	case "move":
 		d := rove.CommandsRequest{
-			Account: account,
+			Account: config.Accounts[config.Host],
 			Commands: []*rove.Command{
 				{
 					Command:  game.CommandMove,
@@ -161,7 +165,7 @@ func InnerMain(command string) error {
 			},
 		}
 
-		if err := verifyID(account); err != nil {
+		if err := verifyID(d.Account); err != nil {
 			return err
 		}
 
@@ -175,8 +179,8 @@ func InnerMain(command string) error {
 		}
 
 	case "radar":
-		dat := rove.RadarRequest{Account: account}
-		if err := verifyID(account); err != nil {
+		dat := rove.RadarRequest{Account: config.Accounts[config.Host]}
+		if err := verifyID(dat.Account); err != nil {
 			return err
 		}
 
@@ -191,8 +195,8 @@ func InnerMain(command string) error {
 		}
 
 	case "rover":
-		req := rove.RoverRequest{Account: account}
-		if err := verifyID(account); err != nil {
+		req := rove.RoverRequest{Account: config.Accounts[config.Host]}
+		if err := verifyID(req.Account); err != nil {
 			return err
 		}
 		response, err := client.Rover(ctx, &req)
@@ -204,8 +208,6 @@ func InnerMain(command string) error {
 		default:
 			fmt.Printf("attributes: %+v\n", response)
 		}
-	case "config":
-		fmt.Printf("host: %s\taccount: %s\n", config.Host, account)
 
 	default:
 		// Print the usage
