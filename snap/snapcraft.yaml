@@ -42,7 +42,7 @@ parts:
     override-pull: |
       snapcraftctl pull
       snapcraftctl set-version $(git describe --always --long --dirty --tags)
-      git describe --exact-match HEAD 2> /dev/null && snapcraftctl set-grade "stable" || snapcraftctl set-grade "devel"
+      git describe --exact-match --tags HEAD 2> /dev/null && snapcraftctl set-grade "stable" || snapcraftctl set-grade "devel"
+      sed -i "s/undefined/$(git describe --always --long --dirty --tags)/" pkg/version/version.go
       
-    # TODO: Add the version into the build itself (currently using ldflags)
     # TODO: Server needs /usr/share/dict/words
