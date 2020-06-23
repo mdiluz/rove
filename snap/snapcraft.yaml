@@ -3,7 +3,6 @@ title: Rove
 base: core20
 license: MIT
 architectures: [ amd64 ]
-version: git
 # TODO icon:
 summary: An asynchronous nomadic game about exploring as part of a loose community.
 # TODO: Add more to the description
@@ -11,6 +10,7 @@ description: |
   An asynchronous nomadic game about exploring as part of a loose community.
 grade: devel # Upgrade to 'stable' when ready
 confinement: strict
+adopt-info: go-rove
 
 apps:
   rove:
@@ -40,5 +40,8 @@ parts:
     source: .
     build-packages:
       - gcc-multilib
+    override-pull: |
+      snapcraftctl pull
+      snapcraftctl set-version $(git describe --always --long --dirty --tags)
     # TODO: Add the version into the build itself (currently using ldflags)
     # TODO: Server needs /usr/share/dict/words
