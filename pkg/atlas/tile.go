@@ -1,9 +1,23 @@
 package atlas
 
 const (
-	TileEmpty = byte(0)
-	TileRover = byte(1)
-
-	TileWall = byte(2)
-	TileRock = byte(3)
+	TileEmpty     = byte(' ')
+	TileRover     = byte('R')
+	TileSmallRock = byte('o')
+	TileLargeRock = byte('O')
 )
+
+// BlockingTiles describes any tiles that block
+var BlockingTiles = [...]byte{
+	TileLargeRock,
+}
+
+// Check if a tile is a blocking tile
+func IsBlocking(tile byte) bool {
+	for _, t := range BlockingTiles {
+		if tile == t {
+			return true
+		}
+	}
+	return false
+}

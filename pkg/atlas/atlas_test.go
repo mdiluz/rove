@@ -146,24 +146,24 @@ func TestAtlas_SpawnWorld(t *testing.T) {
 	for i := -4; i < 4; i++ {
 		tile, err := a.GetTile(vector.Vector{X: i, Y: -4})
 		assert.NoError(t, err)
-		assert.Equal(t, TileWall, tile)
+		assert.Equal(t, TileLargeRock, tile)
 	}
 
 	for i := -4; i < 4; i++ {
 		tile, err := a.GetTile(vector.Vector{X: -4, Y: i})
 		assert.NoError(t, err)
-		assert.Equal(t, TileWall, tile)
+		assert.Equal(t, TileLargeRock, tile)
 	}
 
 	for i := -4; i < 4; i++ {
 		tile, err := a.GetTile(vector.Vector{X: 3, Y: i})
 		assert.NoError(t, err)
-		assert.Equal(t, TileWall, tile)
+		assert.Equal(t, TileLargeRock, tile)
 	}
 
 	for i := -4; i < 4; i++ {
 		tile, err := a.GetTile(vector.Vector{X: i, Y: 3})
 		assert.NoError(t, err)
-		assert.Equal(t, TileWall, tile)
+		assert.Equal(t, TileLargeRock, tile)
 	}
 }

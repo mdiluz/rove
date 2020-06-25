@@ -119,12 +119,6 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 		}
 	}
 
-	// Set the world tile to a rover
-	// TODO: Don't do this, the atlas shouldn't know about rovers
-	if err := w.Atlas.SetTile(rover.Attributes.Pos, atlas.TileRover); err != nil {
-		return uuid.Nil, err
-	}
-
 	log.Printf("Spawned rover at %+v\n", rover.Attributes.Pos)
 
 	// Append the rover to the list
@@ -187,16 +181,11 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 			return nil
 		}
 
-		// Update the world tile
-		// TODO: Don't do this, the atlas shouldn't know about rovers
+		// Check the tile is not blocked
 		if tile, err := w.Atlas.GetTile(pos); err != nil {
 			return fmt.Errorf("coudln't get state of destination rover tile: %s", err)
-		} else if tile == atlas.TileRover {
+		} else if atlas.IsBlocking(tile) {
 			return fmt.Errorf("can't warp rover to occupied tile, check before warping")
-		} else if err := w.Atlas.SetTile(pos, atlas.TileRover); err != nil {
-			return fmt.Errorf("coudln't set rover tile: %s", err)
-		} else if err := w.Atlas.SetTile(i.Attributes.Pos, atlas.TileEmpty); err != nil {
-			return fmt.Errorf("coudln't clear old rover tile: %s", err)
 		}
 
 		i.Attributes.Pos = pos
@@ -225,15 +214,7 @@ func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (RoverAttributes, err
 		// Get the tile and verify it's empty
 		if tile, err := w.Atlas.GetTile(newPos); err != nil {
 			return i.Attributes, fmt.Errorf("couldn't get tile for new position: %s", err)
-		} else if tile == atlas.TileEmpty {
-			// Set the world tiles
-			// TODO: Don't do this, the atlas shouldn't know about rovers
-			if err := w.Atlas.SetTile(newPos, atlas.TileRover); err != nil {
-				return i.Attributes, fmt.Errorf("coudln't set rover tile: %s", err)
-			} else if err := w.Atlas.SetTile(i.Attributes.Pos, atlas.TileEmpty); err != nil {
-				return i.Attributes, fmt.Errorf("coudln't clear old rover tile: %s", err)
-			}
-
+		} else if !atlas.IsBlocking(tile) {
 			// Perform the move
 			i.Attributes.Pos = newPos
 			w.Rovers[id] = i
@@ -293,6 +274,19 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]byte, error) {
 				}
 			}
 		}
+
+		// Add all rovers to the radar
+		for _, r := range w.Rovers {
+			// If the rover is in range
+			if r.Attributes.Pos.Distance(roverPos) < float64(radarSpan) {
+				relative := r.Attributes.Pos.Added(radarMin.Negated())
+				index := relative.X + relative.Y*radarSpan
+				radar[index] = atlas.TileRover
+			}
+		}
+
+		// Add this rover
+		radar[len(radar)/2] = atlas.TileRover
 
 		return radar, nil
 	} else {
