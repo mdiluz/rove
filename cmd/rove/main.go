@@ -33,13 +33,13 @@ func printUsage() {
 }
 
 var home = os.Getenv("HOME")
-var defaultData = path.Join(home, ".local/share/rove.json")
+var defaultDataPath = path.Join(home, ".local/share/")
 
 const gRPCport = 9090
 
 // General usage
 var host = flag.String("host", "", "path to game host server")
-var data = flag.String("data", defaultData, "data file for storage")
+var data = flag.String("data", defaultDataPath, "data location for storage (or $USER_DATA if set)")
 
 // For register command
 var name = flag.String("name", "", "used with status command for the account name")
@@ -70,23 +70,31 @@ func InnerMain(command string) error {
 		Accounts: make(map[string]string),
 	}
 
+	// Allow overriding the data path
+	var datapath = *data
+	var override = os.Getenv("USER_DATA")
+	if len(override) > 0 {
+		datapath = override
+	}
+	datapath = path.Join(datapath, "rove.json")
+
 	// Create the path if needed
-	path := filepath.Dir(*data)
+	path := filepath.Dir(datapath)
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		os.MkdirAll(path, os.ModePerm)
 	} else {
 		// Read the file
-		_, err = os.Stat(*data)
+		_, err = os.Stat(datapath)
 		if !os.IsNotExist(err) {
-			if b, err := ioutil.ReadFile(*data); err != nil {
-				return fmt.Errorf("failed to read file %s error: %s", *data, err)
+			if b, err := ioutil.ReadFile(datapath); err != nil {
+				return fmt.Errorf("failed to read file %s error: %s", datapath, err)
 
 			} else if len(b) == 0 {
-				return fmt.Errorf("file %s was empty, assumin fresh data", *data)
+				return fmt.Errorf("file %s was empty, assumin fresh data", datapath)
 
 			} else if err := json.Unmarshal(b, &config); err != nil {
-				return fmt.Errorf("failed to unmarshal file %s error: %s", *data, err)
+				return fmt.Errorf("failed to unmarshal file %s error: %s", datapath, err)
 
 			}
 		}
@@ -219,8 +227,8 @@ func InnerMain(command string) error {
 	// Save out the persistent file
 	if b, err := json.MarshalIndent(config, "", "\t"); err != nil {
 		return fmt.Errorf("failed to marshal data error: %s", err)
-	} else if err := ioutil.WriteFile(*data, b, os.ModePerm); err != nil {
-		return fmt.Errorf("failed to save file %s error: %s", *data, err)
+	} else if err := ioutil.WriteFile(datapath, b, os.ModePerm); err != nil {
+		return fmt.Errorf("failed to save file %s error: %s", datapath, err)
 	}
 
 	return nil
