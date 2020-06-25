@@ -42,8 +42,12 @@ func NewAtlas(size, chunkSize int) Atlas {
 
 	// Initialise all the chunks
 	for i := range a.Chunks {
+		tiles := make([]byte, chunkSize*chunkSize)
+		for i := 0; i < len(tiles); i++ {
+			tiles[i] = TileEmpty
+		}
 		a.Chunks[i] = Chunk{
-			Tiles: make([]byte, chunkSize*chunkSize),
+			Tiles: tiles,
 		}
 	}
 

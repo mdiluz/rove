@@ -110,7 +110,7 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 		if tile, err := w.Atlas.GetTile(rover.Attributes.Pos); err != nil {
 			return uuid.Nil, err
 		} else {
-			if tile == atlas.TileEmpty {
+			if !atlas.IsBlocking(tile) {
 				break
 			} else {
 				// Try and spawn to the east of the blockage
@@ -278,7 +278,10 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]byte, error) {
 		// Add all rovers to the radar
 		for _, r := range w.Rovers {
 			// If the rover is in range
-			if r.Attributes.Pos.Distance(roverPos) < float64(radarSpan) {
+			dist := r.Attributes.Pos.Added(roverPos.Negated())
+			dist = dist.Abs()
+
+			if dist.X <= r.Attributes.Range && dist.Y <= r.Attributes.Range {
 				relative := r.Attributes.Pos.Added(radarMin.Negated())
 				index := relative.X + relative.Y*radarSpan
 				radar[index] = atlas.TileRover
@@ -400,7 +403,7 @@ func PrintTiles(tiles []byte) {
 	num := int(math.Sqrt(float64(len(tiles))))
 	for j := num - 1; j >= 0; j-- {
 		for i := 0; i < num; i++ {
-			fmt.Printf("%d", tiles[i+num*j])
+			fmt.Printf("%c", tiles[i+num*j])
 		}
 		fmt.Print("\n")
 	}

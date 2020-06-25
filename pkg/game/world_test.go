@@ -135,8 +135,8 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	PrintTiles(radar)
 
 	// Test all expected values
-	//assert.Equal(t, atlas.TileRover, radar[1+fullRange])
-	//assert.Equal(t, atlas.TileRover, radar[4+4*fullRange])
+	assert.Equal(t, atlas.TileRover, radar[1+fullRange])
+	assert.Equal(t, atlas.TileRover, radar[4+4*fullRange])
 	for i := 0; i < 8; i++ {
 		assert.Equal(t, atlas.TileLargeRock, radar[i])
 		assert.Equal(t, atlas.TileLargeRock, radar[i+(7*9)])

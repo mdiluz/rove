@@ -1,6 +1,10 @@
 package vector
 
-import "math"
+import (
+	"math"
+
+	"github.com/mdiluz/rove/pkg/maths"
+)
 
 // Vector desribes a 3D vector
 type Vector struct {
@@ -44,4 +48,9 @@ func (v Vector) Multiplied(val int) Vector {
 // Divided returns the vector divided by an int
 func (v Vector) Divided(val int) Vector {
 	return Vector{v.X / val, v.Y / val}
+}
+
+// Abs returns an absolute version of the vector
+func (v Vector) Abs() Vector {
+	return Vector{maths.Abs(v.X), maths.Abs(v.Y)}
 }
