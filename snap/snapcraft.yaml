@@ -3,7 +3,7 @@ title: Rove
 base: core20
 license: MIT
 architectures: [ amd64 ]
-# TODO icon:
+icon: data/icon.svg
 summary: An asynchronous nomadic game about exploring as part of a loose community.
 # TODO: Add more to the description
 description: |
