@@ -1,11 +1,12 @@
 package game
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"math"
 	"math/rand"
-	"strings"
+	"os"
 	"sync"
 
 	"github.com/google/uuid"
@@ -13,7 +14,6 @@ import (
 	"github.com/mdiluz/rove/pkg/bearing"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/vector"
-	"github.com/tjarratt/babble"
 )
 
 // World describes a self contained universe and everything in it
@@ -35,15 +35,37 @@ type World struct {
 
 	// Mutex to lock around command operations
 	cmdMutex sync.RWMutex
+
+	// Set of possible words to use for names
+	words []string
 }
+
+var wordsFile = os.Getenv("WORDS_FILE")
 
 // NewWorld creates a new world object
 func NewWorld(size, chunkSize int) *World {
+
+	// Try and load the words file
+	var lines []string
+	if file, err := os.Open(wordsFile); err != nil {
+		log.Printf("Couldn't read words file [%s], running without words: %s\n", wordsFile, err)
+	} else {
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			lines = append(lines, scanner.Text())
+		}
+		if scanner.Err() != nil {
+			log.Printf("Failure during word file scan: %s\n", scanner.Err())
+		}
+	}
+
 	return &World{
 		Rovers:       make(map[uuid.UUID]Rover),
 		CommandQueue: make(map[uuid.UUID]CommandStream),
 		Incoming:     make(map[uuid.UUID]CommandStream),
 		Atlas:        atlas.NewAtlas(size, chunkSize),
+		words:        lines,
 	}
 }
 
@@ -66,13 +88,15 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 	rover := Rover{
 		Id: uuid.New(),
 		Attributes: RoverAttributes{
-
 			Speed: 1.0,
 			Range: 5.0,
-
-			// Set the name randomly
-			Name: strings.ReplaceAll(babble.NewBabbler().Babble(), "'s", ""),
+			Name:  "rover",
 		},
+	}
+
+	// Assign a random name if we have words
+	if len(w.words) > 0 {
+		rover.Attributes.Name = fmt.Sprintf("%s-%s", w.words[rand.Intn(len(w.words))], w.words[rand.Intn(len(w.words))])
 	}
 
 	// Spawn in a random place near the origin

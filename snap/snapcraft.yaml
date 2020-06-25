@@ -21,6 +21,8 @@ apps:
     plugs:
       - network
       - network-bind
+    environment:
+      WORDS_FILE : "$SNAP/data/words_alpha.txt"
   rove-accountant:
     command: bin/rove-accountant
     plugs:
@@ -41,8 +43,14 @@ parts:
       - gcc-multilib
     override-pull: |
       snapcraftctl pull
-      snapcraftctl set-version $(git describe --always --long --dirty --tags)
+      version=$(git describe --always --long --dirty --tags)
+      sed -i "s/undefined/$version/" pkg/version/version.go
+      snapcraftctl set-version $version
       git describe --exact-match --tags HEAD 2> /dev/null && snapcraftctl set-grade "stable" || snapcraftctl set-grade "devel"
-      sed -i "s/undefined/$(git describe --always --long --dirty --tags)/" pkg/version/version.go
-      
-    # TODO: Server needs /usr/share/dict/words
+
+  copy-data:
+    plugin: dump
+    source-type: local
+    source: data
+    organize:
+      '*.txt' : data/

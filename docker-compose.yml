@@ -40,6 +40,7 @@ services:
       - PORT=9090
       - DATA_PATH=/mnt/rove-server
       - ROVE_ACCOUNTANT_GRPC=rove-accountant:9091
+      - WORDS_FILE=data/words_alpha.txt
     volumes:
       - persistent-data:/mnt/rove-server:rw
     command: [ "./script/wait-for-it.sh", "rove-accountant:9091", "--", "./rove-server"]
