@@ -61,18 +61,17 @@ service Rove {
 }
 
 message Command {
-    // The command to execute, currently only accepts move, which requires a bearing and a duration.
+    // The command to execute
+    // "move" - Move the rover in a direction, requires bearing
+    // "stash" - Stashes item at current location in rover inventory
     string command = 1;
 
     // The bearing, example: NE
     string bearing = 2;
-
-    // The duration in ticks, example: 5
-    int32 duration = 3;
 }
 
 message CommandsRequest {
-    // The account to execture these commands
+    // The account to execute these commands
     string account = 1;
 
     // The set of desired commands

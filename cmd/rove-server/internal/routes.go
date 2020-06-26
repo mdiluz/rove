@@ -126,9 +126,8 @@ func (s *Server) Commands(ctx context.Context, req *rove.CommandsRequest) (*rove
 	var cmds []game.Command
 	for _, c := range req.Commands {
 		cmds = append(cmds, game.Command{
-			Bearing:  c.Bearing,
-			Command:  c.Command,
-			Duration: int(c.Duration)})
+			Bearing: c.Bearing,
+			Command: c.Command})
 	}
 
 	if err := s.world.Enqueue(id, cmds...); err != nil {

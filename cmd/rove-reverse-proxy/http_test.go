@@ -87,9 +87,8 @@ func TestServer_Command(t *testing.T) {
 		Account: acc,
 		Commands: []*rove.Command{
 			{
-				Command:  "move",
-				Bearing:  "NE",
-				Duration: 1,
+				Command: "move",
+				Bearing: "NE",
 			},
 		},
 	}, &rove.CommandsResponse{})

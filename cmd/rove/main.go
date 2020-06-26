@@ -44,8 +44,7 @@ var data = flag.String("data", defaultDataPath, "data location for storage (or $
 // For register command
 var name = flag.String("name", "", "used with status command for the account name")
 
-// For the duration command
-var duration = flag.Int("duration", 1, "used for the move command duration")
+// For the move command
 var bearing = flag.String("bearing", "", "used for the move command bearing (compass direction)")
 
 // Config is used to store internal data
@@ -166,9 +165,8 @@ func InnerMain(command string) error {
 			Account: config.Accounts[config.Host],
 			Commands: []*rove.Command{
 				{
-					Command:  game.CommandMove,
-					Duration: int32(*duration),
-					Bearing:  *bearing,
+					Command: game.CommandMove,
+					Bearing: *bearing,
 				},
 			},
 		}

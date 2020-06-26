@@ -52,6 +52,5 @@ func Test_InnerMain(t *testing.T) {
 
 	// Move should work with arguments
 	flag.Set("bearing", "N")
-	flag.Set("duration", "1")
 	assert.NoError(t, InnerMain("move"))
 }

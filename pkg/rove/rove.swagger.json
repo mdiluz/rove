@@ -212,16 +212,11 @@
       "properties": {
         "command": {
           "type": "string",
-          "description": "The command to execute, currently only accepts move, which requires a bearing and a duration."
+          "title": "The command to execute\n\"move\" - Move the rover in a direction, requires bearing\n\"stash\" - Stashes item at current location in rover inventory"
         },
         "bearing": {
           "type": "string",
           "title": "The bearing, example: NE"
-        },
-        "duration": {
-          "type": "integer",
-          "format": "int32",
-          "title": "The duration in ticks, example: 5"
         }
       }
     },
@@ -230,7 +225,7 @@
       "properties": {
         "account": {
           "type": "string",
-          "title": "The account to execture these commands"
+          "title": "The account to execute these commands"
         },
         "commands": {
           "type": "array",

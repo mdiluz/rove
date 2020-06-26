@@ -396,18 +396,13 @@ func (w *World) ExecuteCommandQueues() {
 		if len(cmds) != 0 {
 			// Extract the first command in the queue
 			c := cmds[0]
+			w.CommandQueue[rover] = cmds[1:]
 
-			// Execute the command and clear up if requested
-			if done, err := w.ExecuteCommand(&c, rover); err != nil {
-				w.CommandQueue[rover] = cmds[1:]
+			// Execute the command
+			if err := w.ExecuteCommand(&c, rover); err != nil {
 				log.Println(err)
-			} else if done {
-				w.CommandQueue[rover] = cmds[1:]
-			} else {
-				w.CommandQueue[rover][0] = c
+				// TODO: Report this error somehow
 			}
-
-			// If there was an error
 
 		} else {
 			// Clean out the empty entry
@@ -420,36 +415,26 @@ func (w *World) ExecuteCommandQueues() {
 }
 
 // ExecuteCommand will execute a single command
-func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err error) {
+func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (err error) {
 	log.Printf("Executing command: %+v\n", *c)
 
 	switch c.Command {
 	case CommandMove:
 		if dir, err := bearing.FromString(c.Bearing); err != nil {
-			return true, err
+			return err
 
 		} else if _, err := w.MoveRover(rover, dir); err != nil {
-			return true, err
+			return err
 
-		} else {
-			// If we've successfully moved, reduce the duration by 1
-			c.Duration -= 1
-
-			// If we've used up the full duration, remove it, otherwise update
-			if c.Duration == 0 {
-				finished = true
-			}
 		}
 
 	case CommandStash:
 		if _, err := w.RoverStash(rover); err != nil {
-			return true, err
-		} else {
-			return true, nil
+			return err
 		}
 
 	default:
-		return true, fmt.Errorf("unknown command: %s", c.Command)
+		return fmt.Errorf("unknown command: %s", c.Command)
 	}
 
 	return
