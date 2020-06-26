@@ -123,9 +123,6 @@ message RoverResponse {
     // The range of this rover's radar
     int32 range = 3;
 
-    // The speed the rover can move per tick
-    int32 speed = 4;
-
     // The inventory capacity of the rover
     int32 Capacity = 5;
 }

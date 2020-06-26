@@ -40,7 +40,6 @@ func TestWorld_RoverAttributes(t *testing.T) {
 	attribs, err := world.RoverAttributes(a)
 	assert.NoError(t, err, "Failed to get rover attribs")
 	assert.NotZero(t, attribs.Range, "Rover should not be spawned blind")
-	assert.NotZero(t, attribs.Speed, "Rover should not be spawned unable to move")
 }
 
 func TestWorld_DestroyRover(t *testing.T) {
@@ -65,8 +64,6 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	world := NewWorld(4, 4)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
-	attribs, err := world.RoverAttributes(a)
-	assert.NoError(t, err, "Failed to get rover attribs")
 
 	pos := vector.Vector{
 		X: 0.0,
@@ -84,7 +81,7 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	duration := 1
 	newPos, err = world.MoveRover(a, b)
 	assert.NoError(t, err, "Failed to set position for rover")
-	pos.Add(vector.Vector{X: 0, Y: attribs.Speed * duration}) // We should have move one unit of the speed north
+	pos.Add(vector.Vector{X: 0, Y: duration})
 	assert.Equal(t, pos, newPos, "Failed to correctly move position for rover")
 
 	// Place a tile in front of the rover

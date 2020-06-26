@@ -88,7 +88,6 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 	rover := Rover{
 		Id: uuid.New(),
 		Attributes: RoverAttributes{
-			Speed:    1.0,
 			Range:    5.0,
 			Capacity: 5,
 			Name:     "rover",
@@ -229,14 +228,8 @@ func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (vector.Vector, error
 	defer w.worldMutex.Unlock()
 
 	if i, ok := w.Rovers[id]; ok {
-		// Calculate the distance
-		distance := i.Attributes.Speed
-
-		// Calculate the full movement based on the bearing
-		move := b.Vector().Multiplied(distance)
-
 		// Try the new move position
-		newPos := i.Pos.Added(move)
+		newPos := i.Pos.Added(b.Vector())
 
 		// Get the tile and verify it's empty
 		if tile, err := w.Atlas.GetTile(newPos); err != nil {
@@ -402,7 +395,7 @@ func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err 
 	log.Printf("Executing command: %+v\n", *c)
 
 	switch c.Command {
-	case "move":
+	case CommandMove:
 		if dir, err := bearing.FromString(c.Bearing); err != nil {
 			return true, fmt.Errorf("unknown bearing in command %+v, skipping: %s\n", c, err)
 
@@ -418,6 +411,7 @@ func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err 
 				finished = true
 			}
 		}
+
 	default:
 		return true, fmt.Errorf("unknown command: %s", c.Command)
 	}
