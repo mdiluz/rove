@@ -2,6 +2,8 @@ package game
 
 const (
 	CommandMove = "move"
+
+	CommandStash = "stash"
 )
 
 // Command represends a single command to execute

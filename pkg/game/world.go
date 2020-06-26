@@ -71,6 +71,8 @@ func NewWorld(size, chunkSize int) *World {
 
 // SpawnWorld spawns a border at the edge of the world atlas
 func (w *World) SpawnWorld(fillWorld bool) error {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
 	if fillWorld {
 		if err := w.Atlas.SpawnRocks(); err != nil {
 			return err
@@ -246,6 +248,27 @@ func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (vector.Vector, error
 	}
 }
 
+// RoverStash will stash an item at the current rovers position
+func (w *World) RoverStash(id uuid.UUID) (byte, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	if r, ok := w.Rovers[id]; ok {
+		if tile, err := w.Atlas.GetTile(r.Pos); err != nil {
+			return atlas.TileEmpty, err
+		} else {
+			if tile != atlas.TileEmpty {
+				r.Inventory = append(r.Inventory, Item{Type: tile})
+			}
+		}
+
+	} else {
+		return atlas.TileEmpty, fmt.Errorf("no rover matching id")
+	}
+
+	return atlas.TileEmpty, nil
+}
+
 // RadarFromRover can be used to query what a rover can currently see
 func (w *World) RadarFromRover(id uuid.UUID) ([]byte, error) {
 	w.worldMutex.RLock()
@@ -397,10 +420,10 @@ func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err 
 	switch c.Command {
 	case CommandMove:
 		if dir, err := bearing.FromString(c.Bearing); err != nil {
-			return true, fmt.Errorf("unknown bearing in command %+v, skipping: %s\n", c, err)
+			return true, err
 
 		} else if _, err := w.MoveRover(rover, dir); err != nil {
-			return true, fmt.Errorf("error moving rover in command %+v, skipping: %s\n", c, err)
+			return true, err
 
 		} else {
 			// If we've successfully moved, reduce the duration by 1
@@ -410,6 +433,13 @@ func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (finished bool, err 
 			if c.Duration == 0 {
 				finished = true
 			}
+		}
+
+	case CommandStash:
+		if _, err := w.RoverStash(rover); err != nil {
+			return true, err
+		} else {
+			return true, nil
 		}
 
 	default:
