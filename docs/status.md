@@ -16,8 +16,8 @@ This page tracks the current feature set and the features to implement next
 
 ### Incoming features
 
-* Basic rover actions (e.g. dig, repair)
 * Rover integrity and damage
+* Basic rover actions (e.g. repair)
 * Rover replacement and advancement mechanic
 * HTTPS
 
