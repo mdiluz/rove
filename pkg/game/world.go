@@ -88,9 +88,10 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 	rover := Rover{
 		Id: uuid.New(),
 		Attributes: RoverAttributes{
-			Speed: 1.0,
-			Range: 5.0,
-			Name:  "rover",
+			Speed:    1.0,
+			Range:    5.0,
+			Capacity: 5,
+			Name:     "rover",
 		},
 	}
 

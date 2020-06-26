@@ -18,6 +18,9 @@ type RoverAttributes struct {
 
 	// Pos represents where this rover is in the world
 	Pos vector.Vector `json:"pos"`
+
+	// Capacity represents the maximum number of items the rover can carry
+	Capacity int `json:"capacity"`
 }
 
 // Rover describes a single rover in the world
@@ -27,4 +30,7 @@ type Rover struct {
 
 	// Attributes represents the physical attributes of the rover
 	Attributes RoverAttributes `json:"attributes"`
+
+	// Inventory represents any items the rover is carrying
+	Inventory []Item `json:"inventory"`
 }
