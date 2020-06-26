@@ -11,11 +11,11 @@ This page tracks the current feature set and the features to implement next
 * Server supports multiple users and rovers
 * Map is populated with rocks
 * Commands are queued and then are executed in sequence
+* Rover inventory
+* Collectable materials
 
 ### Incoming features
 
-* Rover inventory
-* Collectable materials
 * Basic rover actions (e.g. dig, repair)
 * Rover integrity and damage
 * Rover replacement and advancement mechanic
