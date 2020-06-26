@@ -15,7 +15,7 @@ import (
 func Test_InnerMain(t *testing.T) {
 
 	// Use temporary local user data
-	tmp, err := ioutil.TempDir(os.TempDir(), "rove-*")
+	tmp, err := ioutil.TempDir(os.TempDir(), "rove-")
 	assert.NoError(t, err)
 	os.Setenv("USER_DATA", tmp)
 
@@ -25,13 +25,8 @@ func Test_InnerMain(t *testing.T) {
 		log.Fatal("Must set $ROVE_GRPC")
 	}
 
-	// First attempt should error
+	// First attempt should error without a host
 	assert.Error(t, InnerMain("status"))
-
-	// Then set the host
-	// No error now as we have a host
-	os.Setenv("ROVE_HOST", address)
-	assert.NoError(t, InnerMain("status"))
 
 	// Set the host in the config
 	assert.NoError(t, InnerMain("config", address))

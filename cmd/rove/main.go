@@ -34,7 +34,6 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\tversion                    outputs version info")
 	fmt.Fprintln(os.Stderr, "\nEnvironment")
 	fmt.Fprintln(os.Stderr, "\tUSER_DATA                  path to user data, defaults to "+defaultDataPath)
-	fmt.Fprintln(os.Stderr, "\tROVE_HOST                  path to rove host server")
 }
 
 const gRPCport = 9090
@@ -130,23 +129,16 @@ func InnerMain(command string, args ...string) error {
 
 	// Run config command before server needed
 	if command == "config" {
-		if len(args) > 1 {
-			config.Host = args[1]
-			SaveConfig(config)
+		if len(args) > 0 {
+			config.Host = args[0]
 		}
 		fmt.Printf("host: %s\taccount: %s\n", config.Host, config.Accounts[config.Host])
-		return nil
-	}
-
-	// Allow overriding the host
-	hostOverride := os.Getenv("ROVE_HOST")
-	if len(hostOverride) > 0 {
-		config.Host = hostOverride
+		return SaveConfig(config)
 	}
 
 	// If there's still no host, bail
 	if len(config.Host) == 0 {
-		return fmt.Errorf("no host set, set one with '%s config {HOST}'", os.Args[0])
+		return fmt.Errorf("no host set in %s, set one with '%s config {HOST}'", ConfigPath(), os.Args[0])
 	}
 
 	// Set up the server
@@ -278,8 +270,7 @@ func InnerMain(command string, args ...string) error {
 		os.Exit(1)
 	}
 
-	SaveConfig(config)
-	return nil
+	return SaveConfig(config)
 }
 
 // Simple main
@@ -291,7 +282,7 @@ func main() {
 	}
 
 	// Run the inner main
-	if err := InnerMain(os.Args[1], os.Args[1:]...); err != nil {
+	if err := InnerMain(os.Args[1], os.Args[2:]...); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		os.Exit(1)
 	}
