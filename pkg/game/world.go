@@ -258,9 +258,13 @@ func (w *World) RoverStash(id uuid.UUID) (byte, error) {
 		if tile, err := w.Atlas.GetTile(r.Pos); err != nil {
 			return objects.Empty, err
 		} else {
-			// TODO: Get if item grabbable and clear tile
-			if tile != objects.Empty {
+			if objects.IsStashable(tile) {
 				r.Inventory = append(r.Inventory, Item{Type: tile})
+				if err := w.Atlas.SetTile(r.Pos, objects.Empty); err != nil {
+					return objects.Empty, err
+				} else {
+					return tile, nil
+				}
 			}
 		}
 
