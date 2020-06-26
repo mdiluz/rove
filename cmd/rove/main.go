@@ -33,7 +33,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\thelp                       outputs this usage information")
 	fmt.Fprintln(os.Stderr, "\tversion                    outputs version info")
 	fmt.Fprintln(os.Stderr, "\nEnvironment")
-	fmt.Fprintln(os.Stderr, "\tUSER_DATA                  path to user data, defaults to "+defaultDataPath)
+	fmt.Fprintln(os.Stderr, "\tROVE_USER_DATA             path to user data, defaults to "+defaultDataPath)
 }
 
 const gRPCport = 9090
@@ -48,7 +48,7 @@ type Config struct {
 func ConfigPath() string {
 	// Allow overriding the data path
 	var datapath = defaultDataPath
-	var override = os.Getenv("USER_DATA")
+	var override = os.Getenv("ROVE_USER_DATA")
 	if len(override) > 0 {
 		datapath = override
 	}

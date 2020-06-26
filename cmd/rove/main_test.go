@@ -17,7 +17,7 @@ func Test_InnerMain(t *testing.T) {
 	// Use temporary local user data
 	tmp, err := ioutil.TempDir(os.TempDir(), "rove-")
 	assert.NoError(t, err)
-	os.Setenv("USER_DATA", tmp)
+	os.Setenv("ROVE_USER_DATA", tmp)
 
 	// Used for configuring this test
 	var address = os.Getenv("ROVE_GRPC")

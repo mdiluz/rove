@@ -17,7 +17,7 @@ apps:
     plugs: 
       - network
     environment:
-      USER_DATA: $SNAP_USER_DATA
+      ROVE_USER_DATA: $SNAP_USER_DATA
   rove-server:
     command: bin/rove-server
     plugs:
