@@ -26,5 +26,5 @@ type Rover struct {
 	Attributes RoverAttributes `json:"attributes"`
 
 	// Inventory represents any items the rover is carrying
-	Inventory []Item `json:"inventory"`
+	Inventory []byte `json:"inventory"`
 }

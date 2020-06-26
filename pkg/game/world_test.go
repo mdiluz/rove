@@ -167,6 +167,6 @@ func TestWorld_RoverStash(t *testing.T) {
 
 	inv, err := world.RoverInventory(a)
 	assert.NoError(t, err, "Failed to get inventory")
-	assert.Equal(t, Item{Type: objects.SmallRock}, inv[0])
+	assert.Equal(t, objects.SmallRock, inv[0])
 
 }

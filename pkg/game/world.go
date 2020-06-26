@@ -199,7 +199,7 @@ func (w *World) SetRoverAttributes(id uuid.UUID, attributes RoverAttributes) err
 }
 
 // RoverInventory returns the inventory of a requested rover
-func (w *World) RoverInventory(id uuid.UUID) ([]Item, error) {
+func (w *World) RoverInventory(id uuid.UUID) ([]byte, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
@@ -270,7 +270,7 @@ func (w *World) RoverStash(id uuid.UUID) (byte, error) {
 			return objects.Empty, err
 		} else {
 			if objects.IsStashable(tile) {
-				r.Inventory = append(r.Inventory, Item{Type: tile})
+				r.Inventory = append(r.Inventory, tile)
 				w.Rovers[id] = r
 				if err := w.Atlas.SetTile(r.Pos, objects.Empty); err != nil {
 					return objects.Empty, err
