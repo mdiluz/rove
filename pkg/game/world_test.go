@@ -78,10 +78,9 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.Equal(t, pos, newPos, "Failed to correctly set position for rover")
 
 	b := bearing.North
-	duration := 1
 	newPos, err = world.MoveRover(a, b)
 	assert.NoError(t, err, "Failed to set position for rover")
-	pos.Add(vector.Vector{X: 0, Y: duration})
+	pos.Add(vector.Vector{X: 0, Y: 1})
 	assert.Equal(t, pos, newPos, "Failed to correctly move position for rover")
 
 	// Place a tile in front of the rover

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/mdiluz/rove/pkg/bearing"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
@@ -17,40 +17,88 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Command usage
-func printUsage() {
-	fmt.Fprintf(os.Stderr, "Usage: %s COMMAND [OPTIONS]...\n", os.Args[0])
-	fmt.Fprintln(os.Stderr, "\nCommands:")
-	fmt.Fprintln(os.Stderr, "\tstatus  \tprints the server status")
-	fmt.Fprintln(os.Stderr, "\tregister\tregisters an account and stores it (use with -name)")
-	fmt.Fprintln(os.Stderr, "\tmove    \tissues move command to rover")
-	fmt.Fprintln(os.Stderr, "\tradar   \tgathers radar data for the current rover")
-	fmt.Fprintln(os.Stderr, "\trover   \tgets data for current rover")
-	fmt.Fprintln(os.Stderr, "\tconfig  \toutputs the local config info")
-	fmt.Fprintln(os.Stderr, "\tversion  \toutputs version info")
-	fmt.Fprintln(os.Stderr, "\nOptions:")
-	flag.PrintDefaults()
-}
-
 var home = os.Getenv("HOME")
 var defaultDataPath = path.Join(home, ".local/share/")
 
+// Command usage
+func printUsage() {
+	fmt.Fprintf(os.Stderr, "Usage: %s COMMAND [ARGS]...\n", os.Args[0])
+	fmt.Fprintln(os.Stderr, "\nCommands")
+	fmt.Fprintln(os.Stderr, "\tstatus                     prints the server status")
+	fmt.Fprintln(os.Stderr, "\tregister NAME              registers an account and stores it (use with -name)")
+	fmt.Fprintln(os.Stderr, "\tcommands COMMAND [VAL...]  issues move command to rover")
+	fmt.Fprintln(os.Stderr, "\tradar                      gathers radar data for the current rover")
+	fmt.Fprintln(os.Stderr, "\trover                      gets data for current rover")
+	fmt.Fprintln(os.Stderr, "\tconfig [HOST]              outputs the local config info, optionally sets host")
+	fmt.Fprintln(os.Stderr, "\thelp                       outputs this usage information")
+	fmt.Fprintln(os.Stderr, "\tversion                    outputs version info")
+	fmt.Fprintln(os.Stderr, "\nEnvironment")
+	fmt.Fprintln(os.Stderr, "\tUSER_DATA                  path to user data, defaults to "+defaultDataPath)
+	fmt.Fprintln(os.Stderr, "\tROVE_HOST                  path to rove host server")
+}
+
 const gRPCport = 9090
-
-// General usage
-var host = flag.String("host", "", "path to game host server")
-var data = flag.String("data", defaultDataPath, "data location for storage (or $USER_DATA if set)")
-
-// For register command
-var name = flag.String("name", "", "used with status command for the account name")
-
-// For the move command
-var bearing = flag.String("bearing", "", "used for the move command bearing (compass direction)")
 
 // Config is used to store internal data
 type Config struct {
 	Host     string            `json:"host,omitempty"`
 	Accounts map[string]string `json:"accounts,omitempty"`
+}
+
+// ConfigPath returns the configuration path
+func ConfigPath() string {
+	// Allow overriding the data path
+	var datapath = defaultDataPath
+	var override = os.Getenv("USER_DATA")
+	if len(override) > 0 {
+		datapath = override
+	}
+	datapath = path.Join(datapath, "rove.json")
+
+	return datapath
+}
+
+// LoadConfig loads the config from a chosen path
+func LoadConfig() (config Config, err error) {
+
+	datapath := ConfigPath()
+	config.Accounts = make(map[string]string)
+
+	// Create the path if needed
+	path := filepath.Dir(datapath)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.MkdirAll(path, os.ModePerm)
+	} else {
+		// Read the file
+		_, err = os.Stat(datapath)
+		if !os.IsNotExist(err) {
+			if b, err := ioutil.ReadFile(datapath); err != nil {
+				return Config{}, fmt.Errorf("failed to read file %s error: %s", datapath, err)
+
+			} else if len(b) == 0 {
+				return Config{}, fmt.Errorf("file %s was empty, assumin fresh data", datapath)
+
+			} else if err := json.Unmarshal(b, &config); err != nil {
+				return Config{}, fmt.Errorf("failed to unmarshal file %s error: %s", datapath, err)
+
+			}
+		}
+	}
+
+	return
+}
+
+// SaveConfig saves the config out
+func SaveConfig(config Config) error {
+	// Save out the persistent file
+	datapath := ConfigPath()
+	if b, err := json.MarshalIndent(config, "", "\t"); err != nil {
+		return fmt.Errorf("failed to marshal data error: %s", err)
+	} else if err := ioutil.WriteFile(datapath, b, os.ModePerm); err != nil {
+		return fmt.Errorf("failed to save file %s error: %s", datapath, err)
+	}
+
+	return nil
 }
 
 // verifyID will verify an account ID
@@ -62,61 +110,43 @@ func verifyID(id string) error {
 }
 
 // InnerMain wraps the main function so we can test it
-func InnerMain(command string) error {
+func InnerMain(command string, args ...string) error {
 
-	// Load in the persistent file
-	var config = Config{
-		Accounts: make(map[string]string),
-	}
-
-	// Allow overriding the data path
-	var datapath = *data
-	var override = os.Getenv("USER_DATA")
-	if len(override) > 0 {
-		datapath = override
-	}
-	datapath = path.Join(datapath, "rove.json")
-
-	// Create the path if needed
-	path := filepath.Dir(datapath)
-	_, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		os.MkdirAll(path, os.ModePerm)
-	} else {
-		// Read the file
-		_, err = os.Stat(datapath)
-		if !os.IsNotExist(err) {
-			if b, err := ioutil.ReadFile(datapath); err != nil {
-				return fmt.Errorf("failed to read file %s error: %s", datapath, err)
-
-			} else if len(b) == 0 {
-				return fmt.Errorf("file %s was empty, assumin fresh data", datapath)
-
-			} else if err := json.Unmarshal(b, &config); err != nil {
-				return fmt.Errorf("failed to unmarshal file %s error: %s", datapath, err)
-
-			}
-		}
-	}
-
-	// Early bails
+	// Early simple bails
 	switch command {
+	case "help":
+		printUsage()
+		return nil
 	case "version":
 		fmt.Println(version.Version)
 		return nil
-	case "config":
+	}
+
+	// Load in the persistent file
+	config, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+
+	// Run config command before server needed
+	if command == "config" {
+		if len(args) > 1 {
+			config.Host = args[1]
+			SaveConfig(config)
+		}
 		fmt.Printf("host: %s\taccount: %s\n", config.Host, config.Accounts[config.Host])
 		return nil
 	}
 
-	// If there's a host set on the command line, override the one in the config
-	if len(*host) != 0 {
-		config.Host = *host
+	// Allow overriding the host
+	hostOverride := os.Getenv("ROVE_HOST")
+	if len(hostOverride) > 0 {
+		config.Host = hostOverride
 	}
 
 	// If there's still no host, bail
 	if len(config.Host) == 0 {
-		return fmt.Errorf("no host set, please set one with -host")
+		return fmt.Errorf("no host set, set one with '%s config {HOST}'", os.Args[0])
 	}
 
 	// Set up the server
@@ -144,11 +174,12 @@ func InnerMain(command string) error {
 		}
 
 	case "register":
-		if len(*name) == 0 {
-			return fmt.Errorf("must set name with -name")
+		if len(args) == 0 {
+			return fmt.Errorf("must pass name to 'register'")
 		}
+		name := args[0]
 		d := rove.RegisterRequest{
-			Name: *name,
+			Name: name,
 		}
 		_, err := client.Register(ctx, &d)
 		switch {
@@ -156,19 +187,44 @@ func InnerMain(command string) error {
 			return err
 
 		default:
-			fmt.Printf("Registered account with id: %s\n", *name)
-			config.Accounts[config.Host] = *name
+			fmt.Printf("Registered account with id: %s\n", name)
+			config.Accounts[config.Host] = name
 		}
 
-	case "move":
+	case "commands":
+		if len(args) == 0 {
+			return fmt.Errorf("must pass commands to 'commands'")
+		}
+
+		// Iterate through each command
+		var commands []*rove.Command
+		for i := 0; i < len(args); i++ {
+			switch args[i] {
+			case "move":
+				i++
+				if len(args) == i {
+					return fmt.Errorf("move command must be passed bearing")
+				} else if _, err := bearing.FromString(args[i]); err != nil {
+					return err
+				}
+				commands = append(commands,
+					&rove.Command{
+						Command: game.CommandMove,
+						Bearing: args[i],
+					},
+				)
+			case "stash":
+				commands = append(commands,
+					&rove.Command{
+						Command: game.CommandStash,
+					},
+				)
+			}
+		}
+
 		d := rove.CommandsRequest{
-			Account: config.Accounts[config.Host],
-			Commands: []*rove.Command{
-				{
-					Command: game.CommandMove,
-					Bearing: *bearing,
-				},
-			},
+			Account:  config.Accounts[config.Host],
+			Commands: commands,
 		}
 
 		if err := verifyID(d.Account); err != nil {
@@ -222,30 +278,20 @@ func InnerMain(command string) error {
 		os.Exit(1)
 	}
 
-	// Save out the persistent file
-	if b, err := json.MarshalIndent(config, "", "\t"); err != nil {
-		return fmt.Errorf("failed to marshal data error: %s", err)
-	} else if err := ioutil.WriteFile(datapath, b, os.ModePerm); err != nil {
-		return fmt.Errorf("failed to save file %s error: %s", datapath, err)
-	}
-
+	SaveConfig(config)
 	return nil
 }
 
 // Simple main
 func main() {
-	flag.Usage = printUsage
-
 	// Bail without any args
 	if len(os.Args) == 1 {
 		printUsage()
 		os.Exit(1)
 	}
 
-	flag.CommandLine.Parse(os.Args[2:])
-
 	// Run the inner main
-	if err := InnerMain(os.Args[1]); err != nil {
+	if err := InnerMain(os.Args[1], os.Args[1:]...); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		os.Exit(1)
 	}
