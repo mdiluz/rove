@@ -301,6 +301,11 @@
           "type": "integer",
           "format": "int32",
           "title": "The range of this rover's radar"
+        },
+        "inventory": {
+          "type": "string",
+          "format": "byte",
+          "title": "The items in the rover inventory"
         }
       }
     },

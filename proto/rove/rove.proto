@@ -121,6 +121,9 @@ message RoverResponse {
 
     // The range of this rover's radar
     int32 range = 3;
+
+    // The items in the rover inventory
+    bytes inventory = 4;
 }
 
 // Empty placeholder

@@ -65,6 +65,9 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 	} else if pos, err := s.world.RoverPosition(id); err != nil {
 		return nil, fmt.Errorf("error getting rover attributes: %s", err)
 
+	} else if inv, err := s.world.RoverInventory(id); err != nil {
+		return nil, fmt.Errorf("error getting rover attributes: %s", err)
+
 	} else {
 		response = &rove.RoverResponse{
 			Name: attrib.Name,
@@ -72,7 +75,8 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 				X: int32(pos.X),
 				Y: int32(pos.Y),
 			},
-			Range: int32(attrib.Range),
+			Range:     int32(attrib.Range),
+			Inventory: inv,
 		}
 	}
 	return response, nil

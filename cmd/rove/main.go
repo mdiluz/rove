@@ -268,7 +268,7 @@ func InnerMain(command string, args ...string) error {
 			return err
 
 		default:
-			fmt.Printf("attributes: %+v\n", response)
+			fmt.Printf("rover info: %+v\n", response)
 		}
 
 	default:
