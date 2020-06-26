@@ -141,3 +141,28 @@ func TestWorld_RadarFromRover(t *testing.T) {
 		assert.Equal(t, objects.LargeRock, radar[(i*9)+7])
 	}
 }
+
+func TestWorld_RoverStash(t *testing.T) {
+	world := NewWorld(2, 2)
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
+
+	pos := vector.Vector{
+		X: 0.0,
+		Y: 0.0,
+	}
+
+	err = world.WarpRover(a, pos)
+	assert.NoError(t, err, "Failed to set position for rover")
+
+	err = world.Atlas.SetTile(pos, objects.SmallRock)
+	assert.NoError(t, err, "Failed to set tile to rock")
+
+	o, err := world.RoverStash(a)
+	assert.NoError(t, err, "Failed to stash")
+	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
+
+	tile, err := world.Atlas.GetTile(pos)
+	assert.NoError(t, err, "Failed to get tile")
+	assert.Equal(t, objects.Empty, tile, "Stash failed to remove object from atlas")
+}
