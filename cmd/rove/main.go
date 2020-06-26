@@ -22,7 +22,7 @@ var defaultDataPath = path.Join(home, ".local/share/")
 
 // Command usage
 func printUsage() {
-	fmt.Fprintf(os.Stderr, "Usage: %s COMMAND [ARGS...]\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "Usage: rove COMMAND [ARGS...]\n")
 	fmt.Fprintln(os.Stderr, "\nCommands")
 	fmt.Fprintln(os.Stderr, "\tstatus                     prints the server status")
 	fmt.Fprintln(os.Stderr, "\tregister NAME              registers an account and stores it (use with -name)")
