@@ -199,6 +199,18 @@ func (w *World) SetRoverAttributes(id uuid.UUID, attributes RoverAttributes) err
 	}
 }
 
+// RoverInventory returns the inventory of a requested rover
+func (w *World) RoverInventory(id uuid.UUID) ([]Item, error) {
+	w.worldMutex.RLock()
+	defer w.worldMutex.RUnlock()
+
+	if i, ok := w.Rovers[id]; ok {
+		return i.Inventory, nil
+	} else {
+		return nil, fmt.Errorf("no rover matching id")
+	}
+}
+
 // WarpRover sets an rovers position
 func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 	w.worldMutex.Lock()
@@ -260,6 +272,7 @@ func (w *World) RoverStash(id uuid.UUID) (byte, error) {
 		} else {
 			if objects.IsStashable(tile) {
 				r.Inventory = append(r.Inventory, Item{Type: tile})
+				w.Rovers[id] = r
 				if err := w.Atlas.SetTile(r.Pos, objects.Empty); err != nil {
 					return objects.Empty, err
 				} else {

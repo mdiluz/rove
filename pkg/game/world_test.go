@@ -164,4 +164,9 @@ func TestWorld_RoverStash(t *testing.T) {
 	tile, err := world.Atlas.GetTile(pos)
 	assert.NoError(t, err, "Failed to get tile")
 	assert.Equal(t, objects.Empty, tile, "Stash failed to remove object from atlas")
+
+	inv, err := world.RoverInventory(a)
+	assert.NoError(t, err, "Failed to get inventory")
+	assert.Equal(t, Item{Type: objects.SmallRock}, inv[0])
+
 }
