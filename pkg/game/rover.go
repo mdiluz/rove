@@ -12,9 +12,6 @@ type RoverAttributes struct {
 
 	// Range represents the distance the unit's radar can see
 	Range int `json:"range"`
-
-	// Capacity represents the maximum number of items the rover can carry
-	Capacity int `json:"capacity"`
 }
 
 // Rover describes a single rover in the world

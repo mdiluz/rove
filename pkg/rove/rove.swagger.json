@@ -301,11 +301,6 @@
           "type": "integer",
           "format": "int32",
           "title": "The range of this rover's radar"
-        },
-        "Capacity": {
-          "type": "integer",
-          "format": "int32",
-          "title": "The inventory capacity of the rover"
         }
       }
     },
