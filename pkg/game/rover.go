@@ -7,14 +7,14 @@ import (
 
 // RoverAttributes contains attributes of a rover
 type RoverAttributes struct {
+	// Name of this rover
+	Name string `json:"name"`
+
 	// Speed represents the Speed that the rover will move per second
 	Speed int `json:"speed"`
 
 	// Range represents the distance the unit's radar can see
 	Range int `json:"range"`
-
-	// Name of this rover
-	Name string `json:"name"`
 
 	// Capacity represents the maximum number of items the rover can carry
 	Capacity int `json:"capacity"`
