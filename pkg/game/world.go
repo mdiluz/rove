@@ -356,6 +356,8 @@ func (w *World) Enqueue(rover uuid.UUID, commands ...Command) error {
 			if _, err := bearing.FromString(c.Bearing); err != nil {
 				return fmt.Errorf("unknown bearing: %s", c.Bearing)
 			}
+		case "stash":
+			// Nothing to verify
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
 		}
