@@ -6,6 +6,7 @@ import (
 	"math/rand"
 
 	"github.com/mdiluz/rove/pkg/maths"
+	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/vector"
 )
 
@@ -44,7 +45,7 @@ func NewAtlas(size, chunkSize int) Atlas {
 	for i := range a.Chunks {
 		tiles := make([]byte, chunkSize*chunkSize)
 		for i := 0; i < len(tiles); i++ {
-			tiles[i] = TileEmpty
+			tiles[i] = objects.Empty
 		}
 		a.Chunks[i] = Chunk{
 			Tiles: tiles,
@@ -62,7 +63,7 @@ func (a *Atlas) SpawnRocks() error {
 	for i := -extent; i < extent; i++ {
 		for j := -extent; j < extent; j++ {
 			if rand.Intn(16) == 0 {
-				if err := a.SetTile(vector.Vector{X: i, Y: j}, TileSmallRock); err != nil {
+				if err := a.SetTile(vector.Vector{X: i, Y: j}, objects.SmallRock); err != nil {
 					return err
 				}
 			}
@@ -79,13 +80,13 @@ func (a *Atlas) SpawnWalls() error {
 	// Surround the atlas in walls
 	for i := -extent; i < extent; i++ {
 
-		if err := a.SetTile(vector.Vector{X: i, Y: extent - 1}, TileLargeRock); err != nil { // N
+		if err := a.SetTile(vector.Vector{X: i, Y: extent - 1}, objects.LargeRock); err != nil { // N
 			return err
-		} else if err := a.SetTile(vector.Vector{X: extent - 1, Y: i}, TileLargeRock); err != nil { // E
+		} else if err := a.SetTile(vector.Vector{X: extent - 1, Y: i}, objects.LargeRock); err != nil { // E
 			return err
-		} else if err := a.SetTile(vector.Vector{X: i, Y: -extent}, TileLargeRock); err != nil { // S
+		} else if err := a.SetTile(vector.Vector{X: i, Y: -extent}, objects.LargeRock); err != nil { // S
 			return err
-		} else if err := a.SetTile(vector.Vector{X: -extent, Y: i}, TileLargeRock); err != nil { // W
+		} else if err := a.SetTile(vector.Vector{X: -extent, Y: i}, objects.LargeRock); err != nil { // W
 			return err
 		}
 	}

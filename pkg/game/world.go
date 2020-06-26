@@ -13,6 +13,7 @@ import (
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/bearing"
 	"github.com/mdiluz/rove/pkg/maths"
+	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/vector"
 )
 
@@ -112,7 +113,7 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 		if tile, err := w.Atlas.GetTile(rover.Pos); err != nil {
 			return uuid.Nil, err
 		} else {
-			if !atlas.IsBlocking(tile) {
+			if !objects.IsBlocking(tile) {
 				break
 			} else {
 				// Try and spawn to the east of the blockage
@@ -136,7 +137,7 @@ func (w *World) DestroyRover(id uuid.UUID) error {
 
 	if i, ok := w.Rovers[id]; ok {
 		// Clear the tile
-		if err := w.Atlas.SetTile(i.Pos, atlas.TileEmpty); err != nil {
+		if err := w.Atlas.SetTile(i.Pos, objects.Empty); err != nil {
 			return fmt.Errorf("coudln't clear old rover tile: %s", err)
 		}
 		delete(w.Rovers, id)
@@ -212,7 +213,7 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 		// Check the tile is not blocked
 		if tile, err := w.Atlas.GetTile(pos); err != nil {
 			return fmt.Errorf("coudln't get state of destination rover tile: %s", err)
-		} else if atlas.IsBlocking(tile) {
+		} else if objects.IsBlocking(tile) {
 			return fmt.Errorf("can't warp rover to occupied tile, check before warping")
 		}
 
@@ -236,7 +237,7 @@ func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (vector.Vector, error
 		// Get the tile and verify it's empty
 		if tile, err := w.Atlas.GetTile(newPos); err != nil {
 			return vector.Vector{}, fmt.Errorf("couldn't get tile for new position: %s", err)
-		} else if !atlas.IsBlocking(tile) {
+		} else if !objects.IsBlocking(tile) {
 			// Perform the move
 			i.Pos = newPos
 			w.Rovers[id] = i
@@ -255,18 +256,19 @@ func (w *World) RoverStash(id uuid.UUID) (byte, error) {
 
 	if r, ok := w.Rovers[id]; ok {
 		if tile, err := w.Atlas.GetTile(r.Pos); err != nil {
-			return atlas.TileEmpty, err
+			return objects.Empty, err
 		} else {
-			if tile != atlas.TileEmpty {
+			// TODO: Get if item grabbable and clear tile
+			if tile != objects.Empty {
 				r.Inventory = append(r.Inventory, Item{Type: tile})
 			}
 		}
 
 	} else {
-		return atlas.TileEmpty, fmt.Errorf("no rover matching id")
+		return objects.Empty, fmt.Errorf("no rover matching id")
 	}
 
-	return atlas.TileEmpty, nil
+	return objects.Empty, nil
 }
 
 // RadarFromRover can be used to query what a rover can currently see
@@ -327,12 +329,12 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]byte, error) {
 			if dist.X <= r.Attributes.Range && dist.Y <= r.Attributes.Range {
 				relative := r.Pos.Added(radarMin.Negated())
 				index := relative.X + relative.Y*radarSpan
-				radar[index] = atlas.TileRover
+				radar[index] = objects.Rover
 			}
 		}
 
 		// Add this rover
-		radar[len(radar)/2] = atlas.TileRover
+		radar[len(radar)/2] = objects.Rover
 
 		return radar, nil
 	} else {

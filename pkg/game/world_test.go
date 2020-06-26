@@ -3,8 +3,8 @@ package game
 import (
 	"testing"
 
-	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/bearing"
+	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/vector"
 	"github.com/stretchr/testify/assert"
 )
@@ -85,7 +85,7 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.Equal(t, pos, newPos, "Failed to correctly move position for rover")
 
 	// Place a tile in front of the rover
-	assert.NoError(t, world.Atlas.SetTile(vector.Vector{X: 0, Y: 2}, atlas.TileLargeRock))
+	assert.NoError(t, world.Atlas.SetTile(vector.Vector{X: 0, Y: 2}, objects.LargeRock))
 	newPos, err = world.MoveRover(a, b)
 	assert.Equal(t, pos, newPos, "Failed to correctly not move position for rover into wall")
 }
@@ -132,12 +132,12 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	PrintTiles(radar)
 
 	// Test all expected values
-	assert.Equal(t, atlas.TileRover, radar[1+fullRange])
-	assert.Equal(t, atlas.TileRover, radar[4+4*fullRange])
+	assert.Equal(t, objects.Rover, radar[1+fullRange])
+	assert.Equal(t, objects.Rover, radar[4+4*fullRange])
 	for i := 0; i < 8; i++ {
-		assert.Equal(t, atlas.TileLargeRock, radar[i])
-		assert.Equal(t, atlas.TileLargeRock, radar[i+(7*9)])
-		assert.Equal(t, atlas.TileLargeRock, radar[i*9])
-		assert.Equal(t, atlas.TileLargeRock, radar[(i*9)+7])
+		assert.Equal(t, objects.LargeRock, radar[i])
+		assert.Equal(t, objects.LargeRock, radar[i+(7*9)])
+		assert.Equal(t, objects.LargeRock, radar[i*9])
+		assert.Equal(t, objects.LargeRock, radar[(i*9)+7])
 	}
 }
