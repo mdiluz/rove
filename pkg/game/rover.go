@@ -16,9 +16,6 @@ type RoverAttributes struct {
 	// Name of this rover
 	Name string `json:"name"`
 
-	// Pos represents where this rover is in the world
-	Pos vector.Vector `json:"pos"`
-
 	// Capacity represents the maximum number of items the rover can carry
 	Capacity int `json:"capacity"`
 }
@@ -27,6 +24,9 @@ type RoverAttributes struct {
 type Rover struct {
 	// Id is a unique ID for this rover
 	Id uuid.UUID `json:"id"`
+
+	// Pos represents where this rover is in the world
+	Pos vector.Vector `json:"pos"`
 
 	// Attributes represents the physical attributes of the rover
 	Attributes RoverAttributes `json:"attributes"`

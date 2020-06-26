@@ -101,26 +101,26 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 	}
 
 	// Spawn in a random place near the origin
-	rover.Attributes.Pos = vector.Vector{
+	rover.Pos = vector.Vector{
 		X: w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
 		Y: w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
 	}
 
 	// Seach until we error (run out of world)
 	for {
-		if tile, err := w.Atlas.GetTile(rover.Attributes.Pos); err != nil {
+		if tile, err := w.Atlas.GetTile(rover.Pos); err != nil {
 			return uuid.Nil, err
 		} else {
 			if !atlas.IsBlocking(tile) {
 				break
 			} else {
 				// Try and spawn to the east of the blockage
-				rover.Attributes.Pos.Add(vector.Vector{X: 1, Y: 0})
+				rover.Pos.Add(vector.Vector{X: 1, Y: 0})
 			}
 		}
 	}
 
-	log.Printf("Spawned rover at %+v\n", rover.Attributes.Pos)
+	log.Printf("Spawned rover at %+v\n", rover.Pos)
 
 	// Append the rover to the list
 	w.Rovers[rover.Id] = rover
@@ -135,7 +135,7 @@ func (w *World) DestroyRover(id uuid.UUID) error {
 
 	if i, ok := w.Rovers[id]; ok {
 		// Clear the tile
-		if err := w.Atlas.SetTile(i.Attributes.Pos, atlas.TileEmpty); err != nil {
+		if err := w.Atlas.SetTile(i.Pos, atlas.TileEmpty); err != nil {
 			return fmt.Errorf("coudln't clear old rover tile: %s", err)
 		}
 		delete(w.Rovers, id)
@@ -143,6 +143,32 @@ func (w *World) DestroyRover(id uuid.UUID) error {
 		return fmt.Errorf("no rover matching id")
 	}
 	return nil
+}
+
+// RoverPosition returns the position of the rover
+func (w *World) RoverPosition(id uuid.UUID) (vector.Vector, error) {
+	w.worldMutex.RLock()
+	defer w.worldMutex.RUnlock()
+
+	if i, ok := w.Rovers[id]; ok {
+		return i.Pos, nil
+	} else {
+		return vector.Vector{}, fmt.Errorf("no rover matching id")
+	}
+}
+
+// SetRoverPosition sets the position of the rover
+func (w *World) SetRoverPosition(id uuid.UUID, pos vector.Vector) error {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	if i, ok := w.Rovers[id]; ok {
+		i.Pos = pos
+		w.Rovers[id] = i
+		return nil
+	} else {
+		return fmt.Errorf("no rover matching id")
+	}
 }
 
 // RoverAttributes returns the attributes of a requested rover
@@ -178,7 +204,7 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 
 	if i, ok := w.Rovers[id]; ok {
 		// Nothing to do if these positions match
-		if i.Attributes.Pos == pos {
+		if i.Pos == pos {
 			return nil
 		}
 
@@ -189,7 +215,7 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 			return fmt.Errorf("can't warp rover to occupied tile, check before warping")
 		}
 
-		i.Attributes.Pos = pos
+		i.Pos = pos
 		w.Rovers[id] = i
 		return nil
 	} else {
@@ -198,7 +224,7 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 }
 
 // SetPosition sets an rovers position
-func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (RoverAttributes, error) {
+func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (vector.Vector, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -210,20 +236,20 @@ func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (RoverAttributes, err
 		move := b.Vector().Multiplied(distance)
 
 		// Try the new move position
-		newPos := i.Attributes.Pos.Added(move)
+		newPos := i.Pos.Added(move)
 
 		// Get the tile and verify it's empty
 		if tile, err := w.Atlas.GetTile(newPos); err != nil {
-			return i.Attributes, fmt.Errorf("couldn't get tile for new position: %s", err)
+			return vector.Vector{}, fmt.Errorf("couldn't get tile for new position: %s", err)
 		} else if !atlas.IsBlocking(tile) {
 			// Perform the move
-			i.Attributes.Pos = newPos
+			i.Pos = newPos
 			w.Rovers[id] = i
 		}
 
-		return i.Attributes, nil
+		return i.Pos, nil
 	} else {
-		return RoverAttributes{}, fmt.Errorf("no rover matching id")
+		return vector.Vector{}, fmt.Errorf("no rover matching id")
 	}
 }
 
@@ -235,7 +261,7 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]byte, error) {
 	if r, ok := w.Rovers[id]; ok {
 		// The radar should span in range direction on each axis, plus the row/column the rover is currently on
 		radarSpan := (r.Attributes.Range * 2) + 1
-		roverPos := r.Attributes.Pos
+		roverPos := r.Pos
 
 		// Get the radar min and max values
 		radarMin := vector.Vector{
@@ -279,11 +305,11 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]byte, error) {
 		// Add all rovers to the radar
 		for _, r := range w.Rovers {
 			// If the rover is in range
-			dist := r.Attributes.Pos.Added(roverPos.Negated())
+			dist := r.Pos.Added(roverPos.Negated())
 			dist = dist.Abs()
 
 			if dist.X <= r.Attributes.Range && dist.Y <= r.Attributes.Range {
-				relative := r.Attributes.Pos.Added(radarMin.Negated())
+				relative := r.Pos.Added(radarMin.Negated())
 				index := relative.X + relative.Y*radarSpan
 				radar[index] = atlas.TileRover
 			}

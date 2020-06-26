@@ -31,8 +31,8 @@ func TestCommand_Move(t *testing.T) {
 	world.EnqueueAllIncoming()
 	world.ExecuteCommandQueues()
 
-	newatributes, err := world.RoverAttributes(a)
+	newPos, err := world.RoverPosition(a)
 	assert.NoError(t, err, "Failed to set position for rover")
 	pos.Add(vector.Vector{X: 0.0, Y: int(duration) * int(attribs.Speed)}) // We should have moved duration*speed north
-	assert.Equal(t, pos, newatributes.Pos, "Failed to correctly set position for rover")
+	assert.Equal(t, pos, newPos, "Failed to correctly set position for rover")
 }

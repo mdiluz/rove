@@ -311,6 +311,11 @@
           "type": "integer",
           "format": "int32",
           "title": "The speed the rover can move per tick"
+        },
+        "Capacity": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The inventory capacity of the rover"
         }
       }
     },

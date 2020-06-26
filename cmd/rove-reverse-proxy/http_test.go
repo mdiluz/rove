@@ -125,4 +125,5 @@ func TestServer_Rover(t *testing.T) {
 	assert.NotZero(t, len(resp.Name), "Rover should return valid name")
 	assert.NotZero(t, resp.Speed, "Rover should return valid speed")
 	assert.NotZero(t, resp.Position, "Rover should return valid position")
+	assert.NotZero(t, resp.Capacity, "Rover should return valid position")
 }
