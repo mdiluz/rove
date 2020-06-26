@@ -20,7 +20,7 @@ import (
 // World describes a self contained universe and everything in it
 type World struct {
 	// Rovers is a id->data map of all the rovers in the game
-	Rovers map[uuid.UUID]Rover `json:"rovers"`
+	Rovers map[string]Rover `json:"rovers"`
 
 	// Atlas represends the world map of chunks and tiles
 	Atlas atlas.Atlas `json:"atlas"`
@@ -29,10 +29,10 @@ type World struct {
 	worldMutex sync.RWMutex
 
 	// Commands is the set of currently executing command streams per rover
-	CommandQueue map[uuid.UUID]CommandStream `json:"commands"`
+	CommandQueue map[string]CommandStream `json:"commands"`
 
 	// Incoming represents the set of commands to add to the queue at the end of the current tick
-	Incoming map[uuid.UUID]CommandStream `json:"incoming"`
+	Incoming map[string]CommandStream `json:"incoming"`
 
 	// Mutex to lock around command operations
 	cmdMutex sync.RWMutex
@@ -62,9 +62,9 @@ func NewWorld(size, chunkSize int) *World {
 	}
 
 	return &World{
-		Rovers:       make(map[uuid.UUID]Rover),
-		CommandQueue: make(map[uuid.UUID]CommandStream),
-		Incoming:     make(map[uuid.UUID]CommandStream),
+		Rovers:       make(map[string]Rover),
+		CommandQueue: make(map[string]CommandStream),
+		Incoming:     make(map[string]CommandStream),
 		Atlas:        atlas.NewAtlas(size, chunkSize),
 		words:        lines,
 	}
@@ -83,22 +83,26 @@ func (w *World) SpawnWorld(fillWorld bool) error {
 }
 
 // SpawnRover adds an rover to the game
-func (w *World) SpawnRover() (uuid.UUID, error) {
+func (w *World) SpawnRover() (string, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
 	// Initialise the rover
 	rover := Rover{
-		Id: uuid.New(),
-		Attributes: RoverAttributes{
-			Range: 5.0,
-			Name:  "rover",
-		},
+		Range: 4.0,
+		Name:  uuid.New().String(),
 	}
 
 	// Assign a random name if we have words
 	if len(w.words) > 0 {
-		rover.Attributes.Name = fmt.Sprintf("%s-%s", w.words[rand.Intn(len(w.words))], w.words[rand.Intn(len(w.words))])
+		for {
+			// Loop until we find a unique name
+			name := fmt.Sprintf("%s-%s", w.words[rand.Intn(len(w.words))], w.words[rand.Intn(len(w.words))])
+			if _, ok := w.Rovers[name]; !ok {
+				rover.Name = name
+				break
+			}
+		}
 	}
 
 	// Spawn in a random place near the origin
@@ -110,7 +114,7 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 	// Seach until we error (run out of world)
 	for {
 		if tile, err := w.Atlas.GetTile(rover.Pos); err != nil {
-			return uuid.Nil, err
+			return "", err
 		} else {
 			if !objects.IsBlocking(tile) {
 				break
@@ -124,22 +128,34 @@ func (w *World) SpawnRover() (uuid.UUID, error) {
 	log.Printf("Spawned rover at %+v\n", rover.Pos)
 
 	// Append the rover to the list
-	w.Rovers[rover.Id] = rover
+	w.Rovers[rover.Name] = rover
 
-	return rover.Id, nil
+	return rover.Name, nil
+}
+
+// GetRover gets a specific rover by name
+func (w *World) GetRover(rover string) (Rover, error) {
+	w.worldMutex.RLock()
+	defer w.worldMutex.RUnlock()
+
+	if i, ok := w.Rovers[rover]; ok {
+		return i, nil
+	} else {
+		return Rover{}, fmt.Errorf("Failed to find rover with name: %s", rover)
+	}
 }
 
 // Removes an rover from the game
-func (w *World) DestroyRover(id uuid.UUID) error {
+func (w *World) DestroyRover(rover string) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	if i, ok := w.Rovers[id]; ok {
+	if i, ok := w.Rovers[rover]; ok {
 		// Clear the tile
 		if err := w.Atlas.SetTile(i.Pos, objects.Empty); err != nil {
 			return fmt.Errorf("coudln't clear old rover tile: %s", err)
 		}
-		delete(w.Rovers, id)
+		delete(w.Rovers, rover)
 	} else {
 		return fmt.Errorf("no rover matching id")
 	}
@@ -147,11 +163,11 @@ func (w *World) DestroyRover(id uuid.UUID) error {
 }
 
 // RoverPosition returns the position of the rover
-func (w *World) RoverPosition(id uuid.UUID) (vector.Vector, error) {
+func (w *World) RoverPosition(rover string) (vector.Vector, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
-	if i, ok := w.Rovers[id]; ok {
+	if i, ok := w.Rovers[rover]; ok {
 		return i.Pos, nil
 	} else {
 		return vector.Vector{}, fmt.Errorf("no rover matching id")
@@ -159,39 +175,13 @@ func (w *World) RoverPosition(id uuid.UUID) (vector.Vector, error) {
 }
 
 // SetRoverPosition sets the position of the rover
-func (w *World) SetRoverPosition(id uuid.UUID, pos vector.Vector) error {
+func (w *World) SetRoverPosition(rover string, pos vector.Vector) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	if i, ok := w.Rovers[id]; ok {
+	if i, ok := w.Rovers[rover]; ok {
 		i.Pos = pos
-		w.Rovers[id] = i
-		return nil
-	} else {
-		return fmt.Errorf("no rover matching id")
-	}
-}
-
-// RoverAttributes returns the attributes of a requested rover
-func (w *World) RoverAttributes(id uuid.UUID) (RoverAttributes, error) {
-	w.worldMutex.RLock()
-	defer w.worldMutex.RUnlock()
-
-	if i, ok := w.Rovers[id]; ok {
-		return i.Attributes, nil
-	} else {
-		return RoverAttributes{}, fmt.Errorf("no rover matching id")
-	}
-}
-
-// SetRoverAttributes sets the attributes of a requested rover
-func (w *World) SetRoverAttributes(id uuid.UUID, attributes RoverAttributes) error {
-	w.worldMutex.Lock()
-	defer w.worldMutex.Unlock()
-
-	if i, ok := w.Rovers[id]; ok {
-		i.Attributes = attributes
-		w.Rovers[id] = i
+		w.Rovers[rover] = i
 		return nil
 	} else {
 		return fmt.Errorf("no rover matching id")
@@ -199,11 +189,11 @@ func (w *World) SetRoverAttributes(id uuid.UUID, attributes RoverAttributes) err
 }
 
 // RoverInventory returns the inventory of a requested rover
-func (w *World) RoverInventory(id uuid.UUID) ([]byte, error) {
+func (w *World) RoverInventory(rover string) ([]byte, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
-	if i, ok := w.Rovers[id]; ok {
+	if i, ok := w.Rovers[rover]; ok {
 		return i.Inventory, nil
 	} else {
 		return nil, fmt.Errorf("no rover matching id")
@@ -211,11 +201,11 @@ func (w *World) RoverInventory(id uuid.UUID) ([]byte, error) {
 }
 
 // WarpRover sets an rovers position
-func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
+func (w *World) WarpRover(rover string, pos vector.Vector) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	if i, ok := w.Rovers[id]; ok {
+	if i, ok := w.Rovers[rover]; ok {
 		// Nothing to do if these positions match
 		if i.Pos == pos {
 			return nil
@@ -229,7 +219,7 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 		}
 
 		i.Pos = pos
-		w.Rovers[id] = i
+		w.Rovers[rover] = i
 		return nil
 	} else {
 		return fmt.Errorf("no rover matching id")
@@ -237,11 +227,11 @@ func (w *World) WarpRover(id uuid.UUID, pos vector.Vector) error {
 }
 
 // SetPosition sets an rovers position
-func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (vector.Vector, error) {
+func (w *World) MoveRover(rover string, b bearing.Bearing) (vector.Vector, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	if i, ok := w.Rovers[id]; ok {
+	if i, ok := w.Rovers[rover]; ok {
 		// Try the new move position
 		newPos := i.Pos.Added(b.Vector())
 
@@ -251,7 +241,7 @@ func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (vector.Vector, error
 		} else if !objects.IsBlocking(tile) {
 			// Perform the move
 			i.Pos = newPos
-			w.Rovers[id] = i
+			w.Rovers[rover] = i
 		}
 
 		return i.Pos, nil
@@ -261,17 +251,17 @@ func (w *World) MoveRover(id uuid.UUID, b bearing.Bearing) (vector.Vector, error
 }
 
 // RoverStash will stash an item at the current rovers position
-func (w *World) RoverStash(id uuid.UUID) (byte, error) {
+func (w *World) RoverStash(rover string) (byte, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	if r, ok := w.Rovers[id]; ok {
+	if r, ok := w.Rovers[rover]; ok {
 		if tile, err := w.Atlas.GetTile(r.Pos); err != nil {
 			return objects.Empty, err
 		} else {
 			if objects.IsStashable(tile) {
 				r.Inventory = append(r.Inventory, tile)
-				w.Rovers[id] = r
+				w.Rovers[rover] = r
 				if err := w.Atlas.SetTile(r.Pos, objects.Empty); err != nil {
 					return objects.Empty, err
 				} else {
@@ -288,23 +278,23 @@ func (w *World) RoverStash(id uuid.UUID) (byte, error) {
 }
 
 // RadarFromRover can be used to query what a rover can currently see
-func (w *World) RadarFromRover(id uuid.UUID) ([]byte, error) {
+func (w *World) RadarFromRover(rover string) ([]byte, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
-	if r, ok := w.Rovers[id]; ok {
+	if r, ok := w.Rovers[rover]; ok {
 		// The radar should span in range direction on each axis, plus the row/column the rover is currently on
-		radarSpan := (r.Attributes.Range * 2) + 1
+		radarSpan := (r.Range * 2) + 1
 		roverPos := r.Pos
 
 		// Get the radar min and max values
 		radarMin := vector.Vector{
-			X: roverPos.X - r.Attributes.Range,
-			Y: roverPos.Y - r.Attributes.Range,
+			X: roverPos.X - r.Range,
+			Y: roverPos.Y - r.Range,
 		}
 		radarMax := vector.Vector{
-			X: roverPos.X + r.Attributes.Range,
-			Y: roverPos.Y + r.Attributes.Range,
+			X: roverPos.X + r.Range,
+			Y: roverPos.Y + r.Range,
 		}
 
 		// Make sure we only query within the actual world
@@ -342,7 +332,7 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]byte, error) {
 			dist := r.Pos.Added(roverPos.Negated())
 			dist = dist.Abs()
 
-			if dist.X <= r.Attributes.Range && dist.Y <= r.Attributes.Range {
+			if dist.X <= r.Range && dist.Y <= r.Range {
 				relative := r.Pos.Added(radarMin.Negated())
 				index := relative.X + relative.Y*radarSpan
 				radar[index] = objects.Rover
@@ -359,7 +349,7 @@ func (w *World) RadarFromRover(id uuid.UUID) ([]byte, error) {
 }
 
 // Enqueue will queue the commands given
-func (w *World) Enqueue(rover uuid.UUID, commands ...Command) error {
+func (w *World) Enqueue(rover string, commands ...Command) error {
 
 	// First validate the commands
 	for _, c := range commands {
@@ -397,7 +387,7 @@ func (w *World) EnqueueAllIncoming() {
 		commands = append(commands, incoming...)
 		w.CommandQueue[id] = commands
 	}
-	w.Incoming = make(map[uuid.UUID]CommandStream)
+	w.Incoming = make(map[string]CommandStream)
 }
 
 // Execute will execute any commands in the current command queue
@@ -429,7 +419,7 @@ func (w *World) ExecuteCommandQueues() {
 }
 
 // ExecuteCommand will execute a single command
-func (w *World) ExecuteCommand(c *Command, rover uuid.UUID) (err error) {
+func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 	log.Printf("Executing command: %+v\n", *c)
 
 	switch c.Command {

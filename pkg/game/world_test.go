@@ -32,14 +32,14 @@ func TestWorld_CreateRover(t *testing.T) {
 	}
 }
 
-func TestWorld_RoverAttributes(t *testing.T) {
+func TestWorld_GetRover(t *testing.T) {
 	world := NewWorld(2, 4)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 
-	attribs, err := world.RoverAttributes(a)
+	rover, err := world.GetRover(a)
 	assert.NoError(t, err, "Failed to get rover attribs")
-	assert.NotZero(t, attribs.Range, "Rover should not be spawned blind")
+	assert.NotZero(t, rover.Range, "Rover should not be spawned blind")
 }
 
 func TestWorld_DestroyRover(t *testing.T) {
@@ -96,13 +96,6 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	assert.NoError(t, err)
 	b, err := world.SpawnRover()
 	assert.NoError(t, err)
-
-	// Set the rover range to a predictable value
-	attrib, err := world.RoverAttributes(a)
-	assert.NoError(t, err, "Failed to get rover attribs")
-	attrib.Range = 4 // Set the range to 4 so we can predict the radar fully
-	err = world.SetRoverAttributes(a, attrib)
-	assert.NoError(t, err, "Failed to set rover attribs")
 
 	// Warp the rovers into position
 	bpos := vector.Vector{X: -3, Y: -3}

@@ -8,7 +8,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/persistence"
@@ -239,15 +238,12 @@ type BadRequestError struct {
 }
 
 // SpawnRoverForAccount spawns the rover rover for an account
-func (s *Server) SpawnRoverForAccount(account string) (game.RoverAttributes, uuid.UUID, error) {
+func (s *Server) SpawnRoverForAccount(account string) (string, error) {
 	if inst, err := s.world.SpawnRover(); err != nil {
-		return game.RoverAttributes{}, uuid.UUID{}, err
-
-	} else if attribs, err := s.world.RoverAttributes(inst); err != nil {
-		return game.RoverAttributes{}, uuid.UUID{}, fmt.Errorf("no attributes found for created rover: %s", err)
+		return "", err
 
 	} else {
-		keyval := accounts.DataKeyValue{Account: account, Key: "rover", Value: inst.String()}
+		keyval := accounts.DataKeyValue{Account: account, Key: "rover", Value: inst}
 		_, err := s.accountant.AssignValue(context.Background(), &keyval)
 		if err != nil {
 			log.Printf("Failed to assign rover to account, %s", err)
@@ -257,9 +253,9 @@ func (s *Server) SpawnRoverForAccount(account string) (game.RoverAttributes, uui
 				log.Printf("Failed to destroy rover after failed rover assign: %s", err)
 			}
 
-			return game.RoverAttributes{}, uuid.UUID{}, err
+			return "", err
 		} else {
-			return attribs, inst, nil
+			return inst, nil
 		}
 	}
 }

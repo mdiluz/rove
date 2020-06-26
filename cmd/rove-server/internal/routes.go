@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
@@ -37,12 +36,11 @@ func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove
 	if _, err := s.accountant.Register(ctx, &accounts.RegisterInfo{Name: req.Name}, grpc.WaitForReady(true)); err != nil {
 		return nil, err
 
-	} else if _, _, err := s.SpawnRoverForAccount(req.Name); err != nil {
+	} else if _, err := s.SpawnRoverForAccount(req.Name); err != nil {
 		return nil, fmt.Errorf("failed to spawn rover for account: %s", err)
 
 	} else if err := s.SaveWorld(); err != nil {
 		return nil, fmt.Errorf("internal server error when saving world: %s", err)
-
 	}
 
 	return &rove.RegisterResponse{}, nil
@@ -56,27 +54,18 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 	} else if resp, err := s.accountant.GetValue(ctx, &accounts.DataKey{Account: req.Account, Key: "rover"}); err != nil {
 		return nil, fmt.Errorf("gRPC failed to contact accountant: %s", err)
 
-	} else if id, err := uuid.Parse(resp.Value); err != nil {
-		return nil, fmt.Errorf("account had invalid rover ID: %s", resp.Value)
-
-	} else if attrib, err := s.world.RoverAttributes(id); err != nil {
-		return nil, fmt.Errorf("error getting rover attributes: %s", err)
-
-	} else if pos, err := s.world.RoverPosition(id); err != nil {
-		return nil, fmt.Errorf("error getting rover attributes: %s", err)
-
-	} else if inv, err := s.world.RoverInventory(id); err != nil {
-		return nil, fmt.Errorf("error getting rover attributes: %s", err)
+	} else if rover, err := s.world.GetRover(resp.Value); err != nil {
+		return nil, fmt.Errorf("error getting rover: %s", err)
 
 	} else {
 		response = &rove.RoverResponse{
-			Name: attrib.Name,
+			Name: rover.Name,
 			Position: &rove.Vector{
-				X: int32(pos.X),
-				Y: int32(pos.Y),
+				X: int32(rover.Pos.X),
+				Y: int32(rover.Pos.Y),
 			},
-			Range:     int32(attrib.Range),
-			Inventory: inv,
+			Range:     int32(rover.Range),
+			Inventory: rover.Inventory,
 		}
 	}
 	return response, nil
@@ -92,20 +81,16 @@ func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.Radar
 	resp, err := s.accountant.GetValue(ctx, &accounts.DataKey{Account: req.Account, Key: "rover"})
 	if err != nil {
 		return nil, fmt.Errorf("gRPC failed to contact accountant: %s", err)
-	}
 
-	if id, err := uuid.Parse(resp.Value); err != nil {
-		return nil, fmt.Errorf("account had invalid rover ID: %s", resp.Value)
-
-	} else if attrib, err := s.world.RoverAttributes(id); err != nil {
+	} else if rover, err := s.world.GetRover(resp.Value); err != nil {
 		return nil, fmt.Errorf("error getting rover attributes: %s", err)
 
-	} else if radar, err := s.world.RadarFromRover(id); err != nil {
+	} else if radar, err := s.world.RadarFromRover(resp.Value); err != nil {
 		return nil, fmt.Errorf("error getting radar from rover: %s", err)
 
 	} else {
 		response.Tiles = radar
-		response.Range = int32(attrib.Range)
+		response.Range = int32(rover.Range)
 	}
 
 	return response, nil
@@ -121,11 +106,6 @@ func (s *Server) Commands(ctx context.Context, req *rove.CommandsRequest) (*rove
 		return nil, err
 	}
 
-	id, err := uuid.Parse(resp.Value)
-	if err != nil {
-		return nil, fmt.Errorf("account had invalid rover ID: %s", resp.Value)
-	}
-
 	var cmds []game.Command
 	for _, c := range req.Commands {
 		cmds = append(cmds, game.Command{
@@ -133,7 +113,7 @@ func (s *Server) Commands(ctx context.Context, req *rove.CommandsRequest) (*rove
 			Command: c.Command})
 	}
 
-	if err := s.world.Enqueue(id, cmds...); err != nil {
+	if err := s.world.Enqueue(resp.Value, cmds...); err != nil {
 		return nil, err
 	}
 

@@ -11,7 +11,9 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/rove-server/main.go",
             "cwd": "${workspaceFolder}",
-            "env": {},
+            "env": {
+                "WORDS_FILE": "${workspaceFolder}/data/words_alpha.txt",
+            },
             "args": [],            
         },
         {
