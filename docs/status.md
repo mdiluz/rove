@@ -14,10 +14,10 @@ This page tracks the current feature set and the features to implement next
 * Rover inventory
 * Collectable materials
 * Rover integrity and damage
+* Rover can repair
 
 ### Incoming features
 
-* Basic rover actions (e.g. repair)
 * Rover replacement and advancement mechanic
 * HTTPS
 

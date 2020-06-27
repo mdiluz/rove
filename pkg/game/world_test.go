@@ -161,5 +161,74 @@ func TestWorld_RoverStash(t *testing.T) {
 	inv, err := world.RoverInventory(a)
 	assert.NoError(t, err, "Failed to get inventory")
 	assert.Equal(t, objects.SmallRock, inv[0])
+}
 
+func TestWorld_RoverDamage(t *testing.T) {
+	world := NewWorld(2, 2)
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
+
+	pos := vector.Vector{
+		X: 0.0,
+		Y: 0.0,
+	}
+
+	err = world.WarpRover(a, pos)
+	assert.NoError(t, err, "Failed to set position for rover")
+
+	info, err := world.GetRover(a)
+	assert.NoError(t, err, "couldn't get rover info")
+
+	err = world.Atlas.SetTile(vector.Vector{X: 0.0, Y: 1.0}, objects.LargeRock)
+	assert.NoError(t, err, "Failed to set tile to rock")
+
+	vec, err := world.MoveRover(a, bearing.North)
+	assert.NoError(t, err, "Failed to move rover")
+	assert.Equal(t, pos, vec, "Rover managed to move into large rock")
+
+	newinfo, err := world.GetRover(a)
+	assert.NoError(t, err, "couldn't get rover info")
+	assert.Equal(t, info.Integrity-1, newinfo.Integrity, "rover should have lost integrity")
+}
+
+func TestWorld_RoverRepair(t *testing.T) {
+	world := NewWorld(2, 2)
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
+
+	pos := vector.Vector{
+		X: 0.0,
+		Y: 0.0,
+	}
+
+	err = world.WarpRover(a, pos)
+	assert.NoError(t, err, "Failed to set position for rover")
+
+	originalInfo, err := world.GetRover(a)
+	assert.NoError(t, err, "couldn't get rover info")
+
+	err = world.Atlas.SetTile(pos, objects.SmallRock)
+	assert.NoError(t, err, "Failed to set tile to rock")
+
+	o, err := world.RoverStash(a)
+	assert.NoError(t, err, "Failed to stash")
+	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
+
+	err = world.Atlas.SetTile(vector.Vector{X: 0.0, Y: 1.0}, objects.LargeRock)
+	assert.NoError(t, err, "Failed to set tile to rock")
+
+	vec, err := world.MoveRover(a, bearing.North)
+	assert.NoError(t, err, "Failed to move rover")
+	assert.Equal(t, pos, vec, "Rover managed to move into large rock")
+
+	newinfo, err := world.GetRover(a)
+	assert.NoError(t, err, "couldn't get rover info")
+	assert.Equal(t, originalInfo.Integrity-1, newinfo.Integrity, "rover should have lost integrity")
+
+	err = world.ExecuteCommand(&Command{Command: CommandRepair}, a)
+	assert.NoError(t, err, "Failed to repair rover")
+
+	newinfo, err = world.GetRover(a)
+	assert.NoError(t, err, "couldn't get rover info")
+	assert.Equal(t, originalInfo.Integrity, newinfo.Integrity, "rover should have gained integrity")
 }

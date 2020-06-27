@@ -64,6 +64,7 @@ message Command {
     // The command to execute
     // "move" - Move the rover in a direction, requires bearing
     // "stash" - Stashes item at current location in rover inventory
+    // "repair" - Repairs the rover using an inventory object
     string command = 1;
 
     // The bearing, example: NE

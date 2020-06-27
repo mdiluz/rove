@@ -1,9 +1,14 @@
 package game
 
 const (
+	// Moves the rover in the chosen bearing
 	CommandMove = "move"
 
+	// Will attempt to stash the object at the current location
 	CommandStash = "stash"
+
+	// Will attempt to repair the rover with an inventory object
+	CommandRepair = "repair"
 )
 
 // Command represends a single command to execute

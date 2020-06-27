@@ -363,11 +363,12 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 	// First validate the commands
 	for _, c := range commands {
 		switch c.Command {
-		case "move":
+		case CommandMove:
 			if _, err := bearing.FromString(c.Bearing); err != nil {
 				return fmt.Errorf("unknown bearing: %s", c.Bearing)
 			}
-		case "stash":
+		case CommandStash:
+		case CommandRepair:
 			// Nothing to verify
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
@@ -446,6 +447,17 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 			return err
 		}
 
+	case CommandRepair:
+		if r, err := w.GetRover(rover); err != nil {
+			return err
+		} else {
+			// Consume an inventory item to repair
+			if len(r.Inventory) > 0 {
+				r.Inventory = r.Inventory[:len(r.Inventory)-1]
+				r.Integrity = r.Integrity + 1
+				w.Rovers[rover] = r
+			}
+		}
 	default:
 		return fmt.Errorf("unknown command: %s", c.Command)
 	}
