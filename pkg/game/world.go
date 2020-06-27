@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/bearing"
-	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/vector"
 )
@@ -44,7 +43,7 @@ type World struct {
 var wordsFile = os.Getenv("WORDS_FILE")
 
 // NewWorld creates a new world object
-func NewWorld(size, chunkSize int) *World {
+func NewWorld(chunkSize int) *World {
 
 	// Try and load the words file
 	var lines []string
@@ -65,21 +64,9 @@ func NewWorld(size, chunkSize int) *World {
 		Rovers:       make(map[string]Rover),
 		CommandQueue: make(map[string]CommandStream),
 		Incoming:     make(map[string]CommandStream),
-		Atlas:        atlas.NewAtlas(size, chunkSize),
+		Atlas:        atlas.NewAtlas(chunkSize),
 		words:        lines,
 	}
-}
-
-// SpawnWorld spawns a border at the edge of the world atlas
-func (w *World) SpawnWorld(fillWorld bool) error {
-	w.worldMutex.Lock()
-	defer w.worldMutex.Unlock()
-	if fillWorld {
-		if err := w.Atlas.SpawnRocks(); err != nil {
-			return err
-		}
-	}
-	return w.Atlas.SpawnWalls()
 }
 
 // SpawnRover adds an rover to the game
@@ -114,16 +101,14 @@ func (w *World) SpawnRover() (string, error) {
 
 	// Seach until we error (run out of world)
 	for {
-		if tile, err := w.Atlas.GetTile(rover.Pos); err != nil {
-			return "", err
+		tile := w.Atlas.GetTile(rover.Pos)
+		if !objects.IsBlocking(tile) {
+			break
 		} else {
-			if !objects.IsBlocking(tile) {
-				break
-			} else {
-				// Try and spawn to the east of the blockage
-				rover.Pos.Add(vector.Vector{X: 1, Y: 0})
-			}
+			// Try and spawn to the east of the blockage
+			rover.Pos.Add(vector.Vector{X: 1, Y: 0})
 		}
+
 	}
 
 	log.Printf("Spawned rover at %+v\n", rover.Pos)
@@ -153,9 +138,7 @@ func (w *World) DestroyRover(rover string) error {
 
 	if i, ok := w.Rovers[rover]; ok {
 		// Clear the tile
-		if err := w.Atlas.SetTile(i.Pos, objects.Empty); err != nil {
-			return fmt.Errorf("coudln't clear old rover tile: %s", err)
-		}
+		w.Atlas.SetTile(i.Pos, objects.Empty)
 		delete(w.Rovers, rover)
 	} else {
 		return fmt.Errorf("no rover matching id")
@@ -213,9 +196,8 @@ func (w *World) WarpRover(rover string, pos vector.Vector) error {
 		}
 
 		// Check the tile is not blocked
-		if tile, err := w.Atlas.GetTile(pos); err != nil {
-			return fmt.Errorf("coudln't get state of destination rover tile: %s", err)
-		} else if objects.IsBlocking(tile) {
+		tile := w.Atlas.GetTile(pos)
+		if objects.IsBlocking(tile) {
 			return fmt.Errorf("can't warp rover to occupied tile, check before warping")
 		}
 
@@ -237,9 +219,8 @@ func (w *World) MoveRover(rover string, b bearing.Bearing) (vector.Vector, error
 		newPos := i.Pos.Added(b.Vector())
 
 		// Get the tile and verify it's empty
-		if tile, err := w.Atlas.GetTile(newPos); err != nil {
-			return vector.Vector{}, fmt.Errorf("couldn't get tile for new position: %s", err)
-		} else if !objects.IsBlocking(tile) {
+		tile := w.Atlas.GetTile(newPos)
+		if !objects.IsBlocking(tile) {
 			// Perform the move
 			i.Pos = newPos
 			w.Rovers[rover] = i
@@ -265,18 +246,12 @@ func (w *World) RoverStash(rover string) (byte, error) {
 	defer w.worldMutex.Unlock()
 
 	if r, ok := w.Rovers[rover]; ok {
-		if tile, err := w.Atlas.GetTile(r.Pos); err != nil {
-			return objects.Empty, err
-		} else {
-			if objects.IsStashable(tile) {
-				r.Inventory = append(r.Inventory, tile)
-				w.Rovers[rover] = r
-				if err := w.Atlas.SetTile(r.Pos, objects.Empty); err != nil {
-					return objects.Empty, err
-				} else {
-					return tile, nil
-				}
-			}
+		tile := w.Atlas.GetTile(r.Pos)
+		if objects.IsStashable(tile) {
+			r.Inventory = append(r.Inventory, tile)
+			w.Rovers[rover] = r
+			w.Atlas.SetTile(r.Pos, objects.Empty)
+			return tile, nil
 		}
 
 	} else {
@@ -306,32 +281,19 @@ func (w *World) RadarFromRover(rover string) ([]byte, error) {
 			Y: roverPos.Y + r.Range,
 		}
 
-		// Make sure we only query within the actual world
-		worldMin, worldMax := w.Atlas.GetWorldExtents()
-		scanMin := vector.Vector{
-			X: maths.Max(radarMin.X, worldMin.X),
-			Y: maths.Max(radarMin.Y, worldMin.Y),
-		}
-		scanMax := vector.Vector{
-			X: maths.Min(radarMax.X, worldMax.X),
-			Y: maths.Min(radarMax.Y, worldMax.Y),
-		}
-
 		// Gather up all tiles within the range
 		var radar = make([]byte, radarSpan*radarSpan)
-		for j := scanMin.Y; j <= scanMax.Y; j++ {
-			for i := scanMin.X; i <= scanMax.X; i++ {
+		for j := radarMin.Y; j <= radarMax.Y; j++ {
+			for i := radarMin.X; i <= radarMax.X; i++ {
 				q := vector.Vector{X: i, Y: j}
 
-				if tile, err := w.Atlas.GetTile(q); err != nil {
-					return nil, fmt.Errorf("failed to query tile: %s", err)
+				tile := w.Atlas.GetTile(q)
 
-				} else {
-					// Get the position relative to the bottom left of the radar
-					relative := q.Added(radarMin.Negated())
-					index := relative.X + relative.Y*radarSpan
-					radar[index] = tile
-				}
+				// Get the position relative to the bottom left of the radar
+				relative := q.Added(radarMin.Negated())
+				index := relative.X + relative.Y*radarSpan
+				radar[index] = tile
+
 			}
 		}
 

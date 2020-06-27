@@ -83,15 +83,13 @@ func NewServer(opts ...ServerOption) *Server {
 		address:     "",
 		persistence: EphemeralData,
 		schedule:    cron.New(),
+		world:       game.NewWorld(16),
 	}
 
 	// Apply all options
 	for _, o := range opts {
 		o(s)
 	}
-
-	// Start small, we can grow the world later
-	s.world = game.NewWorld(4, 8)
 
 	return s
 }
@@ -113,11 +111,6 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 		return err
 	}
 	s.accountant = accounts.NewAccountantClient(s.clientConn)
-
-	// Spawn a border on the default world
-	if err := s.world.SpawnWorld(fillWorld); err != nil {
-		return err
-	}
 
 	// Load the world file
 	if err := s.LoadWorld(); err != nil {

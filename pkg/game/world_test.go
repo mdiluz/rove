@@ -11,14 +11,14 @@ import (
 
 func TestNewWorld(t *testing.T) {
 	// Very basic for now, nothing to verify
-	world := NewWorld(4, 4)
+	world := NewWorld(4)
 	if world == nil {
 		t.Error("Failed to create world")
 	}
 }
 
 func TestWorld_CreateRover(t *testing.T) {
-	world := NewWorld(2, 8)
+	world := NewWorld(8)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 	b, err := world.SpawnRover()
@@ -33,7 +33,7 @@ func TestWorld_CreateRover(t *testing.T) {
 }
 
 func TestWorld_GetRover(t *testing.T) {
-	world := NewWorld(2, 4)
+	world := NewWorld(4)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 
@@ -43,7 +43,7 @@ func TestWorld_GetRover(t *testing.T) {
 }
 
 func TestWorld_DestroyRover(t *testing.T) {
-	world := NewWorld(4, 1)
+	world := NewWorld(1)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 	b, err := world.SpawnRover()
@@ -61,7 +61,7 @@ func TestWorld_DestroyRover(t *testing.T) {
 }
 
 func TestWorld_GetSetMovePosition(t *testing.T) {
-	world := NewWorld(4, 4)
+	world := NewWorld(4)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 
@@ -84,14 +84,14 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.Equal(t, pos, newPos, "Failed to correctly move position for rover")
 
 	// Place a tile in front of the rover
-	assert.NoError(t, world.Atlas.SetTile(vector.Vector{X: 0, Y: 2}, objects.LargeRock))
+	world.Atlas.SetTile(vector.Vector{X: 0, Y: 2}, objects.LargeRock)
 	newPos, err = world.MoveRover(a, b)
 	assert.Equal(t, pos, newPos, "Failed to correctly not move position for rover into wall")
 }
 
 func TestWorld_RadarFromRover(t *testing.T) {
 	// Create world that should have visible walls on the radar
-	world := NewWorld(4, 2)
+	world := NewWorld(2)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 	b, err := world.SpawnRover()
@@ -102,40 +102,18 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	assert.NoError(t, world.WarpRover(b, bpos), "Failed to warp rover")
 	assert.NoError(t, world.WarpRover(a, vector.Vector{X: 0, Y: 0}), "Failed to warp rover")
 
-	// Spawn the world wall
-	err = world.Atlas.SpawnWalls()
-	assert.NoError(t, err)
-
 	radar, err := world.RadarFromRover(a)
 	assert.NoError(t, err, "Failed to get radar from rover")
 	fullRange := 4 + 4 + 1
 	assert.Equal(t, fullRange*fullRange, len(radar), "Radar returned wrong length")
 
-	// It should look like:
-	// ---------
-	// OOOOOOOO-
-	// O------O-
-	// O------O-
-	// O---R--O-
-	// O------O-
-	// O------O-
-	// OR-----O-
-	// OOOOOOOO-
-	PrintTiles(radar)
-
-	// Test all expected values
+	// Test the expected values
 	assert.Equal(t, objects.Rover, radar[1+fullRange])
 	assert.Equal(t, objects.Rover, radar[4+4*fullRange])
-	for i := 0; i < 8; i++ {
-		assert.Equal(t, objects.LargeRock, radar[i])
-		assert.Equal(t, objects.LargeRock, radar[i+(7*9)])
-		assert.Equal(t, objects.LargeRock, radar[i*9])
-		assert.Equal(t, objects.LargeRock, radar[(i*9)+7])
-	}
 }
 
 func TestWorld_RoverStash(t *testing.T) {
-	world := NewWorld(2, 2)
+	world := NewWorld(2)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 
@@ -147,15 +125,13 @@ func TestWorld_RoverStash(t *testing.T) {
 	err = world.WarpRover(a, pos)
 	assert.NoError(t, err, "Failed to set position for rover")
 
-	err = world.Atlas.SetTile(pos, objects.SmallRock)
-	assert.NoError(t, err, "Failed to set tile to rock")
+	world.Atlas.SetTile(pos, objects.SmallRock)
 
 	o, err := world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
 	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
 
-	tile, err := world.Atlas.GetTile(pos)
-	assert.NoError(t, err, "Failed to get tile")
+	tile := world.Atlas.GetTile(pos)
 	assert.Equal(t, objects.Empty, tile, "Stash failed to remove object from atlas")
 
 	inv, err := world.RoverInventory(a)
@@ -164,7 +140,7 @@ func TestWorld_RoverStash(t *testing.T) {
 }
 
 func TestWorld_RoverDamage(t *testing.T) {
-	world := NewWorld(2, 2)
+	world := NewWorld(2)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 
@@ -179,8 +155,7 @@ func TestWorld_RoverDamage(t *testing.T) {
 	info, err := world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 
-	err = world.Atlas.SetTile(vector.Vector{X: 0.0, Y: 1.0}, objects.LargeRock)
-	assert.NoError(t, err, "Failed to set tile to rock")
+	world.Atlas.SetTile(vector.Vector{X: 0.0, Y: 1.0}, objects.LargeRock)
 
 	vec, err := world.MoveRover(a, bearing.North)
 	assert.NoError(t, err, "Failed to move rover")
@@ -192,7 +167,7 @@ func TestWorld_RoverDamage(t *testing.T) {
 }
 
 func TestWorld_RoverRepair(t *testing.T) {
-	world := NewWorld(2, 2)
+	world := NewWorld(2)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 
@@ -207,15 +182,13 @@ func TestWorld_RoverRepair(t *testing.T) {
 	originalInfo, err := world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 
-	err = world.Atlas.SetTile(pos, objects.SmallRock)
-	assert.NoError(t, err, "Failed to set tile to rock")
+	world.Atlas.SetTile(pos, objects.SmallRock)
 
 	o, err := world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
 	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
 
-	err = world.Atlas.SetTile(vector.Vector{X: 0.0, Y: 1.0}, objects.LargeRock)
-	assert.NoError(t, err, "Failed to set tile to rock")
+	world.Atlas.SetTile(vector.Vector{X: 0.0, Y: 1.0}, objects.LargeRock)
 
 	vec, err := world.MoveRover(a, bearing.North)
 	assert.NoError(t, err, "Failed to move rover")
