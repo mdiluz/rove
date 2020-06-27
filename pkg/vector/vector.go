@@ -54,3 +54,13 @@ func (v Vector) Divided(val int) Vector {
 func (v Vector) Abs() Vector {
 	return Vector{maths.Abs(v.X), maths.Abs(v.Y)}
 }
+
+// Min returns the minimum values in both vectors
+func Min(v1 Vector, v2 Vector) Vector {
+	return Vector{maths.Min(v1.X, v2.X), maths.Min(v1.Y, v2.Y)}
+}
+
+// Min returns the max values in both vectors
+func Max(v1 Vector, v2 Vector) Vector {
+	return Vector{maths.Max(v1.X, v2.X), maths.Max(v1.Y, v2.Y)}
+}

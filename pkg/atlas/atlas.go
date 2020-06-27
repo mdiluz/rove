@@ -38,32 +38,40 @@ type Atlas struct {
 	// This is intentionally not a 2D array so it can be expanded in all directions
 	Chunks []Chunk `json:"chunks"`
 
-	// CurrentSize is the current width/height of the given atlas
-	CurrentSize int `json:"currentSize"`
+	// CurrentSizeInChunks is the current width/height of the atlas in chunks
+	CurrentSizeInChunks vector.Vector `json:"currentSizeInChunks"`
 
-	// ChunkSize is the dimensions of each chunk
+	// WorldOriginInChunkSpace represents the location of [0,0] in chunk space
+	WorldOriginInChunkSpace vector.Vector `json:"worldOriginInChunkSpace"`
+
+	// ChunkSize is the x/y dimensions of each square chunk
 	ChunkSize int `json:"chunksize"`
 }
 
 // NewAtlas creates a new empty atlas
 func NewAtlas(chunkSize int) Atlas {
-	return Atlas{
-		CurrentSize: 0,
-		Chunks:      nil,
-		ChunkSize:   chunkSize,
+	// Start up with one chunk
+	a := Atlas{
+		ChunkSize:               chunkSize,
+		Chunks:                  make([]Chunk, 1),
+		CurrentSizeInChunks:     vector.Vector{X: 1, Y: 1},
+		WorldOriginInChunkSpace: vector.Vector{X: 0, Y: 0},
 	}
+	// Initialise the first chunk
+	a.Chunks[0].SpawnContent(chunkSize)
+	return a
 }
 
 // SetTile sets an individual tile's kind
 func (a *Atlas) SetTile(v vector.Vector, tile byte) {
-	// Get the chunk, expand, and spawn it if needed
-	c := a.toChunkWithGrow(v)
+	// Get the chunk
+	c := a.worldSpaceToChunkWithGrow(v)
 	chunk := a.Chunks[c]
 	if chunk.Tiles == nil {
 		chunk.SpawnContent(a.ChunkSize)
 	}
 
-	local := a.toChunkLocal(v)
+	local := a.worldSpaceToChunkLocal(v)
 	tileId := local.X + local.Y*a.ChunkSize
 
 	// Sanity check
@@ -78,14 +86,14 @@ func (a *Atlas) SetTile(v vector.Vector, tile byte) {
 
 // GetTile will return an individual tile
 func (a *Atlas) GetTile(v vector.Vector) byte {
-	// Get the chunk, expand, and spawn it if needed
-	c := a.toChunkWithGrow(v)
+	// Get the chunk
+	c := a.worldSpaceToChunkWithGrow(v)
 	chunk := a.Chunks[c]
 	if chunk.Tiles == nil {
 		chunk.SpawnContent(a.ChunkSize)
 	}
 
-	local := a.toChunkLocal(v)
+	local := a.worldSpaceToChunkLocal(v)
 	tileId := local.X + local.Y*a.ChunkSize
 
 	// Sanity check
@@ -96,68 +104,134 @@ func (a *Atlas) GetTile(v vector.Vector) byte {
 	return chunk.Tiles[tileId]
 }
 
-// toChunkWithGrow will expand the atlas for a given tile, returns the new chunk
-func (a *Atlas) toChunkWithGrow(v vector.Vector) int {
-	for {
-		// Get the chunk, and grow looping until we have a valid chunk
-		chunk := a.toChunk(v)
-		if chunk >= len(a.Chunks) || chunk < 0 {
-			a.grow()
-		} else {
-			return chunk
-		}
-	}
-}
-
-// toChunkLocal gets a chunk local coordinate for a tile
-func (a *Atlas) toChunkLocal(v vector.Vector) vector.Vector {
+// worldSpaceToChunkLocal gets a chunk local coordinate for a tile
+func (a *Atlas) worldSpaceToChunkLocal(v vector.Vector) vector.Vector {
 	return vector.Vector{X: maths.Pmod(v.X, a.ChunkSize), Y: maths.Pmod(v.Y, a.ChunkSize)}
 }
 
-// GetChunkID gets the current chunk ID for a position in the world
-func (a *Atlas) toChunk(v vector.Vector) int {
-	local := a.toChunkLocal(v)
-	// Get the chunk origin itself
-	origin := v.Added(local.Negated())
-	// Divided it by the number of chunks
-	origin = origin.Divided(a.ChunkSize)
-	// Shift it by our size (our origin is in the middle)
-	origin = origin.Added(vector.Vector{X: a.CurrentSize / 2, Y: a.CurrentSize / 2})
-	// Get the ID based on the final values
-	return (a.CurrentSize * origin.Y) + origin.X
+// worldSpaceToChunk gets the current chunk ID for a position in the world
+func (a *Atlas) worldSpaceToChunk(v vector.Vector) int {
+	// First convert to chunk space
+	chunkSpace := a.worldSpaceToChunkSpace(v)
+
+	// Then return the ID
+	return a.chunkSpaceToChunk(chunkSpace)
 }
 
-// chunkOrigin gets the chunk origin for a given chunk index
-func (a *Atlas) chunkOrigin(chunk int) vector.Vector {
-	v := vector.Vector{
-		X: maths.Pmod(chunk, a.CurrentSize) - (a.CurrentSize / 2),
-		Y: (chunk / a.CurrentSize) - (a.CurrentSize / 2),
+// worldSpaceToChunkSpace converts from world space to chunk space
+func (a *Atlas) worldSpaceToChunkSpace(v vector.Vector) vector.Vector {
+	// Remove the chunk local part
+	chunkOrigin := v.Added(a.worldSpaceToChunkLocal(v).Negated())
+	// Convert to chunk space coordinate
+	chunkSpaceOrigin := chunkOrigin.Divided(a.ChunkSize)
+	// Shift it by our current chunk origin
+	chunkIndexOrigin := chunkSpaceOrigin.Added(a.WorldOriginInChunkSpace)
+
+	return chunkIndexOrigin
+}
+
+// chunkSpaceToWorldSpace vonverts from chunk space to world space
+func (a *Atlas) chunkSpaceToWorldSpace(v vector.Vector) vector.Vector {
+
+	// Shift it by the current chunk origin
+	shifted := v.Added(a.WorldOriginInChunkSpace.Negated())
+
+	// Multiply out by chunk size
+	return shifted.Multiplied(a.ChunkSize)
+}
+
+// chunkOriginInChunkSpace Gets the chunk origin in chunk space
+func (a *Atlas) chunkOriginInChunkSpace(chunk int) vector.Vector {
+	// convert the chunk to chunk space
+	chunkOrigin := a.chunkToChunkSpace(chunk)
+
+	// Shift it by the current chunk origin
+	return chunkOrigin.Added(a.WorldOriginInChunkSpace.Negated())
+}
+
+// chunkOriginInWorldSpace gets the chunk origin for a given chunk index
+func (a *Atlas) chunkOriginInWorldSpace(chunk int) vector.Vector {
+	// convert the chunk to chunk space
+	chunkSpace := a.chunkToChunkSpace(chunk)
+
+	// Convert to world space
+	return a.chunkSpaceToWorldSpace(chunkSpace)
+}
+
+// chunkSpaceToChunk converts from chunk space to the chunk
+func (a *Atlas) chunkSpaceToChunk(v vector.Vector) int {
+	// Along the coridor and up the stair
+	return (v.Y * a.CurrentSizeInChunks.X) + v.X
+}
+
+// chunkToChunkSpace returns the chunk space coord for the chunk
+func (a *Atlas) chunkToChunkSpace(chunk int) vector.Vector {
+	return vector.Vector{
+		X: maths.Pmod(chunk, a.CurrentSizeInChunks.Y),
+		Y: (chunk / a.CurrentSizeInChunks.X),
+	}
+}
+
+func (a *Atlas) getExtents() (min vector.Vector, max vector.Vector) {
+	min = a.WorldOriginInChunkSpace.Negated()
+	max = min.Added(a.CurrentSizeInChunks)
+	return
+}
+
+// worldSpaceToTrunkWithGrow will expand the current atlas for a given world space position if needed
+func (a *Atlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
+	min, max := a.getExtents()
+
+	// Divide by the chunk size to bring into chunk space
+	v = v.Divided(a.ChunkSize)
+
+	// Check we're within the current extents and bail early
+	if v.X >= min.X && v.Y >= min.Y && v.X < max.X && v.Y < max.Y {
+		return a.worldSpaceToChunk(v)
 	}
 
-	return v.Multiplied(a.ChunkSize)
-}
+	// Calculate the new origin and the new size
+	origin := min
+	size := a.CurrentSizeInChunks
 
-// grow will expand the current atlas in all directions by one chunk
-func (a *Atlas) grow() error {
-	// Create a new atlas
-	newAtlas := NewAtlas(a.ChunkSize)
+	// If we need to shift the origin back
+	originDiff := origin.Added(v.Negated())
+	if originDiff.X > 0 {
+		origin.X -= originDiff.X
+		size.X += originDiff.X
+	}
+	if originDiff.Y > 0 {
+		origin.Y -= originDiff.Y
+		size.Y += originDiff.Y
+	}
 
-	// Expand by one on each axis
-	newAtlas.CurrentSize = a.CurrentSize + 2
+	// If we need to expand the size
+	maxDiff := v.Added(max.Negated())
+	if maxDiff.X > 0 {
+		size.X += maxDiff.X
+	}
+	if maxDiff.Y > 0 {
+		size.Y += maxDiff.Y
+	}
 
-	// Allocate the new atlas chunks
-	// These chunks will have nil tile slices
-	newAtlas.Chunks = make([]Chunk, newAtlas.CurrentSize*newAtlas.CurrentSize)
+	// Set up the new size and origin
+	newAtlas := Atlas{
+		ChunkSize:               a.ChunkSize,
+		WorldOriginInChunkSpace: origin.Negated(),
+		CurrentSizeInChunks:     size,
+		Chunks:                  make([]Chunk, size.X*size.Y),
+	}
 
 	// Copy all old chunks into the new atlas
-	for index, chunk := range a.Chunks {
+	for chunk, chunkData := range a.Chunks {
 		// Calculate the new chunk location and copy over the data
-		newAtlas.Chunks[newAtlas.toChunk(a.chunkOrigin(index))] = chunk
+		newChunk := newAtlas.worldSpaceToChunk(a.chunkOriginInWorldSpace(chunk))
+		// Copy over the old chunk to the new atlas
+		newAtlas.Chunks[newChunk] = chunkData
 	}
 
 	// Copy the new atlas data into this one
 	*a = newAtlas
 
-	// Return the new atlas
-	return nil
+	return a.worldSpaceToChunk(v)
 }
