@@ -430,16 +430,14 @@ func (w *World) ExecuteCommandQueues() {
 
 // ExecuteCommand will execute a single command
 func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
-	log.Printf("Executing command: %+v\n", *c)
+	log.Printf("Executing command: %+v for %s\n", *c, rover)
 
 	switch c.Command {
 	case CommandMove:
 		if dir, err := bearing.FromString(c.Bearing); err != nil {
 			return err
-
 		} else if _, err := w.MoveRover(rover, dir); err != nil {
 			return err
-
 		}
 
 	case CommandStash:

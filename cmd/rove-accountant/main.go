@@ -68,8 +68,7 @@ func (a *accountantServer) GetValue(_ context.Context, in *accounts.DataKey) (*a
 	a.sync.RLock()
 	defer a.sync.RUnlock()
 
-	// Try and fetch the rover
-	log.Printf("Getting value for account %s: %s\n", in.Account, in.Key)
+	// Try and fetch the value
 	data, err := a.accountant.GetValue(in.Account, in.Key)
 	if err != nil {
 		log.Printf("Error: %s\n", err)
