@@ -4,10 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/mdiluz/rove/cmd/rove-server/internal"
 	"github.com/mdiluz/rove/pkg/persistence"
@@ -23,6 +25,9 @@ var data = os.Getenv("DATA_PATH")
 var tick = os.Getenv("TICK_RATE")
 
 func InnerMain() {
+	// Ensure we've seeded rand
+	rand.Seed(time.Now().UTC().UnixNano())
+
 	flag.Parse()
 
 	// Print the version if requested
