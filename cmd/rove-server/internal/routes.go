@@ -66,6 +66,7 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 			},
 			Range:     int32(rover.Range),
 			Inventory: rover.Inventory,
+			Integrity: int32(rover.Integrity),
 		}
 	}
 	return response, nil

@@ -13,10 +13,10 @@ This page tracks the current feature set and the features to implement next
 * Commands are queued and then are executed in sequence
 * Rover inventory
 * Collectable materials
+* Rover integrity and damage
 
 ### Incoming features
 
-* Rover integrity and damage
 * Basic rover actions (e.g. repair)
 * Rover replacement and advancement mechanic
 * HTTPS

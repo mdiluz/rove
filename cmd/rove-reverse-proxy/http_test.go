@@ -123,4 +123,5 @@ func TestServer_Rover(t *testing.T) {
 	assert.NotZero(t, resp.Range, "Rover should return valid range")
 	assert.NotZero(t, len(resp.Name), "Rover should return valid name")
 	assert.NotZero(t, resp.Position, "Rover should return valid position")
+	assert.NotZero(t, resp.Integrity, "Rover should have positive integrity")
 }

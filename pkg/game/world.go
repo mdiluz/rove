@@ -89,8 +89,9 @@ func (w *World) SpawnRover() (string, error) {
 
 	// Initialise the rover
 	rover := Rover{
-		Range: 4.0,
-		Name:  uuid.New().String(),
+		Range:     4.0,
+		Integrity: 10,
+		Name:      uuid.New().String(),
 	}
 
 	// Assign a random name if we have words
@@ -242,6 +243,14 @@ func (w *World) MoveRover(rover string, b bearing.Bearing) (vector.Vector, error
 			// Perform the move
 			i.Pos = newPos
 			w.Rovers[rover] = i
+		} else {
+			// If it is a blocking tile, reduce the rover integrity
+			i.Integrity = i.Integrity - 1
+			if i.Integrity == 0 {
+				// TODO: The rover needs to be left dormant with the player
+			} else {
+				w.Rovers[rover] = i
+			}
 		}
 
 		return i.Pos, nil

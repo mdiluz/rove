@@ -306,6 +306,11 @@
           "type": "string",
           "format": "byte",
           "title": "The items in the rover inventory"
+        },
+        "Integrity": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The current health of the rover"
         }
       }
     },

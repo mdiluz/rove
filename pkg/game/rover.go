@@ -17,4 +17,7 @@ type Rover struct {
 
 	// Inventory represents any items the rover is carrying
 	Inventory []byte `json:"inventory"`
+
+	// Integrity represents current rover health
+	Integrity int `json:"integrity"`
 }
