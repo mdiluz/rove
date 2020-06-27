@@ -49,7 +49,7 @@ func InnerMain() {
 	persistence.SetPath(data)
 
 	// Convert the tick rate
-	tickRate := 5
+	tickRate := 1
 	if len(tick) > 0 {
 		var err error
 		tickRate, err = strconv.Atoi(tick)
