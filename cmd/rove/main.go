@@ -26,7 +26,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\nCommands")
 	fmt.Fprintln(os.Stderr, "\tstatus                     prints the server status")
 	fmt.Fprintln(os.Stderr, "\tregister NAME              registers an account and stores it (use with -name)")
-	fmt.Fprintln(os.Stderr, "\tcommands COMMAND [VAL...]  issues move command to rover, see below")
+	fmt.Fprintln(os.Stderr, "\tcommands COMMAND [VAL...]  issue commands to rover, accepts multiple, see below")
 	fmt.Fprintln(os.Stderr, "\tradar                      gathers radar data for the current rover")
 	fmt.Fprintln(os.Stderr, "\trover                      gets data for current rover")
 	fmt.Fprintln(os.Stderr, "\tconfig [HOST]              outputs the local config info, optionally sets host")
