@@ -38,11 +38,11 @@ type Atlas struct {
 	// This is intentionally not a 2D array so it can be expanded in all directions
 	Chunks []Chunk `json:"chunks"`
 
-	// CurrentSizeInChunks is the current width/height of the atlas in chunks
-	CurrentSizeInChunks vector.Vector `json:"currentSizeInChunks"`
+	// CurrentSize is the current width/height of the atlas in chunks
+	CurrentSize vector.Vector `json:"currentSize"`
 
-	// WorldOriginInChunkSpace represents the location of [0,0] in chunk space
-	WorldOriginInChunkSpace vector.Vector `json:"worldOriginInChunkSpace"`
+	// WorldOrigin represents the location of the [0,0] world space point in terms of the allotted current chunks
+	WorldOrigin vector.Vector `json:"worldOrigin"`
 
 	// ChunkSize is the x/y dimensions of each square chunk
 	ChunkSize int `json:"chunksize"`
@@ -52,10 +52,10 @@ type Atlas struct {
 func NewAtlas(chunkSize int) Atlas {
 	// Start up with one chunk
 	a := Atlas{
-		ChunkSize:               chunkSize,
-		Chunks:                  make([]Chunk, 1),
-		CurrentSizeInChunks:     vector.Vector{X: 1, Y: 1},
-		WorldOriginInChunkSpace: vector.Vector{X: 0, Y: 0},
+		ChunkSize:   chunkSize,
+		Chunks:      make([]Chunk, 1),
+		CurrentSize: vector.Vector{X: 1, Y: 1},
+		WorldOrigin: vector.Vector{X: 0, Y: 0},
 	}
 	// Initialise the first chunk
 	a.Chunks[0].SpawnContent(chunkSize)
@@ -125,7 +125,7 @@ func (a *Atlas) worldSpaceToChunkSpace(v vector.Vector) vector.Vector {
 	// Convert to chunk space coordinate
 	chunkSpaceOrigin := chunkOrigin.Divided(a.ChunkSize)
 	// Shift it by our current chunk origin
-	chunkIndexOrigin := chunkSpaceOrigin.Added(a.WorldOriginInChunkSpace)
+	chunkIndexOrigin := chunkSpaceOrigin.Added(a.WorldOrigin)
 
 	return chunkIndexOrigin
 }
@@ -134,7 +134,7 @@ func (a *Atlas) worldSpaceToChunkSpace(v vector.Vector) vector.Vector {
 func (a *Atlas) chunkSpaceToWorldSpace(v vector.Vector) vector.Vector {
 
 	// Shift it by the current chunk origin
-	shifted := v.Added(a.WorldOriginInChunkSpace.Negated())
+	shifted := v.Added(a.WorldOrigin.Negated())
 
 	// Multiply out by chunk size
 	return shifted.Multiplied(a.ChunkSize)
@@ -146,7 +146,7 @@ func (a *Atlas) chunkOriginInChunkSpace(chunk int) vector.Vector {
 	chunkOrigin := a.chunkToChunkSpace(chunk)
 
 	// Shift it by the current chunk origin
-	return chunkOrigin.Added(a.WorldOriginInChunkSpace.Negated())
+	return chunkOrigin.Added(a.WorldOrigin.Negated())
 }
 
 // chunkOriginInWorldSpace gets the chunk origin for a given chunk index
@@ -161,20 +161,20 @@ func (a *Atlas) chunkOriginInWorldSpace(chunk int) vector.Vector {
 // chunkSpaceToChunk converts from chunk space to the chunk
 func (a *Atlas) chunkSpaceToChunk(v vector.Vector) int {
 	// Along the coridor and up the stair
-	return (v.Y * a.CurrentSizeInChunks.X) + v.X
+	return (v.Y * a.CurrentSize.X) + v.X
 }
 
 // chunkToChunkSpace returns the chunk space coord for the chunk
 func (a *Atlas) chunkToChunkSpace(chunk int) vector.Vector {
 	return vector.Vector{
-		X: maths.Pmod(chunk, a.CurrentSizeInChunks.Y),
-		Y: (chunk / a.CurrentSizeInChunks.X),
+		X: maths.Pmod(chunk, a.CurrentSize.Y),
+		Y: (chunk / a.CurrentSize.X),
 	}
 }
 
 func (a *Atlas) getExtents() (min vector.Vector, max vector.Vector) {
-	min = a.WorldOriginInChunkSpace.Negated()
-	max = min.Added(a.CurrentSizeInChunks)
+	min = a.WorldOrigin.Negated()
+	max = min.Added(a.CurrentSize)
 	return
 }
 
@@ -192,7 +192,7 @@ func (a *Atlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
 
 	// Calculate the new origin and the new size
 	origin := min
-	size := a.CurrentSizeInChunks
+	size := a.CurrentSize
 
 	// If we need to shift the origin back
 	originDiff := origin.Added(v.Negated())
@@ -216,10 +216,10 @@ func (a *Atlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
 
 	// Set up the new size and origin
 	newAtlas := Atlas{
-		ChunkSize:               a.ChunkSize,
-		WorldOriginInChunkSpace: origin.Negated(),
-		CurrentSizeInChunks:     size,
-		Chunks:                  make([]Chunk, size.X*size.Y),
+		ChunkSize:   a.ChunkSize,
+		WorldOrigin: origin.Negated(),
+		CurrentSize: size,
+		Chunks:      make([]Chunk, size.X*size.Y),
 	}
 
 	// Copy all old chunks into the new atlas
