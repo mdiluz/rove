@@ -9,8 +9,6 @@ services:
       context: .
       dockerfile: Dockerfile
     image: rove:latest
-    ports:
-      - "9091:9091"
     environment:
       - PORT=9091
       - DATA_PATH=/mnt/rove-server
