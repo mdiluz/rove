@@ -83,7 +83,7 @@ func NewServer(opts ...ServerOption) *Server {
 		address:     "",
 		persistence: EphemeralData,
 		schedule:    cron.New(),
-		world:       game.NewWorld(16),
+		world:       game.NewWorld(32),
 	}
 
 	// Apply all options
