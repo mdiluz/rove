@@ -42,10 +42,15 @@ func printUsage() {
 
 const gRPCport = 9090
 
+// Account stores data for an account
+type Account struct {
+	Name string `json:"name"`
+}
+
 // Config is used to store internal data
 type Config struct {
-	Host     string            `json:"host,omitempty"`
-	Accounts map[string]string `json:"accounts,omitempty"`
+	Host    string  `json:"host,omitempty"`
+	Account Account `json:"account,omitempty"`
 }
 
 // ConfigPath returns the configuration path
@@ -65,7 +70,6 @@ func ConfigPath() string {
 func LoadConfig() (config Config, err error) {
 
 	datapath := ConfigPath()
-	config.Accounts = make(map[string]string)
 
 	// Create the path if needed
 	path := filepath.Dir(datapath)
@@ -136,7 +140,7 @@ func InnerMain(command string, args ...string) error {
 		if len(args) > 0 {
 			config.Host = args[0]
 		}
-		fmt.Printf("host: %s\taccount: %s\n", config.Host, config.Accounts[config.Host])
+		fmt.Printf("host: %s\taccount: %s\n", config.Host, config.Account)
 		return SaveConfig(config)
 	}
 
@@ -173,6 +177,7 @@ func InnerMain(command string, args ...string) error {
 		if len(args) == 0 {
 			return fmt.Errorf("must pass name to 'register'")
 		}
+
 		name := args[0]
 		d := rove.RegisterRequest{
 			Name: name,
@@ -184,7 +189,7 @@ func InnerMain(command string, args ...string) error {
 
 		default:
 			fmt.Printf("Registered account with id: %s\n", name)
-			config.Accounts[config.Host] = name
+			config.Account.Name = name
 		}
 
 	case "commands":
@@ -219,7 +224,7 @@ func InnerMain(command string, args ...string) error {
 		}
 
 		d := rove.CommandsRequest{
-			Account:  config.Accounts[config.Host],
+			Account:  config.Account.Name,
 			Commands: commands,
 		}
 
@@ -237,7 +242,7 @@ func InnerMain(command string, args ...string) error {
 		}
 
 	case "radar":
-		dat := rove.RadarRequest{Account: config.Accounts[config.Host]}
+		dat := rove.RadarRequest{Account: config.Account.Name}
 		if err := verifyID(dat.Account); err != nil {
 			return err
 		}
@@ -253,7 +258,7 @@ func InnerMain(command string, args ...string) error {
 		}
 
 	case "rover":
-		req := rove.RoverRequest{Account: config.Accounts[config.Host]}
+		req := rove.RoverRequest{Account: config.Account.Name}
 		if err := verifyID(req.Account); err != nil {
 			return err
 		}
