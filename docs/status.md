@@ -19,10 +19,9 @@ This page tracks the current feature set and the features to implement next
 ### Incoming features
 
 * Rover replacement and advancement mechanic
-* HTTPS
+* Account token security
 
 ### Stretch goals
 
 * Render rover camera view
-* Account token security
 
