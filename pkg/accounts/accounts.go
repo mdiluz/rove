@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-const kAccountsFileName = "rove-accounts.json"
-
 // Account represents a registered user
 type Account struct {
 	// Name simply describes the account and must be unique
@@ -51,7 +49,7 @@ func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 	return
 }
 
-// AssignRover assigns data to an account
+// AssignData assigns data to an account
 func (a *Accountant) AssignData(account string, key string, value string) error {
 
 	// Find the account matching the ID
@@ -65,12 +63,12 @@ func (a *Accountant) AssignData(account string, key string, value string) error 
 	return nil
 }
 
-// GetRover gets the rover rover for the account
+// GetValue gets the rover rover for the account
 func (a *Accountant) GetValue(account string, key string) (string, error) {
 	// Find the account matching the ID
-	if this, ok := a.Accounts[account]; !ok {
+	this, ok := a.Accounts[account]
+	if !ok {
 		return "", fmt.Errorf("no account found for id: %s", account)
-	} else {
-		return this.Data[key], nil
 	}
+	return this.Data[key], nil
 }

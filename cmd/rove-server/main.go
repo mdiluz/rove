@@ -24,6 +24,7 @@ var data = os.Getenv("DATA_PATH")
 // The tick rate of the server in seconds
 var tick = os.Getenv("TICK_RATE")
 
+// InnerMain is our main function so tests can run it
 func InnerMain() {
 	// Ensure we've seeded rand
 	rand.Seed(time.Now().UTC().UnixNano())

@@ -124,25 +124,26 @@ func (w *World) GetRover(rover string) (Rover, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
-	if i, ok := w.Rovers[rover]; ok {
-		return i, nil
-	} else {
+	i, ok := w.Rovers[rover]
+	if !ok {
 		return Rover{}, fmt.Errorf("Failed to find rover with name: %s", rover)
 	}
+	return i, nil
 }
 
-// Removes an rover from the game
+// DestroyRover Removes an rover from the game
 func (w *World) DestroyRover(rover string) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	if i, ok := w.Rovers[rover]; ok {
-		// Clear the tile
-		w.Atlas.SetTile(i.Pos, objects.Empty)
-		delete(w.Rovers, rover)
-	} else {
+	i, ok := w.Rovers[rover]
+	if !ok {
 		return fmt.Errorf("no rover matching id")
 	}
+
+	// Clear the tile
+	w.Atlas.SetTile(i.Pos, objects.Empty)
+	delete(w.Rovers, rover)
 	return nil
 }
 
@@ -151,11 +152,11 @@ func (w *World) RoverPosition(rover string) (vector.Vector, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
-	if i, ok := w.Rovers[rover]; ok {
-		return i.Pos, nil
-	} else {
+	i, ok := w.Rovers[rover]
+	if !ok {
 		return vector.Vector{}, fmt.Errorf("no rover matching id")
 	}
+	return i.Pos, nil
 }
 
 // SetRoverPosition sets the position of the rover
@@ -163,13 +164,14 @@ func (w *World) SetRoverPosition(rover string, pos vector.Vector) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	if i, ok := w.Rovers[rover]; ok {
-		i.Pos = pos
-		w.Rovers[rover] = i
-		return nil
-	} else {
+	i, ok := w.Rovers[rover]
+	if !ok {
 		return fmt.Errorf("no rover matching id")
 	}
+
+	i.Pos = pos
+	w.Rovers[rover] = i
+	return nil
 }
 
 // RoverInventory returns the inventory of a requested rover
@@ -177,11 +179,11 @@ func (w *World) RoverInventory(rover string) ([]byte, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
-	if i, ok := w.Rovers[rover]; ok {
-		return i.Inventory, nil
-	} else {
+	i, ok := w.Rovers[rover]
+	if !ok {
 		return nil, fmt.Errorf("no rover matching id")
 	}
+	return i.Inventory, nil
 }
 
 // WarpRover sets an rovers position
@@ -189,55 +191,55 @@ func (w *World) WarpRover(rover string, pos vector.Vector) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	if i, ok := w.Rovers[rover]; ok {
-		// Nothing to do if these positions match
-		if i.Pos == pos {
-			return nil
-		}
-
-		// Check the tile is not blocked
-		tile := w.Atlas.GetTile(pos)
-		if objects.IsBlocking(tile) {
-			return fmt.Errorf("can't warp rover to occupied tile, check before warping")
-		}
-
-		i.Pos = pos
-		w.Rovers[rover] = i
-		return nil
-	} else {
+	i, ok := w.Rovers[rover]
+	if !ok {
 		return fmt.Errorf("no rover matching id")
 	}
+	// Nothing to do if these positions match
+	if i.Pos == pos {
+		return nil
+	}
+
+	// Check the tile is not blocked
+	tile := w.Atlas.GetTile(pos)
+	if objects.IsBlocking(tile) {
+		return fmt.Errorf("can't warp rover to occupied tile, check before warping")
+	}
+
+	i.Pos = pos
+	w.Rovers[rover] = i
+	return nil
 }
 
-// SetPosition sets an rovers position
+// MoveRover attempts to move a rover in a specific direction
 func (w *World) MoveRover(rover string, b bearing.Bearing) (vector.Vector, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	if i, ok := w.Rovers[rover]; ok {
-		// Try the new move position
-		newPos := i.Pos.Added(b.Vector())
-
-		// Get the tile and verify it's empty
-		tile := w.Atlas.GetTile(newPos)
-		if !objects.IsBlocking(tile) {
-			// Perform the move
-			i.Pos = newPos
-			w.Rovers[rover] = i
-		} else {
-			// If it is a blocking tile, reduce the rover integrity
-			i.Integrity = i.Integrity - 1
-			if i.Integrity == 0 {
-				// TODO: The rover needs to be left dormant with the player
-			} else {
-				w.Rovers[rover] = i
-			}
-		}
-
-		return i.Pos, nil
-	} else {
+	i, ok := w.Rovers[rover]
+	if !ok {
 		return vector.Vector{}, fmt.Errorf("no rover matching id")
 	}
+	// Try the new move position
+	newPos := i.Pos.Added(b.Vector())
+
+	// Get the tile and verify it's empty
+	tile := w.Atlas.GetTile(newPos)
+	if !objects.IsBlocking(tile) {
+		// Perform the move
+		i.Pos = newPos
+		w.Rovers[rover] = i
+	} else {
+		// If it is a blocking tile, reduce the rover integrity
+		i.Integrity = i.Integrity - 1
+		if i.Integrity == 0 {
+			// TODO: The rover needs to be left dormant with the player
+		} else {
+			w.Rovers[rover] = i
+		}
+	}
+
+	return i.Pos, nil
 }
 
 // RoverStash will stash an item at the current rovers position
@@ -245,20 +247,20 @@ func (w *World) RoverStash(rover string) (byte, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	if r, ok := w.Rovers[rover]; ok {
-		tile := w.Atlas.GetTile(r.Pos)
-		if objects.IsStashable(tile) {
-			r.Inventory = append(r.Inventory, tile)
-			w.Rovers[rover] = r
-			w.Atlas.SetTile(r.Pos, objects.Empty)
-			return tile, nil
-		}
-
-	} else {
+	r, ok := w.Rovers[rover]
+	if !ok {
 		return objects.Empty, fmt.Errorf("no rover matching id")
 	}
 
-	return objects.Empty, nil
+	tile := w.Atlas.GetTile(r.Pos)
+	if !objects.IsStashable(tile) {
+		return objects.Empty, nil
+	}
+
+	r.Inventory = append(r.Inventory, tile)
+	w.Rovers[rover] = r
+	w.Atlas.SetTile(r.Pos, objects.Empty)
+	return tile, nil
 }
 
 // RadarFromRover can be used to query what a rover can currently see
@@ -266,57 +268,58 @@ func (w *World) RadarFromRover(rover string) ([]byte, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
-	if r, ok := w.Rovers[rover]; ok {
-		// The radar should span in range direction on each axis, plus the row/column the rover is currently on
-		radarSpan := (r.Range * 2) + 1
-		roverPos := r.Pos
-
-		// Get the radar min and max values
-		radarMin := vector.Vector{
-			X: roverPos.X - r.Range,
-			Y: roverPos.Y - r.Range,
-		}
-		radarMax := vector.Vector{
-			X: roverPos.X + r.Range,
-			Y: roverPos.Y + r.Range,
-		}
-
-		// Gather up all tiles within the range
-		var radar = make([]byte, radarSpan*radarSpan)
-		for j := radarMin.Y; j <= radarMax.Y; j++ {
-			for i := radarMin.X; i <= radarMax.X; i++ {
-				q := vector.Vector{X: i, Y: j}
-
-				tile := w.Atlas.GetTile(q)
-
-				// Get the position relative to the bottom left of the radar
-				relative := q.Added(radarMin.Negated())
-				index := relative.X + relative.Y*radarSpan
-				radar[index] = tile
-
-			}
-		}
-
-		// Add all rovers to the radar
-		for _, r := range w.Rovers {
-			// If the rover is in range
-			dist := r.Pos.Added(roverPos.Negated())
-			dist = dist.Abs()
-
-			if dist.X <= r.Range && dist.Y <= r.Range {
-				relative := r.Pos.Added(radarMin.Negated())
-				index := relative.X + relative.Y*radarSpan
-				radar[index] = objects.Rover
-			}
-		}
-
-		// Add this rover
-		radar[len(radar)/2] = objects.Rover
-
-		return radar, nil
-	} else {
+	r, ok := w.Rovers[rover]
+	if !ok {
 		return nil, fmt.Errorf("no rover matching id")
 	}
+
+	// The radar should span in range direction on each axis, plus the row/column the rover is currently on
+	radarSpan := (r.Range * 2) + 1
+	roverPos := r.Pos
+
+	// Get the radar min and max values
+	radarMin := vector.Vector{
+		X: roverPos.X - r.Range,
+		Y: roverPos.Y - r.Range,
+	}
+	radarMax := vector.Vector{
+		X: roverPos.X + r.Range,
+		Y: roverPos.Y + r.Range,
+	}
+
+	// Gather up all tiles within the range
+	var radar = make([]byte, radarSpan*radarSpan)
+	for j := radarMin.Y; j <= radarMax.Y; j++ {
+		for i := radarMin.X; i <= radarMax.X; i++ {
+			q := vector.Vector{X: i, Y: j}
+
+			tile := w.Atlas.GetTile(q)
+
+			// Get the position relative to the bottom left of the radar
+			relative := q.Added(radarMin.Negated())
+			index := relative.X + relative.Y*radarSpan
+			radar[index] = tile
+
+		}
+	}
+
+	// Add all rovers to the radar
+	for _, r := range w.Rovers {
+		// If the rover is in range
+		dist := r.Pos.Added(roverPos.Negated())
+		dist = dist.Abs()
+
+		if dist.X <= r.Range && dist.Y <= r.Range {
+			relative := r.Pos.Added(radarMin.Negated())
+			index := relative.X + relative.Y*radarSpan
+			radar[index] = objects.Rover
+		}
+	}
+
+	// Add this rover
+	radar[len(radar)/2] = objects.Rover
+
+	return radar, nil
 }
 
 // Enqueue will queue the commands given
@@ -362,7 +365,7 @@ func (w *World) EnqueueAllIncoming() {
 	w.Incoming = make(map[string]CommandStream)
 }
 
-// Execute will execute any commands in the current command queue
+// ExecuteCommandQueues will execute any commands in the current command queue
 func (w *World) ExecuteCommandQueues() {
 	w.cmdMutex.Lock()
 	defer w.cmdMutex.Unlock()
@@ -408,15 +411,15 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 		}
 
 	case CommandRepair:
-		if r, err := w.GetRover(rover); err != nil {
+		r, err := w.GetRover(rover)
+		if err != nil {
 			return err
-		} else {
-			// Consume an inventory item to repair
-			if len(r.Inventory) > 0 {
-				r.Inventory = r.Inventory[:len(r.Inventory)-1]
-				r.Integrity = r.Integrity + 1
-				w.Rovers[rover] = r
-			}
+		}
+		// Consume an inventory item to repair
+		if len(r.Inventory) > 0 {
+			r.Inventory = r.Inventory[:len(r.Inventory)-1]
+			r.Integrity = r.Integrity + 1
+			w.Rovers[rover] = r
 		}
 	default:
 		return fmt.Errorf("unknown command: %s", c.Command)

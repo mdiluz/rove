@@ -11,13 +11,21 @@ import (
 type Bearing int
 
 const (
+	// North describes a 0,1 vector
 	North Bearing = iota
+	// NorthEast describes a 1,1 vector
 	NorthEast
+	// East describes a 1,0 vector
 	East
+	// SouthEast describes a 1,-1 vector
 	SouthEast
+	// South describes a 0,-1 vector
 	South
+	// SouthWest describes a -1,-1 vector
 	SouthWest
+	// West describes a -1,0 vector
 	West
+	// NorthWest describes a -1,1 vector
 	NorthWest
 )
 

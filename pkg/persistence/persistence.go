@@ -31,12 +31,13 @@ func jsonPath(name string) string {
 // Save will serialise the interface into a json file
 func Save(name string, data interface{}) error {
 	p := jsonPath(name)
-	if b, err := json.MarshalIndent(data, "", "  "); err != nil {
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
 		return err
-	} else {
-		if err := ioutil.WriteFile(p, b, os.ModePerm); err != nil {
-			return err
-		}
+	}
+
+	if err := ioutil.WriteFile(p, b, os.ModePerm); err != nil {
+		return err
 	}
 
 	log.Printf("Saved %s\n", p)

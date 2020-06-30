@@ -1,13 +1,20 @@
 package objects
 
 const (
-	Empty     = byte(' ')
-	Rover     = byte('R')
+	// Empty represents an non-existant object
+	Empty = byte(' ')
+
+	// Rover represents a live rover
+	Rover = byte('R')
+
+	// SmallRock is a small stashable rock
 	SmallRock = byte('o')
+
+	// LargeRock is a large blocking rock
 	LargeRock = byte('O')
 )
 
-// Check if an object is a blocking object
+// IsBlocking checks if an object is a blocking object
 func IsBlocking(object byte) bool {
 	var blocking = [...]byte{
 		Rover,
@@ -22,7 +29,7 @@ func IsBlocking(object byte) bool {
 	return false
 }
 
-// Check if an object is stashable
+// IsStashable checks if an object is stashable
 func IsStashable(object byte) bool {
 	var stashable = [...]byte{
 		SmallRock,

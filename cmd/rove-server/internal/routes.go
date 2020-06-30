@@ -9,6 +9,7 @@ import (
 	"github.com/mdiluz/rove/pkg/version"
 )
 
+// Status returns the status of the current server to a gRPC request
 func (s *Server) Status(context.Context, *rove.StatusRequest) (*rove.StatusResponse, error) {
 	response := &rove.StatusResponse{
 		Ready:   true,
@@ -26,6 +27,7 @@ func (s *Server) Status(context.Context, *rove.StatusRequest) (*rove.StatusRespo
 	return response, nil
 }
 
+// Register registers a new account for a gRPC request
 func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove.RegisterResponse, error) {
 	if len(req.Name) == 0 {
 		return nil, fmt.Errorf("empty account name")
@@ -44,6 +46,7 @@ func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove
 	return &rove.RegisterResponse{}, nil
 }
 
+// Rover returns rover information for a gRPC request
 func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.RoverResponse, error) {
 	response := &rove.RoverResponse{}
 	if len(req.Account) == 0 {
@@ -70,6 +73,7 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 	return response, nil
 }
 
+// Radar returns the radar information for a rover
 func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.RadarResponse, error) {
 	if len(req.Account) == 0 {
 		return nil, fmt.Errorf("empty account name")
@@ -95,6 +99,7 @@ func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.Radar
 	return response, nil
 }
 
+// Commands issues commands to the world based on a gRPC request
 func (s *Server) Commands(ctx context.Context, req *rove.CommandsRequest) (*rove.CommandsResponse, error) {
 	if len(req.Account) == 0 {
 		return nil, fmt.Errorf("empty account")

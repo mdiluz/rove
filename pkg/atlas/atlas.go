@@ -72,15 +72,15 @@ func (a *Atlas) SetTile(v vector.Vector, tile byte) {
 	}
 
 	local := a.worldSpaceToChunkLocal(v)
-	tileId := local.X + local.Y*a.ChunkSize
+	tileID := local.X + local.Y*a.ChunkSize
 
 	// Sanity check
-	if tileId >= len(chunk.Tiles) || tileId < 0 {
+	if tileID >= len(chunk.Tiles) || tileID < 0 {
 		log.Fatalf("Local tileID is not in valid chunk, somehow, this means something is very wrong")
 	}
 
 	// Set the chunk back
-	chunk.Tiles[tileId] = tile
+	chunk.Tiles[tileID] = tile
 	a.Chunks[c] = chunk
 }
 
@@ -94,14 +94,14 @@ func (a *Atlas) GetTile(v vector.Vector) byte {
 	}
 
 	local := a.worldSpaceToChunkLocal(v)
-	tileId := local.X + local.Y*a.ChunkSize
+	tileID := local.X + local.Y*a.ChunkSize
 
 	// Sanity check
-	if tileId >= len(chunk.Tiles) || tileId < 0 {
+	if tileID >= len(chunk.Tiles) || tileID < 0 {
 		log.Fatalf("Local tileID is not in valid chunk, somehow, this means something is very wrong")
 	}
 
-	return chunk.Tiles[tileId]
+	return chunk.Tiles[tileID]
 }
 
 // worldSpaceToChunkLocal gets a chunk local coordinate for a tile

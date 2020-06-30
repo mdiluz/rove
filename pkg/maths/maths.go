@@ -8,7 +8,7 @@ func Abs(x int) int {
 	return x
 }
 
-// pmod is a mositive modulo
+// Pmod is a mositive modulo
 // golang's % is a "remainder" function si misbehaves for negative modulus inputs
 func Pmod(x, d int) int {
 	if x == 0 || d == 0 {
