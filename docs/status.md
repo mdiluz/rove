@@ -3,7 +3,7 @@ Development status
 
 This page tracks the current feature set and the features to implement next
 
-### Complete features
+### Current features
 
 * Users can register account and spawn rover
 * Users can command the rover to move
@@ -13,15 +13,19 @@ This page tracks the current feature set and the features to implement next
 * Commands are queued and then are executed in sequence
 * Rover inventory
 * Collectable materials
-* Rover integrity and damage
+* Rover has integrity and takes damage on collisions
 * Rover can repair
 
 ### Incoming features
 
 * Rover replacement and advancement mechanic
-* Account token security
+* Dormant rovers
+* Rover energy with solar charging
+* Day/night cycle
+* More hazards
+* Simple rover to rover communication
 
 ### Stretch goals
 
 * Render rover camera view
-
+* Account token security
