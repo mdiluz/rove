@@ -1,0 +1,36 @@
+{
+    "app-id": "io.github.mdiluz.Rove",
+    "runtime": "org.freedesktop.Platform",
+    "runtime-version": "19.08",
+    "sdk": "org.freedesktop.Sdk",
+    "sdk-extensions" : [
+        "org.freedesktop.Sdk.Extension.golang"  
+    ],
+    "finish-args" : [
+        "--share=network"
+    ],
+    "command": "rove",
+    "modules": [
+        {
+            "name": "rove",
+            "buildsystem": "simple",
+            "build-options": {
+                "env": {
+                    "GOBIN": "/app/bin/"
+                },
+                "build-args": [
+                    "--share=network"
+                ]
+            },
+            "build-commands" : [
+                ". /usr/lib/sdk/golang/enable.sh; make install"
+            ],
+            "sources": [
+                {
+                    "type": "dir",
+                    "path": ".."
+                }
+            ]
+        }
+    ]
+}
