@@ -29,7 +29,7 @@ apps:
       DATA_PATH : $SNAP_USER_DATA
 
   rove-rest-server:
-    command: bin/rove-reverse-proxy
+    command: bin/rove-server-rest-proxy
     plugs:
       - network
       - network-bind

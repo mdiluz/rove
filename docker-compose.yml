@@ -40,7 +40,7 @@ services:
     environment:
       - PORT=8080
       - ROVE_GRPC=rove-server:9090
-    command: [ "./script/wait-for-it.sh", "rove-server:9090", "--", "./rove-reverse-proxy" ]
+    command: [ "./script/wait-for-it.sh", "rove-server:9090", "--", "./rove-server-rest-proxy" ]
 
   rove-tests:
     depends_on: [ rove ]
