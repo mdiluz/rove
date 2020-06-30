@@ -18,6 +18,7 @@ apps:
       - network
     environment:
       ROVE_USER_DATA: $SNAP_USER_DATA
+      
   rove-server:
     command: bin/rove-server
     plugs:
@@ -26,13 +27,7 @@ apps:
     environment:
       WORDS_FILE : "$SNAP/data/words_alpha.txt"
       DATA_PATH : $SNAP_USER_DATA
-  rove-accountant:
-    command: bin/rove-accountant
-    plugs:
-      - network
-      - network-bind
-    environment:
-      DATA_PATH : $SNAP_USER_DATA
+
   rove-rest-server:
     command: bin/rove-reverse-proxy
     plugs:

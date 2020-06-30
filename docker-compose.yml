@@ -4,18 +4,6 @@ volumes:
   persistent-data:
 
 services:
-  rove-accountant:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: rove:latest
-    environment:
-      - PORT=9091
-      - DATA_PATH=/mnt/rove-server
-    volumes:
-      - persistent-data:/mnt/rove-server:rw
-    command: [ ./rove-accountant ]
-
   rove-docs:
     build:
       context: .
@@ -27,7 +15,6 @@ services:
       - PORT=80
 
   rove-server:
-    depends_on: [ rove-accountant ]
     build:
       context: .
       dockerfile: Dockerfile
@@ -37,11 +24,10 @@ services:
     environment:
       - PORT=9090
       - DATA_PATH=/mnt/rove-server
-      - ROVE_ACCOUNTANT_GRPC=rove-accountant:9091
       - WORDS_FILE=data/words_alpha.txt
     volumes:
       - persistent-data:/mnt/rove-server:rw
-    command: [ "./script/wait-for-it.sh", "rove-accountant:9091", "--", "./rove-server"]
+    command: [ "./rove-server"]
 
   rove:
     depends_on: [ rove-server, rove-docs ]
@@ -63,7 +49,6 @@ services:
       dockerfile: Dockerfile
     image: rove:latest
     environment:
-      - ROVE_ACCOUNTANT_GRPC=rove-accountant:9091
       - ROVE_HTTP=rove
       - ROVE_GRPC=rove-server
     command: [ "./script/wait-for-it.sh", "rove:8080", "--", "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/mnt/coverage-data/c.out", "-count", "1" ]

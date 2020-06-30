@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
-	"google.golang.org/grpc"
 )
 
 func (s *Server) Status(context.Context, *rove.StatusRequest) (*rove.StatusResponse, error) {
@@ -33,7 +31,7 @@ func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove
 		return nil, fmt.Errorf("empty account name")
 	}
 
-	if _, err := s.accountant.Register(ctx, &accounts.RegisterInfo{Name: req.Name}, grpc.WaitForReady(true)); err != nil {
+	if _, err := s.accountant.RegisterAccount(req.Name); err != nil {
 		return nil, err
 
 	} else if _, err := s.SpawnRoverForAccount(req.Name); err != nil {
@@ -51,10 +49,10 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 	if len(req.Account) == 0 {
 		return nil, fmt.Errorf("empty account name")
 
-	} else if resp, err := s.accountant.GetValue(ctx, &accounts.DataKey{Account: req.Account, Key: "rover"}); err != nil {
-		return nil, fmt.Errorf("gRPC failed to contact accountant: %s", err)
+	} else if resp, err := s.accountant.GetValue(req.Account, "rover"); err != nil {
+		return nil, err
 
-	} else if rover, err := s.world.GetRover(resp.Value); err != nil {
+	} else if rover, err := s.world.GetRover(resp); err != nil {
 		return nil, fmt.Errorf("error getting rover: %s", err)
 
 	} else {
@@ -79,14 +77,14 @@ func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.Radar
 
 	response := &rove.RadarResponse{}
 
-	resp, err := s.accountant.GetValue(ctx, &accounts.DataKey{Account: req.Account, Key: "rover"})
+	resp, err := s.accountant.GetValue(req.Account, "rover")
 	if err != nil {
-		return nil, fmt.Errorf("gRPC failed to contact accountant: %s", err)
+		return nil, err
 
-	} else if rover, err := s.world.GetRover(resp.Value); err != nil {
+	} else if rover, err := s.world.GetRover(resp); err != nil {
 		return nil, fmt.Errorf("error getting rover attributes: %s", err)
 
-	} else if radar, err := s.world.RadarFromRover(resp.Value); err != nil {
+	} else if radar, err := s.world.RadarFromRover(resp); err != nil {
 		return nil, fmt.Errorf("error getting radar from rover: %s", err)
 
 	} else {
@@ -101,8 +99,7 @@ func (s *Server) Commands(ctx context.Context, req *rove.CommandsRequest) (*rove
 	if len(req.Account) == 0 {
 		return nil, fmt.Errorf("empty account")
 	}
-	resp, err := s.accountant.GetValue(ctx, &accounts.DataKey{Account: req.Account, Key: "rover"})
-
+	resp, err := s.accountant.GetValue(req.Account, "rover")
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +111,7 @@ func (s *Server) Commands(ctx context.Context, req *rove.CommandsRequest) (*rove
 			Command: c.Command})
 	}
 
-	if err := s.world.Enqueue(resp.Value, cmds...); err != nil {
+	if err := s.world.Enqueue(resp, cmds...); err != nil {
 		return nil, err
 	}
 

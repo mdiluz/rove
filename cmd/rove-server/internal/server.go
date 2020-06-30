@@ -1,11 +1,9 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net"
-	"os"
 	"sync"
 
 	"github.com/mdiluz/rove/pkg/accounts"
@@ -30,9 +28,8 @@ type Server struct {
 	// Internal state
 	world *game.World
 
-	// Accountant server
-	accountant accounts.AccountantClient
-	clientConn *grpc.ClientConn
+	// Accountant
+	accountant *accounts.Accountant
 
 	// gRPC server
 	netListener net.Listener
@@ -84,6 +81,7 @@ func NewServer(opts ...ServerOption) *Server {
 		persistence: EphemeralData,
 		schedule:    cron.New(),
 		world:       game.NewWorld(32),
+		accountant:  accounts.NewAccountant(),
 	}
 
 	// Apply all options
@@ -99,18 +97,6 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 
 	// Add to our sync
 	s.sync.Add(1)
-
-	// Connect to the accountant
-	accountantAddress := os.Getenv("ROVE_ACCOUNTANT_GRPC")
-	if len(accountantAddress) == 0 {
-		accountantAddress = "localhost:9091"
-	}
-	log.Printf("Dialing accountant on %s\n", accountantAddress)
-	s.clientConn, err = grpc.Dial(accountantAddress, grpc.WithInsecure())
-	if err != nil {
-		return err
-	}
-	s.accountant = accounts.NewAccountantClient(s.clientConn)
 
 	// Load the world file
 	if err := s.LoadWorld(); err != nil {
@@ -173,11 +159,6 @@ func (s *Server) Stop() error {
 	// Stop the gRPC
 	s.grpcServ.Stop()
 
-	// Close the accountant connection
-	if err := s.clientConn.Close(); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -190,7 +171,7 @@ func (s *Server) Close() error {
 	return s.SaveWorld()
 }
 
-// Close waits until the server is finished and closes up shop
+// StopAndClose waits until the server is finished and closes up shop
 func (s *Server) StopAndClose() error {
 	// Stop the server
 	if err := s.Stop(); err != nil {
@@ -225,19 +206,12 @@ func (s *Server) LoadWorld() error {
 	return nil
 }
 
-// used as the type for the return struct
-type BadRequestError struct {
-	Error string `json:"error"`
-}
-
 // SpawnRoverForAccount spawns the rover rover for an account
 func (s *Server) SpawnRoverForAccount(account string) (string, error) {
 	if inst, err := s.world.SpawnRover(); err != nil {
 		return "", err
-
 	} else {
-		keyval := accounts.DataKeyValue{Account: account, Key: "rover", Value: inst}
-		_, err := s.accountant.AssignValue(context.Background(), &keyval)
+		err := s.accountant.AssignData(account, "rover", inst)
 		if err != nil {
 			log.Printf("Failed to assign rover to account, %s", err)
 

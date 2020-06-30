@@ -9,8 +9,6 @@ install:
 	go install -ldflags="-X 'github.com/mdiluz/rove/pkg/version.Version=${VERSION}'" ./...
 
 gen:
-	@echo Generating accountant gRPC
-	protoc --proto_path proto --go_out=plugins=grpc:pkg/ --go_opt=paths=source_relative  proto/accounts/accounts.proto
 	@echo Generating rove server gRPC
 	protoc --proto_path proto --go_out=plugins=grpc:pkg/ --go_opt=paths=source_relative  proto/rove/rove.proto
 	protoc --proto_path proto --grpc-gateway_out=paths=source_relative:pkg/ proto/rove/rove.proto

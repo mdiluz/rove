@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"os"
 	"testing"
 )
 
@@ -31,7 +30,6 @@ func TestNewServer_OptionPersistentData(t *testing.T) {
 }
 
 func TestServer_Run(t *testing.T) {
-	os.Setenv("ROVE_ACCOUNTANT_GRPC", "n/a")
 	server := NewServer()
 	if server == nil {
 		t.Error("Failed to create server")
@@ -47,7 +45,6 @@ func TestServer_Run(t *testing.T) {
 }
 
 func TestServer_RunPersistentData(t *testing.T) {
-	os.Setenv("ROVE_ACCOUNTANT_GRPC", "n/a")
 	server := NewServer(OptionPersistentData())
 	if server == nil {
 		t.Error("Failed to create server")

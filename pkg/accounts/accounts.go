@@ -1,4 +1,4 @@
-package internal
+package accounts
 
 import (
 	"fmt"
@@ -14,10 +14,6 @@ type Account struct {
 
 	// Data represents internal account data
 	Data map[string]string `json:"data"`
-}
-
-// Represents the accountant data to store
-type accountantData struct {
 }
 
 // Accountant manages a set of accounts
