@@ -9,5 +9,5 @@ See [api.go](https://github.com/mdiluz/rove/blob/master/pkg/rove/api.go) for the
 
 Build Status
 ------------
-![Build and Test](https://github.com/mdiluz/rove/workflows/Build%20and%20Test/badge.svg) [![rove](https://snapcraft.io//rove/badge.svg)](https://snapcraft.io/rove)
+![Tests](https://github.com/mdiluz/rove/workflows/Tests/badge.svg) ![Docker](https://github.com/mdiluz/rove/workflows/Docker/badge.svg) [![rove](https://snapcraft.io//rove/badge.svg)](https://snapcraft.io/rove)
 
