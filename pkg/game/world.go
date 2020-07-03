@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"log"
-	"math"
 	"math/rand"
 	"os"
 	"sync"
@@ -423,24 +422,6 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 	}
 
 	return
-}
-
-// PrintTiles simply prints the input tiles directly for debug
-func PrintTiles(tiles []byte) {
-	num := int(math.Sqrt(float64(len(tiles))))
-	for j := num - 1; j >= 0; j-- {
-		for i := 0; i < num; i++ {
-
-			t := tiles[i+num*j]
-			if t != 0 {
-				fmt.Printf("%c", t)
-			} else {
-				fmt.Printf(" ")
-			}
-
-		}
-		fmt.Print("\n")
-	}
 }
 
 // RLock read locks the world

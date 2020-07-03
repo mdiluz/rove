@@ -4,13 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"path"
 	"path/filepath"
 	"time"
 
+	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/bearing"
 	"github.com/mdiluz/rove/pkg/game"
+	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
 	"golang.org/x/net/context"
@@ -253,8 +256,24 @@ func InnerMain(command string, args ...string) error {
 			return err
 
 		default:
+
 			// Print out the radar
-			game.PrintTiles(response.Tiles)
+			num := int(math.Sqrt(float64(len(response.Tiles))))
+			for j := num - 1; j >= 0; j-- {
+				for i := 0; i < num; i++ {
+					t := response.Tiles[i+num*j]
+					o := response.Objects[i+num*j]
+					if o != byte(objects.None) {
+						fmt.Printf("%c", o)
+					} else if t != byte(atlas.TileNone) {
+						fmt.Printf("%c", t)
+					} else {
+						fmt.Printf(" ")
+					}
+
+				}
+				fmt.Print("\n")
+			}
 		}
 
 	case "rover":
