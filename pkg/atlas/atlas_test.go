@@ -3,6 +3,7 @@ package atlas
 import (
 	"testing"
 
+	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/vector"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,8 +20,8 @@ func TestAtlas_toChunk(t *testing.T) {
 	assert.NotNil(t, a)
 
 	// Get a tile to spawn the chunks
-	a.GetTile(vector.Vector{X: -1, Y: -1})
-	a.GetTile(vector.Vector{X: 0, Y: 0})
+	a.QueryPosition(vector.Vector{X: -1, Y: -1})
+	a.QueryPosition(vector.Vector{X: 0, Y: 0})
 
 	// Chunks should look like:
 	//  2 | 3
@@ -38,8 +39,8 @@ func TestAtlas_toChunk(t *testing.T) {
 	a = NewAtlas(2)
 	assert.NotNil(t, a)
 	// Get a tile to spawn the chunks
-	a.GetTile(vector.Vector{X: -2, Y: -2})
-	a.GetTile(vector.Vector{X: 1, Y: 1})
+	a.QueryPosition(vector.Vector{X: -2, Y: -2})
+	a.QueryPosition(vector.Vector{X: 1, Y: 1})
 	// Chunks should look like:
 	// 2 | 3
 	// -----
@@ -56,8 +57,8 @@ func TestAtlas_toChunk(t *testing.T) {
 	a = NewAtlas(2)
 	assert.NotNil(t, a)
 	// Get a tile to spawn the chunks
-	a.GetTile(vector.Vector{X: 5, Y: 5})
-	a.GetTile(vector.Vector{X: -5, Y: -5})
+	a.QueryPosition(vector.Vector{X: 5, Y: 5})
+	a.QueryPosition(vector.Vector{X: -5, Y: -5})
 	// Chunks should look like:
 	//  12| 13|| 14| 15
 	// ----------------
@@ -82,13 +83,28 @@ func TestAtlas_GetSetTile(t *testing.T) {
 
 	// Set the origin tile to 1 and test it
 	a.SetTile(vector.Vector{X: 0, Y: 0}, 1)
-	tile := a.GetTile(vector.Vector{X: 0, Y: 0})
+	tile, _ := a.QueryPosition(vector.Vector{X: 0, Y: 0})
 	assert.Equal(t, byte(1), tile)
 
 	// Set another tile to 1 and test it
 	a.SetTile(vector.Vector{X: 5, Y: -2}, 2)
-	tile = a.GetTile(vector.Vector{X: 5, Y: -2})
+	tile, _ = a.QueryPosition(vector.Vector{X: 5, Y: -2})
 	assert.Equal(t, byte(2), tile)
+}
+
+func TestAtlas_GetSetObject(t *testing.T) {
+	a := NewAtlas(10)
+	assert.NotNil(t, a)
+
+	// Set the origin tile to 1 and test it
+	a.SetObject(vector.Vector{X: 0, Y: 0}, objects.Object{Type: objects.LargeRock})
+	_, obj := a.QueryPosition(vector.Vector{X: 0, Y: 0})
+	assert.Equal(t, objects.Object{Type: objects.LargeRock}, obj)
+
+	// Set another tile to 1 and test it
+	a.SetObject(vector.Vector{X: 5, Y: -2}, objects.Object{Type: objects.SmallRock})
+	_, obj = a.QueryPosition(vector.Vector{X: 5, Y: -2})
+	assert.Equal(t, objects.Object{Type: objects.SmallRock}, obj)
 }
 
 func TestAtlas_Grown(t *testing.T) {
@@ -103,21 +119,21 @@ func TestAtlas_Grown(t *testing.T) {
 	a.SetTile(vector.Vector{X: 1, Y: -2}, 3)
 
 	// Check tile values
-	tile := a.GetTile(vector.Vector{X: 0, Y: 0})
+	tile, _ := a.QueryPosition(vector.Vector{X: 0, Y: 0})
 	assert.Equal(t, byte(1), tile)
 
-	tile = a.GetTile(vector.Vector{X: -1, Y: -1})
+	tile, _ = a.QueryPosition(vector.Vector{X: -1, Y: -1})
 	assert.Equal(t, byte(2), tile)
 
-	tile = a.GetTile(vector.Vector{X: 1, Y: -2})
+	tile, _ = a.QueryPosition(vector.Vector{X: 1, Y: -2})
 	assert.Equal(t, byte(3), tile)
 
-	tile = a.GetTile(vector.Vector{X: 0, Y: 0})
+	tile, _ = a.QueryPosition(vector.Vector{X: 0, Y: 0})
 	assert.Equal(t, byte(1), tile)
 
-	tile = a.GetTile(vector.Vector{X: -1, Y: -1})
+	tile, _ = a.QueryPosition(vector.Vector{X: -1, Y: -1})
 	assert.Equal(t, byte(2), tile)
 
-	tile = a.GetTile(vector.Vector{X: 1, Y: -2})
+	tile, _ = a.QueryPosition(vector.Vector{X: 1, Y: -2})
 	assert.Equal(t, byte(3), tile)
 }

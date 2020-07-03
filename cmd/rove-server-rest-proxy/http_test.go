@@ -108,6 +108,7 @@ func TestServer_Radar(t *testing.T) {
 	assert.NotZero(t, resp.Range, "Radar should return valid range")
 	w := int(resp.Range*2 + 1)
 	assert.Equal(t, w*w, len(resp.Tiles), "radar should return correct number of tiles")
+	assert.Equal(t, w*w, len(resp.Objects), "radar should return correct number of objects")
 }
 
 func TestServer_Rover(t *testing.T) {

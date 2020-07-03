@@ -59,6 +59,11 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 		return nil, fmt.Errorf("error getting rover: %s", err)
 
 	} else {
+		var inv []byte
+		for _, i := range rover.Inventory {
+			inv = append(inv, byte(i.Type))
+		}
+
 		response = &rove.RoverResponse{
 			Name: rover.Name,
 			Position: &rove.Vector{
@@ -66,7 +71,7 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 				Y: int32(rover.Pos.Y),
 			},
 			Range:     int32(rover.Range),
-			Inventory: rover.Inventory,
+			Inventory: inv,
 			Integrity: int32(rover.Integrity),
 		}
 	}
@@ -88,10 +93,11 @@ func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.Radar
 	} else if rover, err := s.world.GetRover(resp); err != nil {
 		return nil, fmt.Errorf("error getting rover attributes: %s", err)
 
-	} else if radar, err := s.world.RadarFromRover(resp); err != nil {
+	} else if radar, objs, err := s.world.RadarFromRover(resp); err != nil {
 		return nil, fmt.Errorf("error getting radar from rover: %s", err)
 
 	} else {
+		response.Objects = objs
 		response.Tiles = radar
 		response.Range = int32(rover.Range)
 	}

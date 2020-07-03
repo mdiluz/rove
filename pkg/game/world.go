@@ -101,8 +101,8 @@ func (w *World) SpawnRover() (string, error) {
 
 	// Seach until we error (run out of world)
 	for {
-		tile := w.Atlas.GetTile(rover.Pos)
-		if !objects.IsBlocking(tile) {
+		_, obj := w.Atlas.QueryPosition(rover.Pos)
+		if !obj.IsBlocking() {
 			break
 		} else {
 			// Try and spawn to the east of the blockage
@@ -136,13 +136,11 @@ func (w *World) DestroyRover(rover string) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
-	i, ok := w.Rovers[rover]
+	_, ok := w.Rovers[rover]
 	if !ok {
 		return fmt.Errorf("no rover matching id")
 	}
 
-	// Clear the tile
-	w.Atlas.SetTile(i.Pos, objects.Empty)
 	delete(w.Rovers, rover)
 	return nil
 }
@@ -175,7 +173,7 @@ func (w *World) SetRoverPosition(rover string, pos vector.Vector) error {
 }
 
 // RoverInventory returns the inventory of a requested rover
-func (w *World) RoverInventory(rover string) ([]byte, error) {
+func (w *World) RoverInventory(rover string) ([]objects.Object, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
@@ -201,8 +199,8 @@ func (w *World) WarpRover(rover string, pos vector.Vector) error {
 	}
 
 	// Check the tile is not blocked
-	tile := w.Atlas.GetTile(pos)
-	if objects.IsBlocking(tile) {
+	_, obj := w.Atlas.QueryPosition(pos)
+	if obj.IsBlocking() {
 		return fmt.Errorf("can't warp rover to occupied tile, check before warping")
 	}
 
@@ -224,8 +222,8 @@ func (w *World) MoveRover(rover string, b bearing.Bearing) (vector.Vector, error
 	newPos := i.Pos.Added(b.Vector())
 
 	// Get the tile and verify it's empty
-	tile := w.Atlas.GetTile(newPos)
-	if !objects.IsBlocking(tile) {
+	_, obj := w.Atlas.QueryPosition(newPos)
+	if !obj.IsBlocking() {
 		// Perform the move
 		i.Pos = newPos
 		w.Rovers[rover] = i
@@ -243,34 +241,35 @@ func (w *World) MoveRover(rover string, b bearing.Bearing) (vector.Vector, error
 }
 
 // RoverStash will stash an item at the current rovers position
-func (w *World) RoverStash(rover string) (byte, error) {
+func (w *World) RoverStash(rover string) (objects.Type, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
 	r, ok := w.Rovers[rover]
 	if !ok {
-		return objects.Empty, fmt.Errorf("no rover matching id")
+		return objects.None, fmt.Errorf("no rover matching id")
 	}
 
-	tile := w.Atlas.GetTile(r.Pos)
-	if !objects.IsStashable(tile) {
-		return objects.Empty, nil
+	_, obj := w.Atlas.QueryPosition(r.Pos)
+	if !obj.IsStashable() {
+		return objects.None, nil
 	}
 
-	r.Inventory = append(r.Inventory, tile)
+	r.Inventory = append(r.Inventory, obj)
 	w.Rovers[rover] = r
-	w.Atlas.SetTile(r.Pos, objects.Empty)
-	return tile, nil
+	w.Atlas.SetObject(r.Pos, objects.Object{Type: objects.None})
+	return obj.Type, nil
 }
 
 // RadarFromRover can be used to query what a rover can currently see
-func (w *World) RadarFromRover(rover string) ([]byte, error) {
+func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
 	r, ok := w.Rovers[rover]
 	if !ok {
-		return nil, fmt.Errorf("no rover matching id")
+		err = fmt.Errorf("no rover matching id")
+		return
 	}
 
 	// The radar should span in range direction on each axis, plus the row/column the rover is currently on
@@ -288,18 +287,19 @@ func (w *World) RadarFromRover(rover string) ([]byte, error) {
 	}
 
 	// Gather up all tiles within the range
-	var radar = make([]byte, radarSpan*radarSpan)
+	radar = make([]byte, radarSpan*radarSpan)
+	objs = make([]byte, radarSpan*radarSpan)
 	for j := radarMin.Y; j <= radarMax.Y; j++ {
 		for i := radarMin.X; i <= radarMax.X; i++ {
 			q := vector.Vector{X: i, Y: j}
 
-			tile := w.Atlas.GetTile(q)
+			tile, obj := w.Atlas.QueryPosition(q)
 
 			// Get the position relative to the bottom left of the radar
 			relative := q.Added(radarMin.Negated())
 			index := relative.X + relative.Y*radarSpan
 			radar[index] = tile
-
+			objs[index] = byte(obj.Type)
 		}
 	}
 
@@ -312,14 +312,11 @@ func (w *World) RadarFromRover(rover string) ([]byte, error) {
 		if dist.X <= r.Range && dist.Y <= r.Range {
 			relative := r.Pos.Added(radarMin.Negated())
 			index := relative.X + relative.Y*radarSpan
-			radar[index] = objects.Rover
+			objs[index] = byte(objects.Rover)
 		}
 	}
 
-	// Add this rover
-	radar[len(radar)/2] = objects.Rover
-
-	return radar, nil
+	return radar, objs, nil
 }
 
 // Enqueue will queue the commands given
@@ -433,7 +430,14 @@ func PrintTiles(tiles []byte) {
 	num := int(math.Sqrt(float64(len(tiles))))
 	for j := num - 1; j >= 0; j-- {
 		for i := 0; i < num; i++ {
-			fmt.Printf("%c", tiles[i+num*j])
+
+			t := tiles[i+num*j]
+			if t != 0 {
+				fmt.Printf("%c", t)
+			} else {
+				fmt.Printf(" ")
+			}
+
 		}
 		fmt.Print("\n")
 	}

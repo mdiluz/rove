@@ -1,28 +1,37 @@
 package objects
 
+// Type represents an object type
+type Type byte
+
+// Types of objects
 const (
-	// Empty represents an non-existant object
-	Empty = byte(' ')
+	// None represents no object at all
+	None = Type(0)
 
 	// Rover represents a live rover
-	Rover = byte('R')
+	Rover = Type('R')
 
 	// SmallRock is a small stashable rock
-	SmallRock = byte('o')
+	SmallRock = Type('o')
 
 	// LargeRock is a large blocking rock
-	LargeRock = byte('O')
+	LargeRock = Type('o')
 )
 
+// Object represents an object in the world
+type Object struct {
+	Type Type `json:"type"`
+}
+
 // IsBlocking checks if an object is a blocking object
-func IsBlocking(object byte) bool {
-	var blocking = [...]byte{
+func (o *Object) IsBlocking() bool {
+	var blocking = [...]Type{
 		Rover,
 		LargeRock,
 	}
 
 	for _, t := range blocking {
-		if object == t {
+		if o.Type == t {
 			return true
 		}
 	}
@@ -30,13 +39,13 @@ func IsBlocking(object byte) bool {
 }
 
 // IsStashable checks if an object is stashable
-func IsStashable(object byte) bool {
-	var stashable = [...]byte{
+func (o *Object) IsStashable() bool {
+	var stashable = [...]Type{
 		SmallRock,
 	}
 
 	for _, t := range stashable {
-		if object == t {
+		if o.Type == t {
 			return true
 		}
 	}

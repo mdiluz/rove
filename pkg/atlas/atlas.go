@@ -1,7 +1,6 @@
 package atlas
 
 import (
-	"log"
 	"math/rand"
 
 	"github.com/mdiluz/rove/pkg/maths"
@@ -9,27 +8,28 @@ import (
 	"github.com/mdiluz/rove/pkg/vector"
 )
 
+// Tile describes the type of terrain
+type Tile byte
+
+const (
+	// TileNone is a keyword for nothing
+	TileNone = Tile(0)
+
+	// TileRock is solid rock ground
+	TileRock = Tile('.')
+
+	// TileSand is sand
+	TileSand = Tile(',')
+)
+
 // Chunk represents a fixed square grid of tiles
 type Chunk struct {
 	// Tiles represents the tiles within the chunk
 	Tiles []byte `json:"tiles"`
-}
 
-// SpawnContent will create a chunk and fill it with spawned tiles
-func (c *Chunk) SpawnContent(size int) {
-	c.Tiles = make([]byte, size*size)
-	for i := 0; i < len(c.Tiles); i++ {
-		c.Tiles[i] = objects.Empty
-	}
-
-	// For now, fill it randomly with objects
-	for i := range c.Tiles {
-		if rand.Intn(16) == 0 {
-			c.Tiles[i] = objects.LargeRock
-		} else if rand.Intn(32) == 0 {
-			c.Tiles[i] = objects.SmallRock
-		}
-	}
+	// Objects represents the objects within the chunk
+	// only one possible object per tile for now
+	Objects map[int]objects.Object `json:"objects"`
 }
 
 // Atlas represents a grid of Chunks
@@ -58,50 +58,101 @@ func NewAtlas(chunkSize int) Atlas {
 		WorldOrigin: vector.Vector{X: 0, Y: 0},
 	}
 	// Initialise the first chunk
-	a.Chunks[0].SpawnContent(chunkSize)
+	a.Chunks[0].populate(chunkSize)
 	return a
 }
 
 // SetTile sets an individual tile's kind
-func (a *Atlas) SetTile(v vector.Vector, tile byte) {
-	// Get the chunk
+func (a *Atlas) SetTile(v vector.Vector, tile Tile) {
 	c := a.worldSpaceToChunkWithGrow(v)
-	chunk := a.Chunks[c]
-	if chunk.Tiles == nil {
-		chunk.SpawnContent(a.ChunkSize)
-	}
-
 	local := a.worldSpaceToChunkLocal(v)
-	tileID := local.X + local.Y*a.ChunkSize
-
-	// Sanity check
-	if tileID >= len(chunk.Tiles) || tileID < 0 {
-		log.Fatalf("Local tileID is not in valid chunk, somehow, this means something is very wrong")
-	}
-
-	// Set the chunk back
-	chunk.Tiles[tileID] = tile
-	a.Chunks[c] = chunk
+	a.setTile(c, local, byte(tile))
 }
 
-// GetTile will return an individual tile
-func (a *Atlas) GetTile(v vector.Vector) byte {
-	// Get the chunk
+// SetObject sets the object on a tile
+func (a *Atlas) SetObject(v vector.Vector, obj objects.Object) {
 	c := a.worldSpaceToChunkWithGrow(v)
+	local := a.worldSpaceToChunkLocal(v)
+	a.setObject(c, local, obj)
+}
+
+// QueryPosition will return information for a specific position
+func (a *Atlas) QueryPosition(v vector.Vector) (byte, objects.Object) {
+	c := a.worldSpaceToChunkWithGrow(v)
+	local := a.worldSpaceToChunkLocal(v)
 	chunk := a.Chunks[c]
 	if chunk.Tiles == nil {
-		chunk.SpawnContent(a.ChunkSize)
+		chunk.populate(a.ChunkSize)
+	}
+	i := a.chunkTileIndex(local)
+	return chunk.Tiles[i], chunk.Objects[i]
+}
+
+// chunkTileID returns the tile index within a chunk
+func (a *Atlas) chunkTileIndex(local vector.Vector) int {
+	return local.X + local.Y*a.ChunkSize
+}
+
+// populate will fill a chunk with data
+func (c *Chunk) populate(size int) {
+	c.Tiles = make([]byte, size*size)
+	c.Objects = make(map[int]objects.Object)
+
+	// Set up the tiles
+	for i := 0; i < len(c.Tiles); i++ {
+		if rand.Intn(3) == 0 {
+			c.Tiles[i] = byte(TileRock)
+		} else {
+			c.Tiles[i] = byte(TileSand)
+		}
 	}
 
-	local := a.worldSpaceToChunkLocal(v)
-	tileID := local.X + local.Y*a.ChunkSize
+	// Set up any objects
+	for i := 0; i < len(c.Tiles); i++ {
+		if rand.Intn(16) == 0 {
+			c.Objects[i] = objects.Object{Type: objects.LargeRock}
+		}
+	}
+}
 
-	// Sanity check
-	if tileID >= len(chunk.Tiles) || tileID < 0 {
-		log.Fatalf("Local tileID is not in valid chunk, somehow, this means something is very wrong")
+// setTile sets a tile in a specific chunk
+func (a *Atlas) setTile(chunk int, local vector.Vector, tile byte) {
+	c := a.Chunks[chunk]
+	if c.Tiles == nil {
+		c.populate(a.ChunkSize)
 	}
 
-	return chunk.Tiles[tileID]
+	c.Tiles[a.chunkTileIndex(local)] = tile
+	a.Chunks[chunk] = c
+}
+
+// setObject sets an object in a specific chunk
+func (a *Atlas) setObject(chunk int, local vector.Vector, object objects.Object) {
+	c := a.Chunks[chunk]
+	if c.Tiles == nil {
+		c.populate(a.ChunkSize)
+	}
+
+	i := a.chunkTileIndex(local)
+	if object.Type != objects.None {
+		c.Objects[i] = object
+	} else {
+		delete(c.Objects, i)
+	}
+	a.Chunks[chunk] = c
+}
+
+// setTileAndObject sets both tile and object information for location in chunk
+func (a *Atlas) setTileAndObject(chunk int, local vector.Vector, tile byte, object objects.Object) {
+	c := a.Chunks[chunk]
+	if c.Tiles == nil {
+		c.populate(a.ChunkSize)
+	}
+
+	i := a.chunkTileIndex(local)
+	c.Tiles[i] = tile
+	c.Objects[i] = object
+	a.Chunks[chunk] = c
 }
 
 // worldSpaceToChunkLocal gets a chunk local coordinate for a tile

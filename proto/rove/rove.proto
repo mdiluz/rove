@@ -98,6 +98,9 @@ message RadarResponse {
 
     // A 1D array representing range*2 + 1 squared set of tiles, origin bottom left and in row->column order
     bytes tiles = 2;
+
+    // A similar array to the tile array, but containing objects
+    bytes objects = 3;
 }
 
 // Empty placeholder

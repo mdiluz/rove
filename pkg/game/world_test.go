@@ -3,6 +3,7 @@ package game
 import (
 	"testing"
 
+	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/bearing"
 	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/vector"
@@ -84,7 +85,7 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.Equal(t, pos, newPos, "Failed to correctly move position for rover")
 
 	// Place a tile in front of the rover
-	world.Atlas.SetTile(vector.Vector{X: 0, Y: 2}, objects.LargeRock)
+	world.Atlas.SetObject(vector.Vector{X: 0, Y: 2}, objects.Object{Type: objects.LargeRock})
 	newPos, err = world.MoveRover(a, b)
 	assert.Equal(t, pos, newPos, "Failed to correctly not move position for rover into wall")
 }
@@ -102,14 +103,15 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	assert.NoError(t, world.WarpRover(b, bpos), "Failed to warp rover")
 	assert.NoError(t, world.WarpRover(a, vector.Vector{X: 0, Y: 0}), "Failed to warp rover")
 
-	radar, err := world.RadarFromRover(a)
+	radar, objs, err := world.RadarFromRover(a)
 	assert.NoError(t, err, "Failed to get radar from rover")
 	fullRange := 4 + 4 + 1
 	assert.Equal(t, fullRange*fullRange, len(radar), "Radar returned wrong length")
+	assert.Equal(t, fullRange*fullRange, len(objs), "Radar returned wrong length")
 
 	// Test the expected values
-	assert.Equal(t, objects.Rover, radar[1+fullRange])
-	assert.Equal(t, objects.Rover, radar[4+4*fullRange])
+	assert.Equal(t, byte(objects.Rover), objs[1+fullRange])
+	assert.Equal(t, byte(objects.Rover), objs[4+4*fullRange])
 }
 
 func TestWorld_RoverStash(t *testing.T) {
@@ -125,18 +127,20 @@ func TestWorld_RoverStash(t *testing.T) {
 	err = world.WarpRover(a, pos)
 	assert.NoError(t, err, "Failed to set position for rover")
 
-	world.Atlas.SetTile(pos, objects.SmallRock)
+	// Set to a traversible tile
+	world.Atlas.SetTile(pos, atlas.TileRock)
+	world.Atlas.SetObject(pos, objects.Object{Type: objects.SmallRock})
 
 	o, err := world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
 	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
 
-	tile := world.Atlas.GetTile(pos)
-	assert.Equal(t, objects.Empty, tile, "Stash failed to remove object from atlas")
+	_, obj := world.Atlas.QueryPosition(pos)
+	assert.Equal(t, objects.None, obj.Type, "Stash failed to remove object from atlas")
 
 	inv, err := world.RoverInventory(a)
 	assert.NoError(t, err, "Failed to get inventory")
-	assert.Equal(t, objects.SmallRock, inv[0])
+	assert.Equal(t, objects.Object{Type: objects.SmallRock}, inv[0])
 }
 
 func TestWorld_RoverDamage(t *testing.T) {
@@ -155,7 +159,7 @@ func TestWorld_RoverDamage(t *testing.T) {
 	info, err := world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 
-	world.Atlas.SetTile(vector.Vector{X: 0.0, Y: 1.0}, objects.LargeRock)
+	world.Atlas.SetObject(vector.Vector{X: 0.0, Y: 1.0}, objects.Object{Type: objects.LargeRock})
 
 	vec, err := world.MoveRover(a, bearing.North)
 	assert.NoError(t, err, "Failed to move rover")
@@ -176,19 +180,22 @@ func TestWorld_RoverRepair(t *testing.T) {
 		Y: 0.0,
 	}
 
+	world.Atlas.SetTile(pos, atlas.TileNone)
+	world.Atlas.SetObject(pos, objects.Object{Type: objects.None})
+
 	err = world.WarpRover(a, pos)
 	assert.NoError(t, err, "Failed to set position for rover")
 
 	originalInfo, err := world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 
-	world.Atlas.SetTile(pos, objects.SmallRock)
+	world.Atlas.SetObject(pos, objects.Object{Type: objects.SmallRock})
 
 	o, err := world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
 	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
 
-	world.Atlas.SetTile(vector.Vector{X: 0.0, Y: 1.0}, objects.LargeRock)
+	world.Atlas.SetObject(vector.Vector{X: 0.0, Y: 1.0}, objects.Object{Type: objects.LargeRock})
 
 	vec, err := world.MoveRover(a, bearing.North)
 	assert.NoError(t, err, "Failed to move rover")

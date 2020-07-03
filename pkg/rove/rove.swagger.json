@@ -212,7 +212,7 @@
       "properties": {
         "command": {
           "type": "string",
-          "title": "The command to execute\n\"move\" - Move the rover in a direction, requires bearing\n\"stash\" - Stashes item at current location in rover inventory"
+          "title": "The command to execute\n\"move\" - Move the rover in a direction, requires bearing\n\"stash\" - Stashes item at current location in rover inventory\n\"repair\" - Repairs the rover using an inventory object"
         },
         "bearing": {
           "type": "string",
@@ -261,6 +261,11 @@
           "type": "string",
           "format": "byte",
           "title": "A 1D array representing range*2 + 1 squared set of tiles, origin bottom left and in row-\u003ecolumn order"
+        },
+        "objects": {
+          "type": "string",
+          "format": "byte",
+          "title": "A similar array to the tile array, but containing objects"
         }
       }
     },

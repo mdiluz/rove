@@ -1,6 +1,7 @@
 package game
 
 import (
+	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/vector"
 )
 
@@ -16,7 +17,7 @@ type Rover struct {
 	Range int `json:"range"`
 
 	// Inventory represents any items the rover is carrying
-	Inventory []byte `json:"inventory"`
+	Inventory []objects.Object `json:"inventory"`
 
 	// Integrity represents current rover health
 	Integrity int `json:"integrity"`
