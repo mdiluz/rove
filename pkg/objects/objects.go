@@ -15,7 +15,7 @@ const (
 	SmallRock = Type('o')
 
 	// LargeRock is a large blocking rock
-	LargeRock = Type('o')
+	LargeRock = Type('O')
 )
 
 // Object represents an object in the world

@@ -111,6 +111,8 @@ func (c *Chunk) populate(size int) {
 	for i := 0; i < len(c.Tiles); i++ {
 		if rand.Intn(16) == 0 {
 			c.Objects[i] = objects.Object{Type: objects.LargeRock}
+		} else if rand.Intn(32) == 0 {
+			c.Objects[i] = objects.Object{Type: objects.SmallRock}
 		}
 	}
 }
