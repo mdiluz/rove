@@ -77,6 +77,7 @@ func (w *World) SpawnRover() (string, error) {
 	rover := Rover{
 		Range:     4.0,
 		Integrity: 10,
+		Capacity:  10,
 		Name:      uuid.New().String(),
 	}
 
@@ -247,6 +248,11 @@ func (w *World) RoverStash(rover string) (objects.Type, error) {
 	r, ok := w.Rovers[rover]
 	if !ok {
 		return objects.None, fmt.Errorf("no rover matching id")
+	}
+
+	// Can't pick up when full
+	if len(r.Inventory) >= r.Capacity {
+		return objects.None, nil
 	}
 
 	_, obj := w.Atlas.QueryPosition(r.Pos)

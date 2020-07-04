@@ -129,8 +129,11 @@ message RoverResponse {
     // The items in the rover inventory
     bytes inventory = 4;
 
+    // The capacity of the inventory
+    int32 capacity = 5;
+
     // The current health of the rover
-    int32 Integrity = 5;
+    int32 integrity = 6;
 }
 
 // Empty placeholder

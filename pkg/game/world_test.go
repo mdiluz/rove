@@ -129,18 +129,46 @@ func TestWorld_RoverStash(t *testing.T) {
 
 	// Set to a traversible tile
 	world.Atlas.SetTile(pos, atlas.TileRock)
+
+	rover, err := world.GetRover(a)
+	assert.NoError(t, err, "Failed to get rover")
+
+	for i := 0; i < rover.Capacity; i++ {
+		// Place an object
+		world.Atlas.SetObject(pos, objects.Object{Type: objects.SmallRock})
+
+		// Pick it up
+		o, err := world.RoverStash(a)
+		assert.NoError(t, err, "Failed to stash")
+		assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
+
+		// Check it's gone
+		_, obj := world.Atlas.QueryPosition(pos)
+		assert.Equal(t, objects.None, obj.Type, "Stash failed to remove object from atlas")
+
+		// Check we have it
+		inv, err := world.RoverInventory(a)
+		assert.NoError(t, err, "Failed to get inventory")
+		assert.Equal(t, i+1, len(inv))
+		assert.Equal(t, objects.Object{Type: objects.SmallRock}, inv[i])
+	}
+
+	// Place an object
 	world.Atlas.SetObject(pos, objects.Object{Type: objects.SmallRock})
 
+	// Try to pick it up
 	o, err := world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
-	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
+	assert.Equal(t, objects.None, o, "Failed to get correct object")
 
+	// Check it's still there
 	_, obj := world.Atlas.QueryPosition(pos)
-	assert.Equal(t, objects.None, obj.Type, "Stash failed to remove object from atlas")
+	assert.Equal(t, objects.SmallRock, obj.Type, "Stash failed to remove object from atlas")
 
+	// Check we don't have it
 	inv, err := world.RoverInventory(a)
 	assert.NoError(t, err, "Failed to get inventory")
-	assert.Equal(t, objects.Object{Type: objects.SmallRock}, inv[0])
+	assert.Equal(t, rover.Capacity, len(inv))
 }
 
 func TestWorld_RoverDamage(t *testing.T) {

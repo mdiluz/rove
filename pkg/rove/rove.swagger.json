@@ -312,7 +312,12 @@
           "format": "byte",
           "title": "The items in the rover inventory"
         },
-        "Integrity": {
+        "capacity": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The capacity of the inventory"
+        },
+        "integrity": {
           "type": "integer",
           "format": "int32",
           "title": "The current health of the rover"

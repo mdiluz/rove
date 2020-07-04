@@ -19,6 +19,9 @@ type Rover struct {
 	// Inventory represents any items the rover is carrying
 	Inventory []objects.Object `json:"inventory"`
 
+	// Capacity is the maximum number of inventory items
+	Capacity int `json:"capacity"`
+
 	// Integrity represents current rover health
 	Integrity int `json:"integrity"`
 }

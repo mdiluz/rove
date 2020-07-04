@@ -72,6 +72,7 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 			},
 			Range:     int32(rover.Range),
 			Inventory: inv,
+			Capacity:  int32(rover.Capacity),
 			Integrity: int32(rover.Integrity),
 		}
 	}
