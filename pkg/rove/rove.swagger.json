@@ -321,6 +321,11 @@
           "type": "integer",
           "format": "int32",
           "title": "The current health of the rover"
+        },
+        "maximumIntegrity": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The maximum health of the rover"
         }
       }
     },

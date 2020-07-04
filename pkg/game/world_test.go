@@ -217,14 +217,15 @@ func TestWorld_RoverRepair(t *testing.T) {
 	originalInfo, err := world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 
+	// Pick up something to repair with
 	world.Atlas.SetObject(pos, objects.Object{Type: objects.SmallRock})
-
 	o, err := world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
 	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
 
 	world.Atlas.SetObject(vector.Vector{X: 0.0, Y: 1.0}, objects.Object{Type: objects.LargeRock})
 
+	// Try and bump into the rock
 	vec, err := world.MoveRover(a, bearing.North)
 	assert.NoError(t, err, "Failed to move rover")
 	assert.Equal(t, pos, vec, "Rover managed to move into large rock")
@@ -239,4 +240,17 @@ func TestWorld_RoverRepair(t *testing.T) {
 	newinfo, err = world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 	assert.Equal(t, originalInfo.Integrity, newinfo.Integrity, "rover should have gained integrity")
+
+	// Check again that it can't repair past the max
+	world.Atlas.SetObject(pos, objects.Object{Type: objects.SmallRock})
+	o, err = world.RoverStash(a)
+	assert.NoError(t, err, "Failed to stash")
+	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
+
+	err = world.ExecuteCommand(&Command{Command: CommandRepair}, a)
+	assert.NoError(t, err, "Failed to repair rover")
+
+	newinfo, err = world.GetRover(a)
+	assert.NoError(t, err, "couldn't get rover info")
+	assert.Equal(t, originalInfo.Integrity, newinfo.Integrity, "rover should have kept the same integrity")
 }

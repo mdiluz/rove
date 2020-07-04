@@ -75,10 +75,11 @@ func (w *World) SpawnRover() (string, error) {
 
 	// Initialise the rover
 	rover := Rover{
-		Range:     4.0,
-		Integrity: 10,
-		Capacity:  10,
-		Name:      uuid.New().String(),
+		Range:            4.0,
+		Integrity:        10,
+		MaximumIntegrity: 10,
+		Capacity:         10,
+		Name:             uuid.New().String(),
 	}
 
 	// Assign a random name if we have words
@@ -417,8 +418,8 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 		if err != nil {
 			return err
 		}
-		// Consume an inventory item to repair
-		if len(r.Inventory) > 0 {
+		// Consume an inventory item to repair if possible
+		if len(r.Inventory) > 0 && r.Integrity < r.MaximumIntegrity {
 			r.Inventory = r.Inventory[:len(r.Inventory)-1]
 			r.Integrity = r.Integrity + 1
 			w.Rovers[rover] = r

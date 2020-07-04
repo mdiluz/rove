@@ -134,6 +134,9 @@ message RoverResponse {
 
     // The current health of the rover
     int32 integrity = 6;
+
+    // The maximum health of the rover
+    int32 maximumIntegrity = 7;
 }
 
 // Empty placeholder

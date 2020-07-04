@@ -24,4 +24,7 @@ type Rover struct {
 
 	// Integrity represents current rover health
 	Integrity int `json:"integrity"`
+
+	// MaximumIntegrity is the full integrity of the rover
+	MaximumIntegrity int `json:"maximum-integrity"`
 }

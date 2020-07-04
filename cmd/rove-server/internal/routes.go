@@ -70,10 +70,11 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 				X: int32(rover.Pos.X),
 				Y: int32(rover.Pos.Y),
 			},
-			Range:     int32(rover.Range),
-			Inventory: inv,
-			Capacity:  int32(rover.Capacity),
-			Integrity: int32(rover.Integrity),
+			Range:            int32(rover.Range),
+			Inventory:        inv,
+			Capacity:         int32(rover.Capacity),
+			Integrity:        int32(rover.Integrity),
+			MaximumIntegrity: int32(rover.MaximumIntegrity),
 		}
 	}
 	return response, nil
