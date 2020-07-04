@@ -75,10 +75,12 @@ func (w *World) SpawnRover() (string, error) {
 
 	// Initialise the rover
 	rover := Rover{
-		Range:            4.0,
+		Range:            4,
 		Integrity:        10,
 		MaximumIntegrity: 10,
 		Capacity:         10,
+		Charge:           10,
+		MaximumCharge:    10,
 		Name:             uuid.New().String(),
 	}
 
@@ -219,6 +221,13 @@ func (w *World) MoveRover(rover string, b bearing.Bearing) (vector.Vector, error
 	if !ok {
 		return vector.Vector{}, fmt.Errorf("no rover matching id")
 	}
+
+	// Ensure the rover has energy
+	if i.Charge <= 0 {
+		return i.Pos, nil
+	}
+	i.Charge--
+
 	// Try the new move position
 	newPos := i.Pos.Added(b.Vector())
 
@@ -255,6 +264,12 @@ func (w *World) RoverStash(rover string) (objects.Type, error) {
 	if len(r.Inventory) >= r.Capacity {
 		return objects.None, nil
 	}
+
+	// Ensure the rover has energy
+	if r.Charge <= 0 {
+		return objects.None, nil
+	}
+	r.Charge--
 
 	_, obj := w.Atlas.QueryPosition(r.Pos)
 	if !obj.IsStashable() {
