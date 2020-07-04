@@ -15,14 +15,14 @@ This page tracks the current feature set and the features to implement next
 
 ### Incoming features
 
-* Rover replacement and advancement mechanic
-* Dormant rovers
 * Day/night cycle
-* More hazards
-* Simple rover to rover communication
+* Weather cycle
 * Deterministic and intelligent world-gen
 
 ### Stretch goals
 
+* Simple rover to rover communication
+* Rover replacement and advancement mechanic
+* Dormant rovers
 * Render rover camera view
 * Account token security
