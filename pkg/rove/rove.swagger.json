@@ -326,6 +326,16 @@
           "type": "integer",
           "format": "int32",
           "title": "The maximum health of the rover"
+        },
+        "charge": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The energy stored in the rover"
+        },
+        "maximumCharge": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The max energy the rover can store"
         }
       }
     },

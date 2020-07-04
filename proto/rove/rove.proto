@@ -137,6 +137,12 @@ message RoverResponse {
 
     // The maximum health of the rover
     int32 maximumIntegrity = 7;
+
+    // The energy stored in the rover
+    int32 charge = 8;
+
+    // The max energy the rover can store
+    int32 maximumCharge = 9;
 }
 
 // Empty placeholder

@@ -75,6 +75,8 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 			Capacity:         int32(rover.Capacity),
 			Integrity:        int32(rover.Integrity),
 			MaximumIntegrity: int32(rover.MaximumIntegrity),
+			Charge:           int32(rover.Charge),
+			MaximumCharge:    int32(rover.MaximumCharge),
 		}
 	}
 	return response, nil

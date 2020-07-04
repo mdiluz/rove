@@ -27,4 +27,10 @@ type Rover struct {
 
 	// MaximumIntegrity is the full integrity of the rover
 	MaximumIntegrity int `json:"maximum-integrity"`
+
+	// Charge is the amount of energy the rover has
+	Charge int `json:"charge"`
+
+	// ChargeCharge is the maximum charge able to be stored
+	MaximumCharge int `json:"maximum-Charge"`
 }
