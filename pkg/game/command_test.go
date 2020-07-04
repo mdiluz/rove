@@ -33,7 +33,7 @@ func TestCommand_Move(t *testing.T) {
 	assert.Equal(t, pos, newPos, "Failed to correctly set position for rover")
 }
 
-func TestCommand_Charge(t *testing.T) {
+func TestCommand_Recharge(t *testing.T) {
 	world := NewWorld(8)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
@@ -56,8 +56,8 @@ func TestCommand_Charge(t *testing.T) {
 	rover, _ := world.GetRover(a)
 	assert.Equal(t, rover.MaximumCharge-1, rover.Charge)
 
-	chargeCommand := Command{Command: CommandCharge}
-	assert.NoError(t, world.Enqueue(a, chargeCommand), "Failed to queue charge command")
+	chargeCommand := Command{Command: CommandRecharge}
+	assert.NoError(t, world.Enqueue(a, chargeCommand), "Failed to queue recharge command")
 
 	// Tick the world
 	world.EnqueueAllIncoming()

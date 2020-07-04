@@ -134,8 +134,8 @@ func (w *World) GetRover(rover string) (Rover, error) {
 	return i, nil
 }
 
-// ChargeRover charges up a rover
-func (w *World) ChargeRover(rover string) (int, error) {
+// RoverRecharge charges up a rover
+func (w *World) RoverRecharge(rover string) (int, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -371,7 +371,7 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 			}
 		case CommandStash:
 		case CommandRepair:
-		case CommandCharge:
+		case CommandRecharge:
 			// Nothing to verify
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
@@ -459,8 +459,8 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 			r.Integrity = r.Integrity + 1
 			w.Rovers[rover] = r
 		}
-	case CommandCharge:
-		_, err := w.ChargeRover(rover)
+	case CommandRecharge:
+		_, err := w.RoverRecharge(rover)
 		if err != nil {
 			return err
 		}

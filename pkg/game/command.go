@@ -10,8 +10,8 @@ const (
 	// CommandRepair Will attempt to repair the rover with an inventory object
 	CommandRepair = "repair"
 
-	// CommandCharge Will use one tick to charge the rover
-	CommandCharge = "charge"
+	// CommandRecharge Will use one tick to charge the rover
+	CommandRecharge = "recharge"
 )
 
 // Command represends a single command to execute

@@ -212,7 +212,7 @@
       "properties": {
         "command": {
           "type": "string",
-          "title": "The command to execute\n\"move\" - Move the rover in a direction, requires bearing\n\"stash\" - Stashes item at current location in rover inventory\n\"repair\" - Repairs the rover using an inventory object"
+          "title": "The command to execute\n\"move\" - Move the rover in a direction, requires bearing\n\"stash\" - Stashes item at current location in rover inventory\n\"repair\" - Repairs the rover using an inventory object\n\"recharge\" - Waits a tick to add more charge to the rover"
         },
         "bearing": {
           "type": "string",

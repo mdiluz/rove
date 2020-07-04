@@ -43,6 +43,7 @@ type Command struct {
 	// "move" - Move the rover in a direction, requires bearing
 	// "stash" - Stashes item at current location in rover inventory
 	// "repair" - Repairs the rover using an inventory object
+	// "recharge" - Waits a tick to add more charge to the rover
 	Command string `protobuf:"bytes,1,opt,name=command,proto3" json:"command,omitempty"`
 	// The bearing, example: NE
 	Bearing string `protobuf:"bytes,2,opt,name=bearing,proto3" json:"bearing,omitempty"`

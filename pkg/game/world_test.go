@@ -168,7 +168,7 @@ func TestWorld_RoverStash(t *testing.T) {
 
 	// Recharge the rover
 	for i := 0; i < rover.MaximumCharge; i++ {
-		world.ChargeRover(a)
+		world.RoverRecharge(a)
 	}
 
 	// Place an object
