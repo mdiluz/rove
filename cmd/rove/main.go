@@ -217,10 +217,11 @@ func InnerMain(command string, args ...string) error {
 						Bearing: args[i],
 					},
 				)
-			case "stash":
+			default:
+				// By default just use the command literally
 				commands = append(commands,
 					&rove.Command{
-						Command: game.CommandStash,
+						Command: args[i],
 					},
 				)
 			}
