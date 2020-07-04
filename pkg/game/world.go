@@ -371,6 +371,7 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 			}
 		case CommandStash:
 		case CommandRepair:
+		case CommandCharge:
 			// Nothing to verify
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
@@ -457,6 +458,11 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 			r.Inventory = r.Inventory[:len(r.Inventory)-1]
 			r.Integrity = r.Integrity + 1
 			w.Rovers[rover] = r
+		}
+	case CommandCharge:
+		_, err := w.ChargeRover(rover)
+		if err != nil {
+			return err
 		}
 	default:
 		return fmt.Errorf("unknown command: %s", c.Command)

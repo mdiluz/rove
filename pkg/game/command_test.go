@@ -32,3 +32,38 @@ func TestCommand_Move(t *testing.T) {
 	pos.Add(vector.Vector{X: 0.0, Y: 1})
 	assert.Equal(t, pos, newPos, "Failed to correctly set position for rover")
 }
+
+func TestCommand_Charge(t *testing.T) {
+	world := NewWorld(8)
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
+	pos := vector.Vector{
+		X: 1.0,
+		Y: 2.0,
+	}
+
+	err = world.WarpRover(a, pos)
+	assert.NoError(t, err, "Failed to set position for rover")
+
+	// Move to use up some charge
+	moveCommand := Command{Command: CommandMove, Bearing: "N"}
+	assert.NoError(t, world.Enqueue(a, moveCommand), "Failed to queue move command")
+
+	// Tick the world
+	world.EnqueueAllIncoming()
+	world.ExecuteCommandQueues()
+
+	rover, _ := world.GetRover(a)
+	assert.Equal(t, rover.MaximumCharge-1, rover.Charge)
+
+	chargeCommand := Command{Command: CommandCharge}
+	assert.NoError(t, world.Enqueue(a, chargeCommand), "Failed to queue charge command")
+
+	// Tick the world
+	world.EnqueueAllIncoming()
+	world.ExecuteCommandQueues()
+
+	rover, _ = world.GetRover(a)
+	assert.Equal(t, rover.MaximumCharge, rover.Charge)
+
+}
