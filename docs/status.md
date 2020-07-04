@@ -24,6 +24,7 @@ This page tracks the current feature set and the features to implement next
 * Day/night cycle
 * More hazards
 * Simple rover to rover communication
+* Deterministic and intelligent world-gen
 
 ### Stretch goals
 
