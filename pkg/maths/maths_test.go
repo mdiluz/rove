@@ -29,5 +29,19 @@ func TestMin(t *testing.T) {
 	assert.Equal(t, 100, Min(100, 500))
 	assert.Equal(t, -4, Min(-4, 1))
 	assert.Equal(t, -4, Min(-4, -2))
+}
+
+func TestRoundUp(t *testing.T) {
+	assert.Equal(t, 10, RoundUp(10, 5))
+	assert.Equal(t, 12, RoundUp(10, 4))
+	assert.Equal(t, -8, RoundUp(-8, 4))
+	assert.Equal(t, -4, RoundUp(-7, 4))
+}
+
+func TestRoundDown(t *testing.T) {
+	assert.Equal(t, 10, RoundDown(10, 5))
+	assert.Equal(t, 8, RoundDown(10, 4))
+	assert.Equal(t, -8, RoundDown(-8, 4))
+	assert.Equal(t, -8, RoundDown(-7, 4))
 
 }

@@ -50,6 +50,25 @@ func (v Vector) Divided(val int) Vector {
 	return Vector{v.X / val, v.Y / val}
 }
 
+// DividedFloor returns the vector divided but floors the value regardless
+func (v Vector) DividedFloor(val int) Vector {
+	x := float64(v.X) / float64(val)
+
+	if x < 0 {
+		x = math.Floor(x)
+	} else {
+		x = math.Floor(x)
+	}
+	y := float64(v.Y) / float64(val)
+	if y < 0 {
+		y = math.Floor(y)
+	} else {
+		y = math.Floor(y)
+	}
+
+	return Vector{X: int(x), Y: int(y)}
+}
+
 // Abs returns an absolute version of the vector
 func (v Vector) Abs() Vector {
 	return Vector{maths.Abs(v.X), maths.Abs(v.Y)}

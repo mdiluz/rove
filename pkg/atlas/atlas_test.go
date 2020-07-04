@@ -22,43 +22,49 @@ func TestAtlas_toChunk(t *testing.T) {
 	// Get a tile to spawn the chunks
 	a.QueryPosition(vector.Vector{X: -1, Y: -1})
 	a.QueryPosition(vector.Vector{X: 0, Y: 0})
+	assert.Equal(t, 2*2, len(a.Chunks))
 
 	// Chunks should look like:
 	//  2 | 3
 	//  -----
 	//  0 | 1
-	chunkID := a.worldSpaceToChunk(vector.Vector{X: 0, Y: 0})
+	chunkID := a.worldSpaceToChunkIndex(vector.Vector{X: 0, Y: 0})
 	assert.Equal(t, 3, chunkID)
-	chunkID = a.worldSpaceToChunk(vector.Vector{X: 0, Y: -1})
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: 0, Y: -1})
 	assert.Equal(t, 1, chunkID)
-	chunkID = a.worldSpaceToChunk(vector.Vector{X: -1, Y: -1})
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: -1, Y: -1})
 	assert.Equal(t, 0, chunkID)
-	chunkID = a.worldSpaceToChunk(vector.Vector{X: -1, Y: 0})
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: -1, Y: 0})
 	assert.Equal(t, 2, chunkID)
 
 	a = NewAtlas(2)
 	assert.NotNil(t, a)
 	// Get a tile to spawn the chunks
 	a.QueryPosition(vector.Vector{X: -2, Y: -2})
+	assert.Equal(t, 2*2, len(a.Chunks))
 	a.QueryPosition(vector.Vector{X: 1, Y: 1})
+	assert.Equal(t, 2*2, len(a.Chunks))
 	// Chunks should look like:
 	// 2 | 3
 	// -----
 	// 0 | 1
-	chunkID = a.worldSpaceToChunk(vector.Vector{X: 1, Y: 1})
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: 1, Y: 1})
 	assert.Equal(t, 3, chunkID)
-	chunkID = a.worldSpaceToChunk(vector.Vector{X: 1, Y: -2})
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: 1, Y: -2})
 	assert.Equal(t, 1, chunkID)
-	chunkID = a.worldSpaceToChunk(vector.Vector{X: -2, Y: -2})
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: -2, Y: -2})
 	assert.Equal(t, 0, chunkID)
-	chunkID = a.worldSpaceToChunk(vector.Vector{X: -2, Y: 1})
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: -2, Y: 1})
 	assert.Equal(t, 2, chunkID)
 
 	a = NewAtlas(2)
 	assert.NotNil(t, a)
-	// Get a tile to spawn the chunks
-	a.QueryPosition(vector.Vector{X: 5, Y: 5})
-	a.QueryPosition(vector.Vector{X: -5, Y: -5})
+	// Get a tile to spawn a 4x4 grid of chunks
+	a.QueryPosition(vector.Vector{X: 3, Y: 3})
+	assert.Equal(t, 2*2, len(a.Chunks))
+	a.QueryPosition(vector.Vector{X: -3, Y: -3})
+	assert.Equal(t, 4*4, len(a.Chunks))
+
 	// Chunks should look like:
 	//  12| 13|| 14| 15
 	// ----------------
@@ -67,14 +73,96 @@ func TestAtlas_toChunk(t *testing.T) {
 	//  4 | 5 || 6 | 7
 	// ----------------
 	//  0 | 1 || 2 | 3
-	chunkID = a.worldSpaceToChunk(vector.Vector{X: 1, Y: 3})
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: 1, Y: 3})
 	assert.Equal(t, 14, chunkID)
-	chunkID = a.worldSpaceToChunk(vector.Vector{X: 1, Y: -3})
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: 1, Y: -3})
 	assert.Equal(t, 2, chunkID)
-	chunkID = a.worldSpaceToChunk(vector.Vector{X: -1, Y: -1})
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: -1, Y: -1})
 	assert.Equal(t, 5, chunkID)
-	chunkID = a.worldSpaceToChunk(vector.Vector{X: -2, Y: 2})
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: -2, Y: 2})
 	assert.Equal(t, 13, chunkID)
+
+	a = NewAtlas(3)
+	assert.NotNil(t, a)
+	// Get a tile to spawn a 4x4 grid of chunks
+	a.QueryPosition(vector.Vector{X: 3, Y: 3})
+	assert.Equal(t, 2*2, len(a.Chunks))
+
+	// Chunks should look like:
+	// || 2| 3
+	// -------
+	// || 0| 1
+	// =======
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: 1, Y: 1})
+	assert.Equal(t, 0, chunkID)
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: 3, Y: 1})
+	assert.Equal(t, 1, chunkID)
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: 1, Y: 4})
+	assert.Equal(t, 2, chunkID)
+	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: 5, Y: 5})
+	assert.Equal(t, 3, chunkID)
+}
+
+func TestAtlas_toWorld(t *testing.T) {
+	a := NewAtlas(1)
+	assert.NotNil(t, a)
+
+	// Get a tile to spawn some chunks
+	a.QueryPosition(vector.Vector{X: -1, Y: -1})
+	assert.Equal(t, 2*2, len(a.Chunks))
+
+	// Chunks should look like:
+	//  2 | 3
+	//  -----
+	//  0 | 1
+	assert.Equal(t, vector.Vector{X: -1, Y: -1}, a.chunkOriginInWorldSpace(0))
+	assert.Equal(t, vector.Vector{X: 0, Y: -1}, a.chunkOriginInWorldSpace(1))
+
+	a = NewAtlas(2)
+	assert.NotNil(t, a)
+	// Get a tile to spawn the chunks
+	a.QueryPosition(vector.Vector{X: -2, Y: -2})
+	assert.Equal(t, 2*2, len(a.Chunks))
+	a.QueryPosition(vector.Vector{X: 1, Y: 1})
+	assert.Equal(t, 2*2, len(a.Chunks))
+	// Chunks should look like:
+	// 2 | 3
+	// -----
+	// 0 | 1
+	assert.Equal(t, vector.Vector{X: -2, Y: -2}, a.chunkOriginInWorldSpace(0))
+	assert.Equal(t, vector.Vector{X: -2, Y: 0}, a.chunkOriginInWorldSpace(2))
+
+	a = NewAtlas(2)
+	assert.NotNil(t, a)
+	// Get a tile to spawn a 4x4 grid of chunks
+	a.QueryPosition(vector.Vector{X: 3, Y: 3})
+	assert.Equal(t, 2*2, len(a.Chunks))
+	a.QueryPosition(vector.Vector{X: -3, Y: -3})
+	assert.Equal(t, 4*4, len(a.Chunks))
+
+	// Chunks should look like:
+	//  12| 13|| 14| 15
+	// ----------------
+	//  8 | 9 || 10| 11
+	// ================
+	//  4 | 5 || 6 | 7
+	// ----------------
+	//  0 | 1 || 2 | 3
+	assert.Equal(t, vector.Vector{X: -4, Y: -4}, a.chunkOriginInWorldSpace(0))
+	assert.Equal(t, vector.Vector{X: 2, Y: -2}, a.chunkOriginInWorldSpace(7))
+
+	a = NewAtlas(3)
+	assert.NotNil(t, a)
+	// Get a tile to spawn a 4x4 grid of chunks
+	a.QueryPosition(vector.Vector{X: 3, Y: 3})
+	assert.Equal(t, 2*2, len(a.Chunks))
+
+	// Chunks should look like:
+	// || 2| 3
+	// -------
+	// || 0| 1
+	// =======
+	assert.Equal(t, vector.Vector{X: 0, Y: 0}, a.chunkOriginInWorldSpace(0))
 }
 
 func TestAtlas_GetSetTile(t *testing.T) {
@@ -136,4 +224,27 @@ func TestAtlas_Grown(t *testing.T) {
 
 	tile, _ = a.QueryPosition(vector.Vector{X: 1, Y: -2})
 	assert.Equal(t, byte(3), tile)
+}
+
+func TestAtlas_GetSetCorrect(t *testing.T) {
+	// Big stress test to ensure we do actually properly expand for all reasonable values
+	for i := 1; i <= 4; i++ {
+
+		for x := -i * 2; x < i*2; x++ {
+			for y := -i * 2; y < i*2; y++ {
+				a := NewAtlas(i)
+				assert.NotNil(t, a)
+				assert.Equal(t, 1, len(a.Chunks))
+
+				pos := vector.Vector{X: x, Y: y}
+				a.SetTile(pos, TileRock)
+				a.SetObject(pos, objects.Object{Type: objects.LargeRock})
+				tile, obj := a.QueryPosition(pos)
+
+				assert.Equal(t, TileRock, Tile(tile))
+				assert.Equal(t, objects.Object{Type: objects.LargeRock}, obj)
+
+			}
+		}
+	}
 }

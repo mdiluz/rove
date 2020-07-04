@@ -39,3 +39,19 @@ func Min(x, y int) int {
 	}
 	return x
 }
+
+// RoundUp rounds a value up to the nearest multiple
+func RoundUp(toRound int, multiple int) int {
+	remainder := Pmod(toRound, multiple)
+	if remainder == 0 {
+		return toRound
+	}
+
+	return (multiple - remainder) + toRound
+}
+
+// RoundDown rounds a value down to the nearest multiple
+func RoundDown(toRound int, multiple int) int {
+	remainder := Pmod(toRound, multiple)
+	return toRound - remainder
+}
