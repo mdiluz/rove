@@ -26,11 +26,11 @@ func Test_InnerMain(t *testing.T) {
 	}
 
 	// First attempt should error without a host
-	assert.Error(t, InnerMain("status"))
+	assert.Error(t, InnerMain("server-status"))
 
 	// Set the host in the config
 	assert.NoError(t, InnerMain("config", address))
-	assert.NoError(t, InnerMain("status"))
+	assert.NoError(t, InnerMain("server-status"))
 
 	// Register should fail without a name
 	assert.Error(t, InnerMain("register"))

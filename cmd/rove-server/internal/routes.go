@@ -10,8 +10,8 @@ import (
 )
 
 // Status returns the status of the current server to a gRPC request
-func (s *Server) Status(context.Context, *rove.StatusRequest) (*rove.StatusResponse, error) {
-	response := &rove.StatusResponse{
+func (s *Server) ServerStatus(context.Context, *rove.ServerStatusRequest) (*rove.ServerStatusResponse, error) {
+	response := &rove.ServerStatusResponse{
 		Ready:   true,
 		Version: version.Version,
 		Tick:    int32(s.tick),

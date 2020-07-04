@@ -148,16 +148,16 @@
         ]
       }
     },
-    "/status": {
+    "/server-status": {
       "get": {
         "summary": "Server status",
         "description": "Responds with various details about the current server status",
-        "operationId": "Rove_Status",
+        "operationId": "Rove_ServerStatus",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/roveStatusResponse"
+              "$ref": "#/definitions/roveServerStatusResponse"
             }
           },
           "default": {
@@ -339,7 +339,7 @@
         }
       }
     },
-    "roveStatusResponse": {
+    "roveServerStatusResponse": {
       "type": "object",
       "properties": {
         "next_tick": {

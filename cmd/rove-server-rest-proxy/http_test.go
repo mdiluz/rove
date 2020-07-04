@@ -61,10 +61,10 @@ func (s Server) Request(method, path string, in, out interface{}) error {
 
 var serv = Server(os.Getenv("ROVE_HTTP"))
 
-func TestServer_Status(t *testing.T) {
-	req := &rove.StatusRequest{}
-	resp := &rove.StatusResponse{}
-	if err := serv.Request("GET", "status", req, resp); err != nil {
+func TestServer_ServerStatus(t *testing.T) {
+	req := &rove.ServerStatusRequest{}
+	resp := &rove.ServerStatusResponse{}
+	if err := serv.Request("GET", "server-status", req, resp); err != nil {
 		log.Fatal(err)
 	}
 }

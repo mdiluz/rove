@@ -13,9 +13,9 @@ service Rove {
     // Server status
     // 
     // Responds with various details about the current server status
-    rpc Status(StatusRequest) returns (StatusResponse) {
+    rpc ServerStatus(ServerStatusRequest) returns (ServerStatusResponse) {
         option (google.api.http) = {
-            get: "/status"
+            get: "/server-status"
           };
     }
 
@@ -147,9 +147,9 @@ message RoverResponse {
 }
 
 // Empty placeholder
-message StatusRequest {}
+message ServerStatusRequest {}
 
-message StatusResponse {
+message ServerStatusResponse {
     // The time the next tick will occur
     string next_tick = 1;
 

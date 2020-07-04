@@ -27,7 +27,7 @@ var defaultDataPath = path.Join(home, ".local/share/")
 func printUsage() {
 	fmt.Fprintf(os.Stderr, "Usage: rove COMMAND [ARGS...]\n")
 	fmt.Fprintln(os.Stderr, "\nCommands")
-	fmt.Fprintln(os.Stderr, "\tstatus                     prints the server status")
+	fmt.Fprintln(os.Stderr, "\tserver-status              prints the server status")
 	fmt.Fprintln(os.Stderr, "\tregister NAME              registers an account and stores it (use with -name)")
 	fmt.Fprintln(os.Stderr, "\tcommands COMMAND [VAL...]  issue commands to rover, accepts multiple, see below")
 	fmt.Fprintln(os.Stderr, "\tradar                      gathers radar data for the current rover")
@@ -163,8 +163,8 @@ func InnerMain(command string, args ...string) error {
 
 	// Handle all the commands
 	switch command {
-	case "status":
-		response, err := client.Status(ctx, &rove.StatusRequest{})
+	case "server-status":
+		response, err := client.ServerStatus(ctx, &rove.ServerStatusRequest{})
 		switch {
 		case err != nil:
 			return err
