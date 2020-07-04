@@ -39,6 +39,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\tmove BEARING               moves the rover in the chosen direction")
 	fmt.Fprintln(os.Stderr, "\tstash                      stores the object at the rover location in the inventory")
 	fmt.Fprintln(os.Stderr, "\trepair                     uses an inventory object to repair the rover")
+	fmt.Fprintln(os.Stderr, "\trecharge                   wait a tick to recharge the rover")
 	fmt.Fprintln(os.Stderr, "\nEnvironment")
 	fmt.Fprintln(os.Stderr, "\tROVE_USER_DATA             path to user data, defaults to "+defaultDataPath)
 }
