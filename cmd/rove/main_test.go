@@ -37,14 +37,14 @@ func Test_InnerMain(t *testing.T) {
 
 	// These methods should fail without an account
 	assert.Error(t, InnerMain("radar"))
-	assert.Error(t, InnerMain("rover"))
+	assert.Error(t, InnerMain("status"))
 
 	// Now set the name
 	assert.NoError(t, InnerMain("register", uuid.New().String()))
 
 	// These should now work
 	assert.NoError(t, InnerMain("radar"))
-	assert.NoError(t, InnerMain("rover"))
+	assert.NoError(t, InnerMain("status"))
 
 	// Commands should fail with no commands
 	assert.Error(t, InnerMain("commands"))
