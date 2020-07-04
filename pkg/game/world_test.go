@@ -84,10 +84,18 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	pos.Add(vector.Vector{X: 0, Y: 1})
 	assert.Equal(t, pos, newPos, "Failed to correctly move position for rover")
 
+	rover, err := world.GetRover(a)
+	assert.NoError(t, err, "Failed to get rover information")
+	assert.Equal(t, rover.MaximumCharge-1, rover.Charge, "Rover should have lost charge for moving")
+
 	// Place a tile in front of the rover
 	world.Atlas.SetObject(vector.Vector{X: 0, Y: 2}, objects.Object{Type: objects.LargeRock})
 	newPos, err = world.MoveRover(a, b)
 	assert.Equal(t, pos, newPos, "Failed to correctly not move position for rover into wall")
+
+	rover, err = world.GetRover(a)
+	assert.NoError(t, err, "Failed to get rover information")
+	assert.Equal(t, rover.MaximumCharge-2, rover.Charge, "Rover should have lost charge for move attempt")
 }
 
 func TestWorld_RadarFromRover(t *testing.T) {
@@ -151,6 +159,16 @@ func TestWorld_RoverStash(t *testing.T) {
 		assert.NoError(t, err, "Failed to get inventory")
 		assert.Equal(t, i+1, len(inv))
 		assert.Equal(t, objects.Object{Type: objects.SmallRock}, inv[i])
+
+		// Check that this didn't reduce the charge
+		info, err := world.GetRover(a)
+		assert.NoError(t, err, "Failed to get rover")
+		assert.Equal(t, info.MaximumCharge-(i+1), info.Charge, "Rover lost charge for stash")
+	}
+
+	// Recharge the rover
+	for i := 0; i < rover.MaximumCharge; i++ {
+		world.ChargeRover(a)
 	}
 
 	// Place an object
@@ -169,6 +187,11 @@ func TestWorld_RoverStash(t *testing.T) {
 	inv, err := world.RoverInventory(a)
 	assert.NoError(t, err, "Failed to get inventory")
 	assert.Equal(t, rover.Capacity, len(inv))
+
+	// Check that this didn't reduce the charge
+	info, err := world.GetRover(a)
+	assert.NoError(t, err, "Failed to get rover")
+	assert.Equal(t, info.MaximumCharge, info.Charge, "Rover lost charge for non-stash")
 }
 
 func TestWorld_RoverDamage(t *testing.T) {
@@ -253,4 +276,37 @@ func TestWorld_RoverRepair(t *testing.T) {
 	newinfo, err = world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 	assert.Equal(t, originalInfo.Integrity, newinfo.Integrity, "rover should have kept the same integrity")
+}
+
+func TestWorld_Charge(t *testing.T) {
+	world := NewWorld(4)
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
+
+	// Get the rover information
+	rover, err := world.GetRover(a)
+	assert.NoError(t, err, "Failed to get rover information")
+	assert.Equal(t, rover.MaximumCharge, rover.Charge, "Rover should start with maximum charge")
+
+	// Use up all the charge
+	for i := 0; i < rover.MaximumCharge; i++ {
+		// Get the initial position
+		initialPos, err := world.RoverPosition(a)
+		assert.NoError(t, err, "Failed to get position for rover")
+
+		// Ensure the path ahead is empty
+		world.Atlas.SetTile(initialPos.Added(bearing.North.Vector()), atlas.TileRock)
+		world.Atlas.SetObject(initialPos.Added(bearing.North.Vector()), objects.Object{Type: objects.None})
+
+		// Try and move north (along unblocked path)
+		newPos, err := world.MoveRover(a, bearing.North)
+		assert.NoError(t, err, "Failed to set position for rover")
+		assert.Equal(t, initialPos.Added(bearing.North.Vector()), newPos, "Failed to correctly move position for rover")
+
+		// Ensure rover lost charge
+		rover, err := world.GetRover(a)
+		assert.NoError(t, err, "Failed to get rover information")
+		assert.Equal(t, rover.MaximumCharge-(i+1), rover.Charge, "Rover should have lost charge")
+	}
+
 }

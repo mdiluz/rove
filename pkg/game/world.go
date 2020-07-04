@@ -134,6 +134,25 @@ func (w *World) GetRover(rover string) (Rover, error) {
 	return i, nil
 }
 
+// ChargeRover charges up a rover
+func (w *World) ChargeRover(rover string) (int, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	i, ok := w.Rovers[rover]
+	if !ok {
+		return 0, fmt.Errorf("Failed to find rover with name: %s", rover)
+	}
+
+	// Add one charge
+	if i.Charge < i.MaximumCharge {
+		i.Charge++
+	}
+	w.Rovers[rover] = i
+
+	return i.Charge, nil
+}
+
 // DestroyRover Removes an rover from the game
 func (w *World) DestroyRover(rover string) error {
 	w.worldMutex.Lock()
