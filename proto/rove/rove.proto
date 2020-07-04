@@ -52,9 +52,9 @@ service Rove {
     // Get rover information
     // 
     // Gets information for the account's rover
-    rpc Rover(RoverRequest) returns (RoverResponse) {
+    rpc Status(StatusRequest) returns (StatusResponse) {
         option (google.api.http) = {
-            post: "/rover"
+            post: "/status"
             body: "*"
           };
     }
@@ -112,12 +112,12 @@ message RegisterRequest {
     string name = 1;
 }
 
-message RoverRequest {
+message StatusRequest {
     // The account for this request
     string account = 1;
 }
 
-message RoverResponse {
+message StatusResponse {
     // The name of the rover
     string name = 1;
 

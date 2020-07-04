@@ -114,40 +114,6 @@
         ]
       }
     },
-    "/rover": {
-      "post": {
-        "summary": "Get rover information",
-        "description": "Gets information for the account's rover",
-        "operationId": "Rove_Rover",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/roveRoverResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/roveRoverRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Rove"
-        ]
-      }
-    },
     "/server-status": {
       "get": {
         "summary": "Server status",
@@ -167,6 +133,40 @@
             }
           }
         },
+        "tags": [
+          "Rove"
+        ]
+      }
+    },
+    "/status": {
+      "post": {
+        "summary": "Get rover information",
+        "description": "Gets information for the account's rover",
+        "operationId": "Rove_Status",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/roveStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/gatewayruntimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/roveStatusRequest"
+            }
+          }
+        ],
         "tags": [
           "Rove"
         ]
@@ -282,7 +282,30 @@
       "type": "object",
       "title": "Empty placeholder"
     },
-    "roveRoverRequest": {
+    "roveServerStatusResponse": {
+      "type": "object",
+      "properties": {
+        "next_tick": {
+          "type": "string",
+          "title": "The time the next tick will occur"
+        },
+        "ready": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Whether the server is ready to accept requests"
+        },
+        "tick": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The tick rate of the server in minutes (how many minutes per tick)"
+        },
+        "version": {
+          "type": "string",
+          "title": "The version of the server in v{major}.{minor}-{delta}-{sha} form"
+        }
+      }
+    },
+    "roveStatusRequest": {
       "type": "object",
       "properties": {
         "account": {
@@ -291,7 +314,7 @@
         }
       }
     },
-    "roveRoverResponse": {
+    "roveStatusResponse": {
       "type": "object",
       "properties": {
         "name": {
@@ -336,29 +359,6 @@
           "type": "integer",
           "format": "int32",
           "title": "The max energy the rover can store"
-        }
-      }
-    },
-    "roveServerStatusResponse": {
-      "type": "object",
-      "properties": {
-        "next_tick": {
-          "type": "string",
-          "title": "The time the next tick will occur"
-        },
-        "ready": {
-          "type": "boolean",
-          "format": "boolean",
-          "title": "Whether the server is ready to accept requests"
-        },
-        "tick": {
-          "type": "integer",
-          "format": "int32",
-          "title": "The tick rate of the server in minutes (how many minutes per tick)"
-        },
-        "version": {
-          "type": "string",
-          "title": "The version of the server in v{major}.{minor}-{delta}-{sha} form"
         }
       }
     },

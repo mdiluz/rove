@@ -31,7 +31,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\tregister NAME              registers an account and stores it (use with -name)")
 	fmt.Fprintln(os.Stderr, "\tcommands COMMAND [VAL...]  issue commands to rover, accepts multiple, see below")
 	fmt.Fprintln(os.Stderr, "\tradar                      gathers radar data for the current rover")
-	fmt.Fprintln(os.Stderr, "\trover                      gets data for current rover")
+	fmt.Fprintln(os.Stderr, "\tstatus                     gets status info for current rover")
 	fmt.Fprintln(os.Stderr, "\tconfig [HOST]              outputs the local config info, optionally sets host")
 	fmt.Fprintln(os.Stderr, "\thelp                       outputs this usage information")
 	fmt.Fprintln(os.Stderr, "\tversion                    outputs version info")
@@ -277,12 +277,12 @@ func InnerMain(command string, args ...string) error {
 			}
 		}
 
-	case "rover":
-		req := rove.RoverRequest{Account: config.Account.Name}
+	case "status":
+		req := rove.StatusRequest{Account: config.Account.Name}
 		if err := verifyID(req.Account); err != nil {
 			return err
 		}
-		response, err := client.Rover(ctx, &req)
+		response, err := client.Status(ctx, &req)
 
 		switch {
 		case err != nil:

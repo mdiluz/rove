@@ -116,8 +116,8 @@ func TestServer_Rover(t *testing.T) {
 	err := serv.Request("POST", "register", &rove.RegisterRequest{Name: acc}, &rove.RegisterResponse{})
 	assert.NoError(t, err, "First register attempt should pass")
 
-	resp := &rove.RoverResponse{}
-	err = serv.Request("POST", "rover", &rove.RoverRequest{
+	resp := &rove.StatusResponse{}
+	err = serv.Request("POST", "status", &rove.StatusRequest{
 		Account: acc,
 	}, resp)
 	assert.NoError(t, err, "Rover sould pass should pass")

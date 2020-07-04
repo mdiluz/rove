@@ -46,9 +46,9 @@ func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove
 	return &rove.RegisterResponse{}, nil
 }
 
-// Rover returns rover information for a gRPC request
-func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.RoverResponse, error) {
-	response := &rove.RoverResponse{}
+// Status returns rover information for a gRPC request
+func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (*rove.StatusResponse, error) {
+	response := &rove.StatusResponse{}
 	if len(req.Account) == 0 {
 		return nil, fmt.Errorf("empty account name")
 
@@ -64,7 +64,7 @@ func (s *Server) Rover(ctx context.Context, req *rove.RoverRequest) (*rove.Rover
 			inv = append(inv, byte(i.Type))
 		}
 
-		response = &rove.RoverResponse{
+		response = &rove.StatusResponse{
 			Name: rover.Name,
 			Position: &rove.Vector{
 				X: int32(rover.Pos.X),
