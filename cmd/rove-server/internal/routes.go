@@ -64,6 +64,21 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (*rove.Sta
 			inv = append(inv, byte(i.Type))
 		}
 
+		i, q := s.world.RoverCommands(resp)
+		var incoming, queued []*rove.Command
+		for _, i := range i {
+			incoming = append(incoming, &rove.Command{
+				Command: i.Command,
+				Bearing: i.Bearing,
+			})
+		}
+		for _, q := range q {
+			queued = append(queued, &rove.Command{
+				Command: q.Command,
+				Bearing: q.Bearing,
+			})
+		}
+
 		response = &rove.StatusResponse{
 			Name: rover.Name,
 			Position: &rove.Vector{
@@ -77,6 +92,8 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (*rove.Sta
 			MaximumIntegrity: int32(rover.MaximumIntegrity),
 			Charge:           int32(rover.Charge),
 			MaximumCharge:    int32(rover.MaximumCharge),
+			IncomingCommands: incoming,
+			QueuedCommands:   queued,
 		}
 	}
 	return response, nil

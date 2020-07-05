@@ -30,7 +30,7 @@ type World struct {
 	CommandQueue map[string]CommandStream `json:"commands"`
 
 	// Incoming represents the set of commands to add to the queue at the end of the current tick
-	Incoming map[string]CommandStream `json:"incoming"`
+	CommandIncoming map[string]CommandStream `json:"incoming"`
 
 	// Mutex to lock around command operations
 	cmdMutex sync.RWMutex
@@ -60,11 +60,11 @@ func NewWorld(chunkSize int) *World {
 	}
 
 	return &World{
-		Rovers:       make(map[string]Rover),
-		CommandQueue: make(map[string]CommandStream),
-		Incoming:     make(map[string]CommandStream),
-		Atlas:        atlas.NewAtlas(chunkSize),
-		words:        lines,
+		Rovers:          make(map[string]Rover),
+		CommandQueue:    make(map[string]CommandStream),
+		CommandIncoming: make(map[string]CommandStream),
+		Atlas:           atlas.NewAtlas(chunkSize),
+		words:           lines,
 	}
 }
 
@@ -359,6 +359,17 @@ func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err err
 	return radar, objs, nil
 }
 
+// RoverCommands returns current commands for the given rover
+func (w *World) RoverCommands(rover string) (incoming []Command, queued []Command) {
+	if c, ok := w.CommandIncoming[rover]; ok {
+		incoming = c
+	}
+	if c, ok := w.CommandQueue[rover]; ok {
+		queued = c
+	}
+	return
+}
+
 // Enqueue will queue the commands given
 func (w *World) Enqueue(rover string, commands ...Command) error {
 
@@ -395,12 +406,12 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 // EnqueueAllIncoming will enqueue the incoming commands
 func (w *World) EnqueueAllIncoming() {
 	// Add any incoming commands from this tick and clear that queue
-	for id, incoming := range w.Incoming {
+	for id, incoming := range w.CommandIncoming {
 		commands := w.CommandQueue[id]
 		commands = append(commands, incoming...)
 		w.CommandQueue[id] = commands
 	}
-	w.Incoming = make(map[string]CommandStream)
+	w.CommandIncoming = make(map[string]CommandStream)
 }
 
 // ExecuteCommandQueues will execute any commands in the current command queue

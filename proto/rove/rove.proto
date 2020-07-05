@@ -144,6 +144,12 @@ message StatusResponse {
 
     // The max energy the rover can store
     int32 maximumCharge = 9;
+
+    // The set of currently incoming commands for this tick
+    repeated Command incomingCommands = 10;
+
+    // The set of currently queued commands
+    repeated Command queuedCommands = 11;
 }
 
 // Empty placeholder

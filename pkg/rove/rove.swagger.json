@@ -359,6 +359,20 @@
           "type": "integer",
           "format": "int32",
           "title": "The max energy the rover can store"
+        },
+        "incomingCommands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/roveCommand"
+          },
+          "title": "The set of currently incoming commands for this tick"
+        },
+        "queuedCommands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/roveCommand"
+          },
+          "title": "The set of currently queued commands"
         }
       }
     },
