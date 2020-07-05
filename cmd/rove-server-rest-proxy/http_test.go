@@ -83,7 +83,7 @@ func TestServer_Command(t *testing.T) {
 	err := serv.Request("POST", "register", &rove.RegisterRequest{Name: acc}, &rove.RegisterResponse{})
 	assert.NoError(t, err, "First register attempt should pass")
 
-	err = serv.Request("POST", "commands", &rove.CommandsRequest{
+	err = serv.Request("POST", "command", &rove.CommandRequest{
 		Account: acc,
 		Commands: []*rove.Command{
 			{
@@ -91,7 +91,7 @@ func TestServer_Command(t *testing.T) {
 				Bearing: "NE",
 			},
 		},
-	}, &rove.CommandsResponse{})
+	}, &rove.CommandResponse{})
 	assert.NoError(t, err, "Commands should should pass")
 }
 

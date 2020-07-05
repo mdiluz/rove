@@ -12,16 +12,16 @@
     "application/json"
   ],
   "paths": {
-    "/commands": {
+    "/command": {
       "post": {
         "summary": "Send commands to rover",
         "description": "Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent",
-        "operationId": "Rove_Commands",
+        "operationId": "Rove_Command",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/roveCommandsResponse"
+              "$ref": "#/definitions/roveCommandResponse"
             }
           },
           "default": {
@@ -37,7 +37,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/roveCommandsRequest"
+              "$ref": "#/definitions/roveCommandRequest"
             }
           }
         ],
@@ -220,7 +220,7 @@
         }
       }
     },
-    "roveCommandsRequest": {
+    "roveCommandRequest": {
       "type": "object",
       "properties": {
         "account": {
@@ -236,7 +236,7 @@
         }
       }
     },
-    "roveCommandsResponse": {
+    "roveCommandResponse": {
       "type": "object",
       "title": "Empty placeholder"
     },

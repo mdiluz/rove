@@ -109,8 +109,8 @@ func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.Radar
 	return response, nil
 }
 
-// Commands issues commands to the world based on a gRPC request
-func (s *Server) Commands(ctx context.Context, req *rove.CommandsRequest) (*rove.CommandsResponse, error) {
+// Command issues commands to the world based on a gRPC request
+func (s *Server) Command(ctx context.Context, req *rove.CommandRequest) (*rove.CommandResponse, error) {
 	if len(req.Account) == 0 {
 		return nil, fmt.Errorf("empty account")
 	}
@@ -130,5 +130,5 @@ func (s *Server) Commands(ctx context.Context, req *rove.CommandsRequest) (*rove
 		return nil, err
 	}
 
-	return &rove.CommandsResponse{}, nil
+	return &rove.CommandResponse{}, nil
 }

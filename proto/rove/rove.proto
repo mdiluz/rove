@@ -32,9 +32,9 @@ service Rove {
     // Send commands to rover
     // 
     // Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent
-    rpc Commands(CommandsRequest) returns (CommandsResponse) {
+    rpc Command(CommandRequest) returns (CommandResponse) {
         option (google.api.http) = {
-            post: "/commands"
+            post: "/command"
             body: "*"
           };
     }
@@ -72,7 +72,7 @@ message Command {
     string bearing = 2;
 }
 
-message CommandsRequest {
+message CommandRequest {
     // The account to execute these commands
     string account = 1;
 
@@ -81,7 +81,7 @@ message CommandsRequest {
 }
 
 // Empty placeholder
-message CommandsResponse {}
+message CommandResponse {}
 
 message Error {
     // An explanation for the HTTP error returned

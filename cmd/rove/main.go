@@ -29,7 +29,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\nCommands")
 	fmt.Fprintln(os.Stderr, "\tserver-status              prints the server status")
 	fmt.Fprintln(os.Stderr, "\tregister NAME              registers an account and stores it (use with -name)")
-	fmt.Fprintln(os.Stderr, "\tcommands COMMAND [VAL...]  issue commands to rover, accepts multiple, see below")
+	fmt.Fprintln(os.Stderr, "\tcommand COMMAND [VAL...]   issue commands to rover, accepts multiple, see below")
 	fmt.Fprintln(os.Stderr, "\tradar                      gathers radar data for the current rover")
 	fmt.Fprintln(os.Stderr, "\tstatus                     gets status info for current rover")
 	fmt.Fprintln(os.Stderr, "\tconfig [HOST]              outputs the local config info, optionally sets host")
@@ -196,7 +196,7 @@ func InnerMain(command string, args ...string) error {
 			config.Account.Name = name
 		}
 
-	case "commands":
+	case "command":
 		if len(args) == 0 {
 			return fmt.Errorf("must pass commands to 'commands'")
 		}
@@ -228,7 +228,7 @@ func InnerMain(command string, args ...string) error {
 			}
 		}
 
-		d := rove.CommandsRequest{
+		d := rove.CommandRequest{
 			Account:  config.Account.Name,
 			Commands: commands,
 		}
@@ -237,7 +237,7 @@ func InnerMain(command string, args ...string) error {
 			return err
 		}
 
-		_, err := client.Commands(ctx, &d)
+		_, err := client.Command(ctx, &d)
 		switch {
 		case err != nil:
 			return err

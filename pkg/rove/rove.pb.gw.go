@@ -83,8 +83,8 @@ func local_request_Rove_Register_0(ctx context.Context, marshaler runtime.Marsha
 
 }
 
-func request_Rove_Commands_0(ctx context.Context, marshaler runtime.Marshaler, client RoveClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CommandsRequest
+func request_Rove_Command_0(ctx context.Context, marshaler runtime.Marshaler, client RoveClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq CommandRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -95,13 +95,13 @@ func request_Rove_Commands_0(ctx context.Context, marshaler runtime.Marshaler, c
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.Commands(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.Command(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Rove_Commands_0(ctx context.Context, marshaler runtime.Marshaler, server RoveServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CommandsRequest
+func local_request_Rove_Command_0(ctx context.Context, marshaler runtime.Marshaler, server RoveServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq CommandRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -112,7 +112,7 @@ func local_request_Rove_Commands_0(ctx context.Context, marshaler runtime.Marsha
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.Commands(ctx, &protoReq)
+	msg, err := server.Command(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -230,7 +230,7 @@ func RegisterRoveHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 
 	})
 
-	mux.Handle("POST", pattern_Rove_Commands_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Rove_Command_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -239,14 +239,14 @@ func RegisterRoveHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Rove_Commands_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Rove_Command_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Rove_Commands_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Rove_Command_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -371,7 +371,7 @@ func RegisterRoveHandlerClient(ctx context.Context, mux *runtime.ServeMux, clien
 
 	})
 
-	mux.Handle("POST", pattern_Rove_Commands_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Rove_Command_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -380,14 +380,14 @@ func RegisterRoveHandlerClient(ctx context.Context, mux *runtime.ServeMux, clien
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Rove_Commands_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Rove_Command_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Rove_Commands_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Rove_Command_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -439,7 +439,7 @@ var (
 
 	pattern_Rove_Register_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"register"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Rove_Commands_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"commands"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Rove_Command_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"command"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_Rove_Radar_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"radar"}, "", runtime.AssumeColonVerbOpt(true)))
 
@@ -451,7 +451,7 @@ var (
 
 	forward_Rove_Register_0 = runtime.ForwardResponseMessage
 
-	forward_Rove_Commands_0 = runtime.ForwardResponseMessage
+	forward_Rove_Command_0 = runtime.ForwardResponseMessage
 
 	forward_Rove_Radar_0 = runtime.ForwardResponseMessage
 
