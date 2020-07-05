@@ -393,12 +393,8 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 	w.cmdMutex.Lock()
 	defer w.cmdMutex.Unlock()
 
-	// Append the commands to the incoming set
-	if cmds, ok := w.Incoming[rover]; ok {
-		w.Incoming[rover] = append(cmds, commands...)
-	} else {
-		w.Incoming[rover] = commands
-	}
+	// Override the incoming command set
+	w.CommandIncoming[rover] = commands
 
 	return nil
 }
