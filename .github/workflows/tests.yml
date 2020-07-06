@@ -23,6 +23,13 @@ jobs:
       run: |
         sudo curl -o /usr/local/bin/swagger -L'#' https://github.com/go-swagger/go-swagger/releases/download/v0.23.0/swagger_linux_amd64
         sudo chmod +x /usr/local/bin/swagger
+
+    - name: Install protoc and check no difference
+      run: |
+        sudo apt install protobuf-compiler
+        make gen
+        git update-index --refresh
+        git diff-index --quiet HEAD --
       
     - name: Check out repo
       uses: actions/checkout@v2
