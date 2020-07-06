@@ -34,6 +34,9 @@ jobs:
     - name: Check out repo
       uses: actions/checkout@v2
 
+    - name: Check golangci-lint
+      uses: matoous/golangci-lint-action@v1.1.0
+
     - name: Get go dependencies
       run: |
         go get -v -t -d ./...
