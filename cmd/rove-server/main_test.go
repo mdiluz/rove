@@ -3,10 +3,12 @@ package main
 import (
 	"flag"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_InnerMain_Version(t *testing.T) {
-	flag.Set("version", "1")
+	assert.NoError(t, flag.Set("version", "1"))
 	InnerMain()
-	flag.Set("version", "0")
+	assert.NoError(t, flag.Set("version", "0"))
 }

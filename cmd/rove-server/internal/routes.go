@@ -47,8 +47,7 @@ func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove
 }
 
 // Status returns rover information for a gRPC request
-func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (*rove.StatusResponse, error) {
-	response := &rove.StatusResponse{}
+func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response *rove.StatusResponse, err error) {
 	if len(req.Account) == 0 {
 		return nil, fmt.Errorf("empty account name")
 

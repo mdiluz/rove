@@ -52,7 +52,9 @@ func InnerMain() {
 	log.Printf("Initialising version %s...\n", version.Version)
 
 	// Set the persistence path
-	persistence.SetPath(data)
+	if err := persistence.SetPath(data); err != nil {
+		log.Fatal(err)
+	}
 
 	// Convert the tick rate
 	tickRate := 1

@@ -78,7 +78,9 @@ func LoadConfig() (config Config, err error) {
 	// Create the path if needed
 	path := filepath.Dir(datapath)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		os.MkdirAll(path, os.ModePerm)
+		if err := os.MkdirAll(path, os.ModePerm); err != nil {
+			return Config{}, fmt.Errorf("Failed to create data path %s: %s", path, err)
+		}
 	} else {
 		// Read the file
 		_, err = os.Stat(datapath)

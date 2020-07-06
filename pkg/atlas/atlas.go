@@ -144,19 +144,6 @@ func (a *Atlas) setObject(chunk int, local vector.Vector, object objects.Object)
 	a.Chunks[chunk] = c
 }
 
-// setTileAndObject sets both tile and object information for location in chunk
-func (a *Atlas) setTileAndObject(chunk int, local vector.Vector, tile byte, object objects.Object) {
-	c := a.Chunks[chunk]
-	if c.Tiles == nil {
-		c.populate(a.ChunkSize)
-	}
-
-	i := a.chunkTileIndex(local)
-	c.Tiles[i] = tile
-	c.Objects[i] = object
-	a.Chunks[chunk] = c
-}
-
 // worldSpaceToChunkLocal gets a chunk local coordinate for a tile
 func (a *Atlas) worldSpaceToChunkLocal(v vector.Vector) vector.Vector {
 	return vector.Vector{X: maths.Pmod(v.X, a.ChunkSize), Y: maths.Pmod(v.Y, a.ChunkSize)}

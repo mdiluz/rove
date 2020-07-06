@@ -136,7 +136,9 @@ func (s *Server) Run() {
 			s.world.ExecuteCommandQueues()
 
 			// Save out the new world state
-			s.SaveWorld()
+			if err := s.SaveWorld(); err != nil {
+				log.Fatalf("Failed to save the world: %s", err)
+			}
 		}); err != nil {
 			log.Fatal(err)
 		}

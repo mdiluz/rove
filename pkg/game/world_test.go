@@ -91,6 +91,7 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	// Place a tile in front of the rover
 	world.Atlas.SetObject(vector.Vector{X: 0, Y: 2}, objects.Object{Type: objects.LargeRock})
 	newPos, err = world.MoveRover(a, b)
+	assert.NoError(t, err, "Failed to move rover")
 	assert.Equal(t, pos, newPos, "Failed to correctly not move position for rover into wall")
 
 	rover, err = world.GetRover(a)
@@ -168,7 +169,9 @@ func TestWorld_RoverStash(t *testing.T) {
 
 	// Recharge the rover
 	for i := 0; i < rover.MaximumCharge; i++ {
-		world.RoverRecharge(a)
+		_, err = world.RoverRecharge(a)
+		assert.NoError(t, err)
+
 	}
 
 	// Place an object

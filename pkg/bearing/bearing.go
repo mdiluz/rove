@@ -60,7 +60,7 @@ func (d Bearing) ShortString() string {
 // FromString gets the Direction from a string
 func FromString(s string) (Bearing, error) {
 	for i, d := range bearingStrings {
-		if strings.ToLower(d.Long) == strings.ToLower(s) || strings.ToLower(d.Short) == strings.ToLower(s) {
+		if strings.EqualFold(d.Long, s) || strings.EqualFold(d.Short, s) {
 			return Bearing(i), nil
 		}
 	}
