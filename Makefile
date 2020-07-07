@@ -11,8 +11,14 @@ install:
 	go install -ldflags="-X 'github.com/mdiluz/rove/pkg/version.Version=${VERSION}'" ./...
 
 gen:
+	@echo Installing go dependencies
+	go install \
+		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
+		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
+		github.com/golang/protobuf/protoc-gen-go
+	go mod download
 	@echo Generating rove server gRPC and gateway
-	protoc --proto_path proto --go_out=plugins=grpc:pkg/ --go_opt=paths=source_relative  proto/rove/rove.proto
+	protoc --proto_path proto --go_out=plugins=grpc,paths=source_relative:pkg/ proto/rove/rove.proto
 	protoc --proto_path proto --grpc-gateway_out=paths=source_relative:pkg/ proto/rove/rove.proto
 	@echo Generating rove server swagger
 	protoc --proto_path proto --swagger_out=logtostderr=true:pkg/ proto/rove/rove.proto
