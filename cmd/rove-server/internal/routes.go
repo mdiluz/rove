@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
@@ -18,8 +19,6 @@ func (s *Server) ServerStatus(context.Context, *rove.ServerStatusRequest) (*rove
 		CurrentTick: int32(s.world.CurrentTicks),
 	}
 
-	// TODO: Verify the accountant is up and ready too
-
 	// If there's a schedule, respond with it
 	if len(s.schedule.Entries()) > 0 {
 		response.NextTick = s.schedule.Entries()[0].Next.Format("15:04:05")
@@ -30,6 +29,8 @@ func (s *Server) ServerStatus(context.Context, *rove.ServerStatusRequest) (*rove
 
 // Register registers a new account for a gRPC request
 func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove.RegisterResponse, error) {
+	log.Printf("Handling register request: %s\n", req.Name)
+
 	if len(req.Name) == 0 {
 		return nil, fmt.Errorf("empty account name")
 	}
@@ -55,6 +56,8 @@ func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove
 
 // Status returns rover information for a gRPC request
 func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response *rove.StatusResponse, err error) {
+	log.Printf("Handling status request: %s\n", req.Account.Name)
+
 	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
 		return nil, err
 
@@ -110,6 +113,8 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response 
 
 // Radar returns the radar information for a rover
 func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.RadarResponse, error) {
+	log.Printf("Handling radar request: %s\n", req.Account.Name)
+
 	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
 		return nil, err
 
@@ -140,6 +145,8 @@ func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.Radar
 
 // Command issues commands to the world based on a gRPC request
 func (s *Server) Command(ctx context.Context, req *rove.CommandRequest) (*rove.CommandResponse, error) {
+	log.Printf("Handling command request: %s and %+v\n", req.Account.Name, req.Commands)
+
 	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
 		return nil, err
 

@@ -1,6 +1,7 @@
 package atlas
 
 import (
+	"log"
 	"math/rand"
 
 	"github.com/mdiluz/rove/pkg/maths"
@@ -217,6 +218,9 @@ func (a *Atlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
 		UpperBound: upper,
 		Chunks:     make([]Chunk, size.X*size.Y),
 	}
+
+	// Log that we're resizing
+	log.Printf("Re-allocating world, old: %+v,%+v new: %+v,%+v\n", a.LowerBound, a.UpperBound, newAtlas.LowerBound, newAtlas.UpperBound)
 
 	// Copy all old chunks into the new atlas
 	for chunk, chunkData := range a.Chunks {
