@@ -37,6 +37,12 @@ type World struct {
 
 	// Set of possible words to use for names
 	words []string
+
+	// TicksPerDay is the amount of ticks in a single day
+	TicksPerDay int
+
+	// Current number of ticks from the start
+	CurrentTicks int
 }
 
 var wordsFile = os.Getenv("WORDS_FILE")
@@ -65,6 +71,8 @@ func NewWorld(chunkSize int) *World {
 		CommandIncoming: make(map[string]CommandStream),
 		Atlas:           atlas.NewAtlas(chunkSize),
 		words:           lines,
+		TicksPerDay:     24,
+		CurrentTicks:    0,
 	}
 }
 
@@ -436,6 +444,9 @@ func (w *World) ExecuteCommandQueues() {
 
 	// Add any incoming commands from this tick and clear that queue
 	w.EnqueueAllIncoming()
+
+	// Increment the current tick count
+	w.CurrentTicks++
 }
 
 // ExecuteCommand will execute a single command
