@@ -3,6 +3,8 @@ package accounts
 import (
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Account represents a registered user
@@ -29,7 +31,7 @@ func NewAccountant() *Accountant {
 // RegisterAccount adds an account to the set of internal accounts
 func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 
-	// Set the account name
+	// Set up the account info
 	acc.Name = name
 	acc.Data = make(map[string]string)
 
@@ -43,10 +45,23 @@ func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 	// Set the creation time
 	acc.Data["created"] = time.Now().String()
 
+	// Create a secret
+	acc.Data["secret"] = uuid.New().String()
+
 	// Simply add the account to the map
 	a.Accounts[acc.Name] = acc
 
 	return
+}
+
+// VerifySecret verifies if an account secret is correct
+func (a *Accountant) VerifySecret(account string, secret string) (bool, error) {
+	// Find the account matching the ID
+	if this, ok := a.Accounts[account]; ok {
+		return this.Data["secret"] == secret, nil
+	}
+
+	return false, fmt.Errorf("no account found for id: %s", account)
 }
 
 // AssignData assigns data to an account

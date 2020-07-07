@@ -74,7 +74,7 @@ message Command {
 
 message CommandRequest {
     // The account to execute these commands
-    string account = 1;
+    Account account = 1;
 
     // The set of desired commands
     repeated Command commands = 2;
@@ -90,7 +90,7 @@ message Error {
 
 message RadarRequest {
     // The account for this request
-    string account = 1;
+    Account account = 1;
 }
 
 message RadarResponse {
@@ -104,17 +104,20 @@ message RadarResponse {
     bytes objects = 3;
 }
 
-// Empty placeholder
-message RegisterResponse{}
-
 message RegisterRequest {
     // The desired account name
     string name = 1;
 }
 
+// Empty placeholder
+message RegisterResponse{
+    // The registered account information
+    Account account = 1;
+}
+
 message StatusRequest {
     // The account for this request
-    string account = 1;
+    Account account = 1;
 }
 
 message StatusResponse {
@@ -175,4 +178,9 @@ message ServerStatusResponse {
 message Vector {
     int32 x = 1;
     int32 y = 2;
+}
+
+message Account {
+    string name = 1;
+    string secret = 2;
 }

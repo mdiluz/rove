@@ -48,7 +48,8 @@ const gRPCport = 9090
 
 // Account stores data for an account
 type Account struct {
-	Name string `json:"name"`
+	Name   string `json:"name"`
+	Secret string `json:"secret"`
 }
 
 // Config is used to store internal data
@@ -114,10 +115,12 @@ func SaveConfig(config Config) error {
 	return nil
 }
 
-// verifyID will verify an account ID
-func verifyID(id string) error {
-	if len(id) == 0 {
+// checkAccount will verify an account ID
+func checkAccount(a Account) error {
+	if len(a.Name) == 0 {
 		return fmt.Errorf("no account ID set, must register first")
+	} else if len(a.Secret) == 0 {
+		return fmt.Errorf("empty account secret, must register first")
 	}
 	return nil
 }
@@ -181,26 +184,27 @@ func InnerMain(command string, args ...string) error {
 		}
 
 	case "register":
-		if len(args) == 0 {
+		if len(args) == 0 || len(args[0]) == 0 {
 			return fmt.Errorf("must pass name to 'register'")
 		}
 
-		name := args[0]
-		d := rove.RegisterRequest{
-			Name: name,
-		}
-		_, err := client.Register(ctx, &d)
+		resp, err := client.Register(ctx, &rove.RegisterRequest{
+			Name: args[0],
+		})
 		switch {
 		case err != nil:
 			return err
 
 		default:
-			fmt.Printf("Registered account with id: %s\n", name)
-			config.Account.Name = name
+			fmt.Printf("Registered account with id: %s\n", resp.Account.Name)
+			config.Account.Name = resp.Account.Name
+			config.Account.Secret = resp.Account.Secret
 		}
 
 	case "command":
-		if len(args) == 0 {
+		if err := checkAccount(config.Account); err != nil {
+			return err
+		} else if len(args) == 0 {
 			return fmt.Errorf("must pass commands to 'commands'")
 		}
 
@@ -231,16 +235,14 @@ func InnerMain(command string, args ...string) error {
 			}
 		}
 
-		d := rove.CommandRequest{
-			Account:  config.Account.Name,
+		_, err := client.Command(ctx, &rove.CommandRequest{
+			Account: &rove.Account{
+				Name:   config.Account.Name,
+				Secret: config.Account.Secret,
+			},
 			Commands: commands,
-		}
+		})
 
-		if err := verifyID(d.Account); err != nil {
-			return err
-		}
-
-		_, err := client.Command(ctx, &d)
 		switch {
 		case err != nil:
 			return err
@@ -250,12 +252,17 @@ func InnerMain(command string, args ...string) error {
 		}
 
 	case "radar":
-		dat := rove.RadarRequest{Account: config.Account.Name}
-		if err := verifyID(dat.Account); err != nil {
+		if err := checkAccount(config.Account); err != nil {
 			return err
 		}
 
-		response, err := client.Radar(ctx, &dat)
+		response, err := client.Radar(ctx, &rove.RadarRequest{
+			Account: &rove.Account{
+				Name:   config.Account.Name,
+				Secret: config.Account.Secret,
+			},
+		})
+
 		switch {
 		case err != nil:
 			return err
@@ -282,11 +289,16 @@ func InnerMain(command string, args ...string) error {
 		}
 
 	case "status":
-		req := rove.StatusRequest{Account: config.Account.Name}
-		if err := verifyID(req.Account); err != nil {
+		if err := checkAccount(config.Account); err != nil {
 			return err
 		}
-		response, err := client.Status(ctx, &req)
+
+		response, err := client.Status(ctx, &rove.StatusRequest{
+			Account: &rove.Account{
+				Name:   config.Account.Name,
+				Secret: config.Account.Secret,
+			},
+		})
 
 		switch {
 		case err != nil:
