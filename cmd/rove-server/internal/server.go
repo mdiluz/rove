@@ -36,9 +36,9 @@ type Server struct {
 	grpcServ    *grpc.Server
 
 	// Config settings
-	address     string
-	persistence int
-	tick        int
+	address        string
+	persistence    int
+	minutesPerTick int
 
 	// sync point for sub-threads
 	sync sync.WaitGroup
@@ -68,7 +68,7 @@ func OptionPersistentData() ServerOption {
 // 0 means no automatic server tick
 func OptionTick(minutes int) ServerOption {
 	return func(s *Server) {
-		s.tick = minutes
+		s.minutesPerTick = minutes
 	}
 }
 
@@ -124,8 +124,8 @@ func (s *Server) Run() {
 	defer s.sync.Done()
 
 	// Set up the schedule if requested
-	if s.tick != 0 {
-		if err := s.schedule.AddFunc(fmt.Sprintf("0 */%d * * *", s.tick), func() {
+	if s.minutesPerTick != 0 {
+		if err := s.schedule.AddFunc(fmt.Sprintf("0 */%d * * *", s.minutesPerTick), func() {
 			// Ensure we don't quit during this function
 			s.sync.Add(1)
 			defer s.sync.Done()
