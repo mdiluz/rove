@@ -175,7 +175,8 @@ func InnerMain(command string, args ...string) error {
 		default:
 			fmt.Printf("Ready: %t\n", response.Ready)
 			fmt.Printf("Version: %s\n", response.Version)
-			fmt.Printf("Tick: %d\n", response.Tick)
+			fmt.Printf("Tick Rate: %d\n", response.TickRate)
+			fmt.Printf("Current Tick: %d\n", response.CurrentTick)
 			fmt.Printf("Next Tick: %s\n", response.NextTick)
 		}
 

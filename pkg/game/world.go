@@ -37,6 +37,12 @@ type World struct {
 
 	// Set of possible words to use for names
 	words []string
+
+	// TicksPerDay is the amount of ticks in a single day
+	TicksPerDay int `json:"ticks-per-day"`
+
+	// Current number of ticks from the start
+	CurrentTicks int `json:"current-ticks"`
 }
 
 var wordsFile = os.Getenv("WORDS_FILE")
@@ -65,6 +71,8 @@ func NewWorld(chunkSize int) *World {
 		CommandIncoming: make(map[string]CommandStream),
 		Atlas:           atlas.NewAtlas(chunkSize),
 		words:           lines,
+		TicksPerDay:     24,
+		CurrentTicks:    0,
 	}
 }
 
@@ -142,6 +150,11 @@ func (w *World) RoverRecharge(rover string) (int, error) {
 	i, ok := w.Rovers[rover]
 	if !ok {
 		return 0, fmt.Errorf("Failed to find rover with name: %s", rover)
+	}
+
+	// We can only recharge during the day
+	if !w.Daytime() {
+		return i.Charge, nil
 	}
 
 	// Add one charge
@@ -436,6 +449,9 @@ func (w *World) ExecuteCommandQueues() {
 
 	// Add any incoming commands from this tick and clear that queue
 	w.EnqueueAllIncoming()
+
+	// Increment the current tick count
+	w.CurrentTicks++
 }
 
 // ExecuteCommand will execute a single command
@@ -476,6 +492,13 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 	}
 
 	return
+}
+
+// Daytime returns if it's currently daytime
+// for simplicity this uses the 1st half of the day as daytime, the 2nd half as nighttime
+func (w *World) Daytime() bool {
+	tickInDay := w.CurrentTicks % w.TicksPerDay
+	return tickInDay < w.TicksPerDay/2
 }
 
 // RLock read locks the world

@@ -313,3 +313,42 @@ func TestWorld_Charge(t *testing.T) {
 	}
 
 }
+
+func TestWorld_Daytime(t *testing.T) {
+	world := NewWorld(1)
+
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
+
+	// Remove rover charge
+	rover := world.Rovers[a]
+	rover.Charge = 0
+	world.Rovers[a] = rover
+
+	// Try and recharge, should work
+	_, err = world.RoverRecharge(a)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, world.Rovers[a].Charge)
+
+	// Loop for half the day
+	for i := 0; i < world.TicksPerDay/2; i++ {
+		assert.True(t, world.Daytime())
+		world.ExecuteCommandQueues()
+	}
+
+	// Remove rover charge again
+	rover = world.Rovers[a]
+	rover.Charge = 0
+	world.Rovers[a] = rover
+
+	// Try and recharge, should fail
+	_, err = world.RoverRecharge(a)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, world.Rovers[a].Charge)
+
+	// Loop for half the day
+	for i := 0; i < world.TicksPerDay/2; i++ {
+		assert.False(t, world.Daytime())
+		world.ExecuteCommandQueues()
+	}
+}
