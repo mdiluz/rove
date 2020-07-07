@@ -326,7 +326,8 @@ func TestWorld_Daytime(t *testing.T) {
 	world.Rovers[a] = rover
 
 	// Try and recharge, should work
-	world.RoverRecharge(a)
+	_, err = world.RoverRecharge(a)
+	assert.NoError(t, err)
 	assert.Equal(t, 1, world.Rovers[a].Charge)
 
 	// Loop for half the day
@@ -341,7 +342,8 @@ func TestWorld_Daytime(t *testing.T) {
 	world.Rovers[a] = rover
 
 	// Try and recharge, should fail
-	world.RoverRecharge(a)
+	_, err = world.RoverRecharge(a)
+	assert.NoError(t, err)
 	assert.Equal(t, 0, world.Rovers[a].Charge)
 
 	// Loop for half the day
