@@ -80,47 +80,69 @@ func TestServer_Register(t *testing.T) {
 
 func TestServer_Command(t *testing.T) {
 	acc := uuid.New().String()
-	err := serv.Request("POST", "register", &rove.RegisterRequest{Name: acc}, &rove.RegisterResponse{})
+	var resp rove.RegisterResponse
+	err := serv.Request("POST", "register", &rove.RegisterRequest{Name: acc}, &resp)
 	assert.NoError(t, err, "First register attempt should pass")
 
-	err = serv.Request("POST", "command", &rove.CommandRequest{
-		Account: acc,
+	req := &rove.CommandRequest{
+		Account: &rove.Account{
+			Name: resp.Account.Name,
+		},
 		Commands: []*rove.Command{
 			{
 				Command: "move",
 				Bearing: "NE",
 			},
 		},
-	}, &rove.CommandResponse{})
-	assert.NoError(t, err, "Commands should should pass")
+	}
+
+	assert.Error(t, serv.Request("POST", "command", req, &rove.CommandResponse{}), "Commands should fail with no secret")
+
+	req.Account.Secret = resp.Account.Secret
+	assert.NoError(t, serv.Request("POST", "command", req, &rove.CommandResponse{}), "Commands should pass")
 }
 
 func TestServer_Radar(t *testing.T) {
 	acc := uuid.New().String()
-	err := serv.Request("POST", "register", &rove.RegisterRequest{Name: acc}, &rove.RegisterResponse{})
+	var reg rove.RegisterResponse
+	err := serv.Request("POST", "register", &rove.RegisterRequest{Name: acc}, &reg)
 	assert.NoError(t, err, "First register attempt should pass")
 
 	resp := &rove.RadarResponse{}
-	err = serv.Request("POST", "radar", &rove.RadarRequest{
-		Account: acc,
-	}, resp)
-	assert.NoError(t, err, "Radar sould pass should pass")
+	req := &rove.RadarRequest{
+		Account: &rove.Account{
+			Name: reg.Account.Name,
+		},
+	}
+
+	assert.Error(t, serv.Request("POST", "radar", req, resp), "Radar should fail without secret")
+	req.Account.Secret = reg.Account.Secret
+
+	assert.NoError(t, serv.Request("POST", "radar", req, resp), "Radar should pass")
 	assert.NotZero(t, resp.Range, "Radar should return valid range")
+
 	w := int(resp.Range*2 + 1)
 	assert.Equal(t, w*w, len(resp.Tiles), "radar should return correct number of tiles")
 	assert.Equal(t, w*w, len(resp.Objects), "radar should return correct number of objects")
 }
 
-func TestServer_Rover(t *testing.T) {
+func TestServer_Status(t *testing.T) {
 	acc := uuid.New().String()
-	err := serv.Request("POST", "register", &rove.RegisterRequest{Name: acc}, &rove.RegisterResponse{})
+	var reg rove.RegisterResponse
+	err := serv.Request("POST", "register", &rove.RegisterRequest{Name: acc}, &reg)
 	assert.NoError(t, err, "First register attempt should pass")
 
 	resp := &rove.StatusResponse{}
-	err = serv.Request("POST", "status", &rove.StatusRequest{
-		Account: acc,
-	}, resp)
-	assert.NoError(t, err, "Rover sould pass should pass")
+	req := &rove.StatusRequest{
+		Account: &rove.Account{
+			Name: reg.Account.Name,
+		},
+	}
+
+	assert.Error(t, serv.Request("POST", "status", req, resp), "Status should fail without secret")
+	req.Account.Secret = reg.Account.Secret
+
+	assert.NoError(t, serv.Request("POST", "status", req, resp), "Status should pass")
 	assert.NotZero(t, resp.Range, "Rover should return valid range")
 	assert.NotZero(t, len(resp.Name), "Rover should return valid name")
 	assert.NotZero(t, resp.Position, "Rover should return valid position")

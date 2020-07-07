@@ -207,6 +207,17 @@
         }
       }
     },
+    "roveAccount": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "secret": {
+          "type": "string"
+        }
+      }
+    },
     "roveCommand": {
       "type": "object",
       "properties": {
@@ -224,7 +235,7 @@
       "type": "object",
       "properties": {
         "account": {
-          "type": "string",
+          "$ref": "#/definitions/roveAccount",
           "title": "The account to execute these commands"
         },
         "commands": {
@@ -244,7 +255,7 @@
       "type": "object",
       "properties": {
         "account": {
-          "type": "string",
+          "$ref": "#/definitions/roveAccount",
           "title": "The account for this request"
         }
       }
@@ -280,6 +291,12 @@
     },
     "roveRegisterResponse": {
       "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "#/definitions/roveAccount",
+          "title": "The registered account information"
+        }
+      },
       "title": "Empty placeholder"
     },
     "roveServerStatusResponse": {
@@ -314,7 +331,7 @@
       "type": "object",
       "properties": {
         "account": {
-          "type": "string",
+          "$ref": "#/definitions/roveAccount",
           "title": "The account for this request"
         }
       }

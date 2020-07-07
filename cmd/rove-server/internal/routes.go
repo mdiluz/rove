@@ -34,7 +34,7 @@ func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove
 		return nil, fmt.Errorf("empty account name")
 	}
 
-	if _, err := s.accountant.RegisterAccount(req.Name); err != nil {
+	if acc, err := s.accountant.RegisterAccount(req.Name); err != nil {
 		return nil, err
 
 	} else if _, err := s.SpawnRoverForAccount(req.Name); err != nil {
@@ -42,17 +42,26 @@ func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove
 
 	} else if err := s.SaveWorld(); err != nil {
 		return nil, fmt.Errorf("internal server error when saving world: %s", err)
-	}
 
-	return &rove.RegisterResponse{}, nil
+	} else {
+		return &rove.RegisterResponse{
+			Account: &rove.Account{
+				Name:   acc.Name,
+				Secret: acc.Data["secret"],
+			},
+		}, nil
+	}
 }
 
 // Status returns rover information for a gRPC request
 func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response *rove.StatusResponse, err error) {
-	if len(req.Account) == 0 {
-		return nil, fmt.Errorf("empty account name")
+	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
+		return nil, err
 
-	} else if resp, err := s.accountant.GetValue(req.Account, "rover"); err != nil {
+	} else if !valid {
+		return nil, fmt.Errorf("Secret incorrect for account %s", req.Account.Name)
+
+	} else if resp, err := s.accountant.GetValue(req.Account.Name, "rover"); err != nil {
 		return nil, err
 
 	} else if rover, err := s.world.GetRover(resp); err != nil {
@@ -101,13 +110,16 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response 
 
 // Radar returns the radar information for a rover
 func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.RadarResponse, error) {
-	if len(req.Account) == 0 {
-		return nil, fmt.Errorf("empty account name")
+	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
+		return nil, err
+
+	} else if !valid {
+		return nil, fmt.Errorf("Secret incorrect for account %s", req.Account.Name)
 	}
 
 	response := &rove.RadarResponse{}
 
-	resp, err := s.accountant.GetValue(req.Account, "rover")
+	resp, err := s.accountant.GetValue(req.Account.Name, "rover")
 	if err != nil {
 		return nil, err
 
@@ -128,10 +140,14 @@ func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.Radar
 
 // Command issues commands to the world based on a gRPC request
 func (s *Server) Command(ctx context.Context, req *rove.CommandRequest) (*rove.CommandResponse, error) {
-	if len(req.Account) == 0 {
-		return nil, fmt.Errorf("empty account")
+	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
+		return nil, err
+
+	} else if !valid {
+		return nil, fmt.Errorf("Secret incorrect for account %s", req.Account.Name)
 	}
-	resp, err := s.accountant.GetValue(req.Account, "rover")
+
+	resp, err := s.accountant.GetValue(req.Account.Name, "rover")
 	if err != nil {
 		return nil, err
 	}
