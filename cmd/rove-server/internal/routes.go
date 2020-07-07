@@ -12,9 +12,10 @@ import (
 // ServerStatus returns the status of the current server to a gRPC request
 func (s *Server) ServerStatus(context.Context, *rove.ServerStatusRequest) (*rove.ServerStatusResponse, error) {
 	response := &rove.ServerStatusResponse{
-		Ready:   true,
-		Version: version.Version,
-		Tick:    int32(s.tick),
+		Ready:       true,
+		Version:     version.Version,
+		TickRate:    int32(s.minutesPerTick),
+		CurrentTick: int32(s.world.CurrentTicks),
 	}
 
 	// TODO: Verify the accountant is up and ready too

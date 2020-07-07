@@ -156,17 +156,20 @@ message StatusResponse {
 message ServerStatusRequest {}
 
 message ServerStatusResponse {
-    // The time the next tick will occur
-    string next_tick = 1;
+    // The version of the server in v{major}.{minor}-{delta}-{sha} form
+    string version = 1;
 
     // Whether the server is ready to accept requests
     bool ready = 2;
 
     // The tick rate of the server in minutes (how many minutes per tick)
-    int32 tick = 3;
+    int32 tickRate = 3;
 
-    // The version of the server in v{major}.{minor}-{delta}-{sha} form
-    string version = 4;
+    // The current tick of the server
+    int32 currentTick = 4;
+
+    // The time the next tick will occur
+    string next_tick = 5;
 }
 
 message Vector {

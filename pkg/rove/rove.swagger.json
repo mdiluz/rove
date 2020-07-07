@@ -285,23 +285,28 @@
     "roveServerStatusResponse": {
       "type": "object",
       "properties": {
-        "next_tick": {
+        "version": {
           "type": "string",
-          "title": "The time the next tick will occur"
+          "title": "The version of the server in v{major}.{minor}-{delta}-{sha} form"
         },
         "ready": {
           "type": "boolean",
           "format": "boolean",
           "title": "Whether the server is ready to accept requests"
         },
-        "tick": {
+        "tickRate": {
           "type": "integer",
           "format": "int32",
           "title": "The tick rate of the server in minutes (how many minutes per tick)"
         },
-        "version": {
+        "currentTick": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The current tick of the server"
+        },
+        "next_tick": {
           "type": "string",
-          "title": "The version of the server in v{major}.{minor}-{delta}-{sha} form"
+          "title": "The time the next tick will occur"
         }
       }
     },
