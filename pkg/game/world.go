@@ -152,6 +152,11 @@ func (w *World) RoverRecharge(rover string) (int, error) {
 		return 0, fmt.Errorf("Failed to find rover with name: %s", rover)
 	}
 
+	// We can only recharge during the day
+	if !w.Daytime() {
+		return i.Charge, nil
+	}
+
 	// Add one charge
 	if i.Charge < i.MaximumCharge {
 		i.Charge++
@@ -487,6 +492,13 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 	}
 
 	return
+}
+
+// Daytime returns if it's currently daytime
+// for simplicity this uses the 1st half of the day as daytime, the 2nd half as nighttime
+func (w *World) Daytime() bool {
+	tickInDay := w.CurrentTicks % w.TicksPerDay
+	return tickInDay < w.TicksPerDay/2
 }
 
 // RLock read locks the world
