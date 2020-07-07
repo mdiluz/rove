@@ -1,6 +1,7 @@
 package atlas
 
 import (
+	"log"
 	"math/rand"
 
 	"github.com/mdiluz/rove/pkg/maths"
@@ -83,6 +84,7 @@ func (a *Atlas) QueryPosition(v vector.Vector) (byte, objects.Object) {
 	chunk := a.Chunks[c]
 	if chunk.Tiles == nil {
 		chunk.populate(a.ChunkSize)
+		a.Chunks[c] = chunk
 	}
 	i := a.chunkTileIndex(local)
 	return chunk.Tiles[i], chunk.Objects[i]
@@ -217,6 +219,9 @@ func (a *Atlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
 		UpperBound: upper,
 		Chunks:     make([]Chunk, size.X*size.Y),
 	}
+
+	// Log that we're resizing
+	log.Printf("Re-allocating world, old: %+v,%+v new: %+v,%+v\n", a.LowerBound, a.UpperBound, newAtlas.LowerBound, newAtlas.UpperBound)
 
 	// Copy all old chunks into the new atlas
 	for chunk, chunkData := range a.Chunks {
