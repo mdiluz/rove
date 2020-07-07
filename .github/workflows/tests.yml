@@ -33,7 +33,7 @@ jobs:
         rm -f $PROTOC_ZIP
         make gen
         git update-index --refresh
-        git diff-index --quiet HEAD
+        git diff-index --quiet HEAD || (git diff; exit 1)
 
     - name: Build and Test
       run: make test
