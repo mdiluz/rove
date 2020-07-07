@@ -124,7 +124,9 @@ func TestWorld_RadarFromRover(t *testing.T) {
 
 	// Check the radar results are stable
 	radar1, objs1, err := world.RadarFromRover(a)
+	assert.NoError(t, err)
 	radar2, objs2, err := world.RadarFromRover(a)
+	assert.NoError(t, err)
 	assert.Equal(t, radar1, radar2)
 	assert.Equal(t, objs1, objs2)
 }
