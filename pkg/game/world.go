@@ -39,10 +39,10 @@ type World struct {
 	words []string
 
 	// TicksPerDay is the amount of ticks in a single day
-	TicksPerDay int
+	TicksPerDay int `json:"ticks-per-day"`
 
 	// Current number of ticks from the start
-	CurrentTicks int
+	CurrentTicks int `json:"current-ticks"`
 }
 
 var wordsFile = os.Getenv("WORDS_FILE")
