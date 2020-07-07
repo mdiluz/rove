@@ -84,6 +84,7 @@ func (a *Atlas) QueryPosition(v vector.Vector) (byte, objects.Object) {
 	chunk := a.Chunks[c]
 	if chunk.Tiles == nil {
 		chunk.populate(a.ChunkSize)
+		a.Chunks[c] = chunk
 	}
 	i := a.chunkTileIndex(local)
 	return chunk.Tiles[i], chunk.Objects[i]
