@@ -121,6 +121,12 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	// Test the expected values
 	assert.Equal(t, byte(objects.Rover), objs[1+fullRange])
 	assert.Equal(t, byte(objects.Rover), objs[4+4*fullRange])
+
+	// Check the radar results are stable
+	radar1, objs1, err := world.RadarFromRover(a)
+	radar2, objs2, err := world.RadarFromRover(a)
+	assert.Equal(t, radar1, radar2)
+	assert.Equal(t, objs1, objs2)
 }
 
 func TestWorld_RoverStash(t *testing.T) {
