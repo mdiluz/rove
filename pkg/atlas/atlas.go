@@ -4,6 +4,7 @@ import (
 	"log"
 	"math/rand"
 
+	"github.com/aquilax/go-perlin"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/vector"
@@ -47,6 +48,9 @@ type Atlas struct {
 
 	// ChunkSize is the x/y dimensions of each square chunk
 	ChunkSize int `json:"chunksize"`
+
+	// perlin is the current perlin noise generator
+	perlin *perlin.Perlin
 }
 
 // NewAtlas creates a new empty atlas
@@ -57,6 +61,7 @@ func NewAtlas(chunkSize int) Atlas {
 		Chunks:     make([]Chunk, 1),
 		LowerBound: vector.Vector{X: 0, Y: 0},
 		UpperBound: vector.Vector{X: chunkSize, Y: chunkSize},
+		perlin:     perlin.NewPerlin(2, 2, 3, 100),
 	}
 	// Initialise the first chunk
 	a.populate(0)
@@ -102,12 +107,23 @@ func (a *Atlas) populate(chunk int) {
 	c.Tiles = make([]byte, a.ChunkSize*a.ChunkSize)
 	c.Objects = make(map[int]objects.Object)
 
-	// Set up the tiles
-	for i := 0; i < len(c.Tiles); i++ {
-		if rand.Intn(3) == 0 {
-			c.Tiles[i] = byte(TileRock)
-		} else {
-			c.Tiles[i] = byte(TileSand)
+	origin := a.chunkOriginInWorldSpace(chunk)
+	for i := 0; i < a.ChunkSize; i++ {
+		for j := 0; j < a.ChunkSize; j++ {
+
+			// Get the perlin noise value for this location
+			pl := a.perlin.Noise2D(float64(origin.X+i)/10, float64(origin.Y+j)/10)
+
+			// Choose a tile based on the perlin noise value
+			var tile Tile
+			switch {
+			case pl > 0.1:
+				tile = TileSand
+			default:
+				tile = TileRock
+			}
+
+			c.Tiles[j*a.ChunkSize+i] = byte(tile)
 		}
 	}
 
@@ -217,6 +233,7 @@ func (a *Atlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
 		LowerBound: lower,
 		UpperBound: upper,
 		Chunks:     make([]Chunk, size.X*size.Y),
+		perlin:     a.perlin,
 	}
 
 	// Log that we're resizing

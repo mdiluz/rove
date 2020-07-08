@@ -3,6 +3,7 @@ module github.com/mdiluz/rove
 go 1.14
 
 require (
+	github.com/aquilax/go-perlin v0.0.0-20191229124216-0af9ce917c28
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.1
