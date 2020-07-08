@@ -59,7 +59,7 @@ func NewAtlas(chunkSize int) Atlas {
 		UpperBound: vector.Vector{X: chunkSize, Y: chunkSize},
 	}
 	// Initialise the first chunk
-	a.Chunks[0].populate(chunkSize)
+	a.populate(0)
 	return a
 }
 
@@ -81,11 +81,8 @@ func (a *Atlas) SetObject(v vector.Vector, obj objects.Object) {
 func (a *Atlas) QueryPosition(v vector.Vector) (byte, objects.Object) {
 	c := a.worldSpaceToChunkWithGrow(v)
 	local := a.worldSpaceToChunkLocal(v)
+	a.populate(c)
 	chunk := a.Chunks[c]
-	if chunk.Tiles == nil {
-		chunk.populate(a.ChunkSize)
-		a.Chunks[c] = chunk
-	}
 	i := a.chunkTileIndex(local)
 	return chunk.Tiles[i], chunk.Objects[i]
 }
@@ -96,8 +93,13 @@ func (a *Atlas) chunkTileIndex(local vector.Vector) int {
 }
 
 // populate will fill a chunk with data
-func (c *Chunk) populate(size int) {
-	c.Tiles = make([]byte, size*size)
+func (a *Atlas) populate(chunk int) {
+	c := a.Chunks[chunk]
+	if c.Tiles != nil {
+		return
+	}
+
+	c.Tiles = make([]byte, a.ChunkSize*a.ChunkSize)
 	c.Objects = make(map[int]objects.Object)
 
 	// Set up the tiles
@@ -117,26 +119,23 @@ func (c *Chunk) populate(size int) {
 			c.Objects[i] = objects.Object{Type: objects.SmallRock}
 		}
 	}
+
+	a.Chunks[chunk] = c
 }
 
 // setTile sets a tile in a specific chunk
 func (a *Atlas) setTile(chunk int, local vector.Vector, tile byte) {
+	a.populate(chunk)
 	c := a.Chunks[chunk]
-	if c.Tiles == nil {
-		c.populate(a.ChunkSize)
-	}
-
 	c.Tiles[a.chunkTileIndex(local)] = tile
 	a.Chunks[chunk] = c
 }
 
 // setObject sets an object in a specific chunk
 func (a *Atlas) setObject(chunk int, local vector.Vector, object objects.Object) {
-	c := a.Chunks[chunk]
-	if c.Tiles == nil {
-		c.populate(a.ChunkSize)
-	}
+	a.populate(chunk)
 
+	c := a.Chunks[chunk]
 	i := a.chunkTileIndex(local)
 	if object.Type != objects.None {
 		c.Objects[i] = object
