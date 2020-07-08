@@ -1,6 +1,7 @@
 package atlas
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/mdiluz/rove/pkg/objects"
@@ -246,5 +247,28 @@ func TestAtlas_GetSetCorrect(t *testing.T) {
 
 			}
 		}
+	}
+}
+
+func TestAtlas_WorldGen(t *testing.T) {
+	a := NewAtlas(8)
+	// Spawn a large world
+	_, _ = a.QueryPosition(vector.Vector{X: 20, Y: 20})
+
+	// Print out the world for manual evaluation
+	num := 20
+	for j := num - 1; j >= 0; j-- {
+		for i := 0; i < num; i++ {
+			t, o := a.QueryPosition(vector.Vector{X: i, Y: j})
+			if o.Type != objects.None {
+				fmt.Printf("%c", o.Type)
+			} else if t != byte(TileNone) {
+				fmt.Printf("%c", t)
+			} else {
+				fmt.Printf(" ")
+			}
+
+		}
+		fmt.Print("\n")
 	}
 }
