@@ -18,10 +18,13 @@ const (
 	TileNone = Tile(0)
 
 	// TileRock is solid rock ground
-	TileRock = Tile('.')
+	TileRock = Tile('-')
+
+	// TileGravel is loose rocks
+	TileGravel = Tile(':')
 
 	// TileSand is sand
-	TileSand = Tile(',')
+	TileSand = Tile('~')
 )
 
 // Chunk represents a fixed square grid of tiles
@@ -112,12 +115,14 @@ func (a *Atlas) populate(chunk int) {
 		for j := 0; j < a.ChunkSize; j++ {
 
 			// Get the perlin noise value for this location
-			pl := a.perlin.Noise2D(float64(origin.X+i)/10, float64(origin.Y+j)/10)
+			pl := a.perlin.Noise2D(float64(origin.X+i)/15, float64(origin.Y+j)/15)
 
 			// Choose a tile based on the perlin noise value
 			var tile Tile
 			switch {
-			case pl > 0.1:
+			case pl > 0.2:
+				tile = TileGravel
+			case pl > 0.05:
 				tile = TileSand
 			default:
 				tile = TileRock
