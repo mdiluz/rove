@@ -4,10 +4,10 @@ import (
 	"log"
 	"math/rand"
 
-	"github.com/aquilax/go-perlin"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/vector"
+	"github.com/ojrac/opensimplex-go"
 )
 
 // Tile describes the type of terrain
@@ -52,9 +52,13 @@ type Atlas struct {
 	// ChunkSize is the x/y dimensions of each square chunk
 	ChunkSize int `json:"chunksize"`
 
-	// perlin is the current perlin noise generator
-	perlin *perlin.Perlin
+	// noise is an OpenSimplex noise generator
+	noise opensimplex.Noise
 }
+
+const (
+	noiseSeed = 1024
+)
 
 // NewAtlas creates a new empty atlas
 func NewAtlas(chunkSize int) Atlas {
@@ -64,7 +68,7 @@ func NewAtlas(chunkSize int) Atlas {
 		Chunks:     make([]Chunk, 1),
 		LowerBound: vector.Vector{X: 0, Y: 0},
 		UpperBound: vector.Vector{X: chunkSize, Y: chunkSize},
-		perlin:     perlin.NewPerlin(2, 2, 3, 100),
+		noise:      opensimplex.New(noiseSeed),
 	}
 	// Initialise the first chunk
 	a.populate(0)
@@ -115,12 +119,12 @@ func (a *Atlas) populate(chunk int) {
 		for j := 0; j < a.ChunkSize; j++ {
 
 			// Get the perlin noise value for this location
-			pl := a.perlin.Noise2D(float64(origin.X+i)/15, float64(origin.Y+j)/15)
+			pl := a.noise.Eval2(float64(origin.X+i)/6, float64(origin.Y+j)/6)
 
 			// Choose a tile based on the perlin noise value
 			var tile Tile
 			switch {
-			case pl > 0.2:
+			case pl > 0.5:
 				tile = TileGravel
 			case pl > 0.05:
 				tile = TileSand
@@ -238,7 +242,7 @@ func (a *Atlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
 		LowerBound: lower,
 		UpperBound: upper,
 		Chunks:     make([]Chunk, size.X*size.Y),
-		perlin:     a.perlin,
+		noise:      a.noise,
 	}
 
 	// Log that we're resizing
