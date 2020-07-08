@@ -52,23 +52,29 @@ type Atlas struct {
 	// ChunkSize is the x/y dimensions of each square chunk
 	ChunkSize int `json:"chunksize"`
 
-	// noise is an OpenSimplex noise generator
-	noise opensimplex.Noise
+	// terrainNoise describes the noise function for the terrain
+	terrainNoise opensimplex.Noise
+
+	// terrainNoise describes the noise function for the terrain
+	objectNoise opensimplex.Noise
 }
 
 const (
-	noiseSeed = 1024
+	noiseSeed         = 1024
+	terrainNoiseScale = 6
+	objectNoiseScale  = 3
 )
 
 // NewAtlas creates a new empty atlas
 func NewAtlas(chunkSize int) Atlas {
 	// Start up with one chunk
 	a := Atlas{
-		ChunkSize:  chunkSize,
-		Chunks:     make([]Chunk, 1),
-		LowerBound: vector.Vector{X: 0, Y: 0},
-		UpperBound: vector.Vector{X: chunkSize, Y: chunkSize},
-		noise:      opensimplex.New(noiseSeed),
+		ChunkSize:    chunkSize,
+		Chunks:       make([]Chunk, 1),
+		LowerBound:   vector.Vector{X: 0, Y: 0},
+		UpperBound:   vector.Vector{X: chunkSize, Y: chunkSize},
+		terrainNoise: opensimplex.New(noiseSeed),
+		objectNoise:  opensimplex.New(noiseSeed),
 	}
 	// Initialise the first chunk
 	a.populate(0)
@@ -118,21 +124,31 @@ func (a *Atlas) populate(chunk int) {
 	for i := 0; i < a.ChunkSize; i++ {
 		for j := 0; j < a.ChunkSize; j++ {
 
-			// Get the perlin noise value for this location
-			pl := a.noise.Eval2(float64(origin.X+i)/6, float64(origin.Y+j)/6)
-
-			// Choose a tile based on the perlin noise value
+			// Get the terrain noise value for this location
+			t := a.terrainNoise.Eval2(float64(origin.X+i)/terrainNoiseScale, float64(origin.Y+j)/terrainNoiseScale)
 			var tile Tile
 			switch {
-			case pl > 0.5:
+			case t > 0.5:
 				tile = TileGravel
-			case pl > 0.05:
+			case t > 0.05:
 				tile = TileSand
 			default:
 				tile = TileRock
 			}
-
 			c.Tiles[j*a.ChunkSize+i] = byte(tile)
+
+			// Get the object noise value for this location
+			o := a.objectNoise.Eval2(float64(origin.X+i)/objectNoiseScale, float64(origin.Y+j)/objectNoiseScale)
+			var obj = objects.None
+			switch {
+			case o > 0.6:
+				obj = objects.LargeRock
+			case o > 0.5:
+				obj = objects.SmallRock
+			}
+			if obj != objects.None {
+				c.Objects[j*a.ChunkSize+i] = objects.Object{Type: obj}
+			}
 		}
 	}
 
@@ -238,11 +254,12 @@ func (a *Atlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
 
 	// Create the new empty atlas
 	newAtlas := Atlas{
-		ChunkSize:  a.ChunkSize,
-		LowerBound: lower,
-		UpperBound: upper,
-		Chunks:     make([]Chunk, size.X*size.Y),
-		noise:      a.noise,
+		ChunkSize:    a.ChunkSize,
+		LowerBound:   lower,
+		UpperBound:   upper,
+		Chunks:       make([]Chunk, size.X*size.Y),
+		terrainNoise: a.terrainNoise,
+		objectNoise:  a.objectNoise,
 	}
 
 	// Log that we're resizing
