@@ -251,6 +251,19 @@
       "type": "object",
       "title": "Empty placeholder"
     },
+    "roveLog": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "string",
+          "title": "The unix timestamp of the log"
+        },
+        "text": {
+          "type": "string",
+          "title": "The text of the log"
+        }
+      }
+    },
     "roveRadarRequest": {
       "type": "object",
       "properties": {
@@ -395,6 +408,13 @@
             "$ref": "#/definitions/roveCommand"
           },
           "title": "The set of currently queued commands"
+        },
+        "logs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/roveLog"
+          },
+          "title": "The most recent logs"
         }
       }
     },

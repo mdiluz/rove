@@ -90,6 +90,13 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response 
 				Bearing: q.Bearing,
 			})
 		}
+		var logs []*rove.Log
+		for _, log := range rover.Logs {
+			logs = append(logs, &rove.Log{
+				Text: log.Text,
+				Time: fmt.Sprintf("%d", log.Time.Unix()), // proto uses strings under the hood for 64bit ints anyway
+			})
+		}
 
 		response = &rove.StatusResponse{
 			Name: rover.Name,
@@ -106,6 +113,7 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response 
 			MaximumCharge:    int32(rover.MaximumCharge),
 			IncomingCommands: incoming,
 			QueuedCommands:   queued,
+			Logs:             logs,
 		}
 	}
 	return response, nil

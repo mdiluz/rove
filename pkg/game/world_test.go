@@ -41,6 +41,7 @@ func TestWorld_GetRover(t *testing.T) {
 	rover, err := world.GetRover(a)
 	assert.NoError(t, err, "Failed to get rover attribs")
 	assert.NotZero(t, rover.Range, "Rover should not be spawned blind")
+	assert.Contains(t, rover.Logs[len(rover.Logs)-1].Text, "created", "Rover logs should contain the creation")
 }
 
 func TestWorld_DestroyRover(t *testing.T) {
@@ -87,6 +88,7 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	rover, err := world.GetRover(a)
 	assert.NoError(t, err, "Failed to get rover information")
 	assert.Equal(t, rover.MaximumCharge-1, rover.Charge, "Rover should have lost charge for moving")
+	assert.Contains(t, rover.Logs[len(rover.Logs)-1].Text, "moved", "Rover logs should contain the move")
 
 	// Place a tile in front of the rover
 	world.Atlas.SetObject(vector.Vector{X: 0, Y: 2}, objects.Object{Type: objects.LargeRock})
@@ -169,10 +171,11 @@ func TestWorld_RoverStash(t *testing.T) {
 		assert.Equal(t, i+1, len(inv))
 		assert.Equal(t, objects.Object{Type: objects.SmallRock}, inv[i])
 
-		// Check that this didn't reduce the charge
+		// Check that this did reduce the charge
 		info, err := world.GetRover(a)
 		assert.NoError(t, err, "Failed to get rover")
 		assert.Equal(t, info.MaximumCharge-(i+1), info.Charge, "Rover lost charge for stash")
+		assert.Contains(t, info.Logs[len(info.Logs)-1].Text, "stashed", "Rover logs should contain the move")
 	}
 
 	// Recharge the rover
@@ -230,6 +233,7 @@ func TestWorld_RoverDamage(t *testing.T) {
 	newinfo, err := world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 	assert.Equal(t, info.Integrity-1, newinfo.Integrity, "rover should have lost integrity")
+	assert.Contains(t, newinfo.Logs[len(newinfo.Logs)-1].Text, "collision", "Rover logs should contain the collision")
 }
 
 func TestWorld_RoverRepair(t *testing.T) {
@@ -274,6 +278,7 @@ func TestWorld_RoverRepair(t *testing.T) {
 	newinfo, err = world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 	assert.Equal(t, originalInfo.Integrity, newinfo.Integrity, "rover should have gained integrity")
+	assert.Contains(t, newinfo.Logs[len(newinfo.Logs)-1].Text, "repair", "Rover logs should contain the repair")
 
 	// Check again that it can't repair past the max
 	world.Atlas.SetObject(pos, objects.Object{Type: objects.SmallRock})
