@@ -8,7 +8,6 @@ package rove;
 option go_package = "github.com/mdiluz/rove/pkg/rove";
 
 import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
 
 service Rove {
     // Server status
@@ -122,8 +121,8 @@ message StatusRequest {
 }
 
 message Log {
-    // The timestamp of the log
-    google.protobuf.Timestamp time = 1;
+    // The unix timestamp of the log
+    int64 time = 1;
 
     // The text of the log
     string text = 2;

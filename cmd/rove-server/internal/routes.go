@@ -8,7 +8,6 @@ import (
 	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // ServerStatus returns the status of the current server to a gRPC request
@@ -95,7 +94,7 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response 
 		for _, log := range rover.Logs {
 			logs = append(logs, &rove.Log{
 				Text: log.Text,
-				Time: timestamppb.New(log.Time),
+				Time: log.Time.Unix(),
 			})
 		}
 

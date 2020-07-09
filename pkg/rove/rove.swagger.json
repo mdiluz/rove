@@ -256,8 +256,8 @@
       "properties": {
         "time": {
           "type": "string",
-          "format": "date-time",
-          "title": "The timestamp of the log"
+          "format": "int64",
+          "title": "The unix timestamp of the log"
         },
         "text": {
           "type": "string",
