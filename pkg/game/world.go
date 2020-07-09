@@ -168,6 +168,40 @@ func (w *World) RoverRecharge(rover string) (int, error) {
 	return i.Charge, nil
 }
 
+// RoverBroadcast broadcasts a message to nearby rovers
+func (w *World) RoverBroadcast(rover string, message []byte) (err error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	i, ok := w.Rovers[rover]
+	if !ok {
+		return fmt.Errorf("Failed to find rover with name: %s", rover)
+	}
+
+	// Use up a charge as needed, if available
+	if i.Charge == 0 {
+		return
+	}
+	i.Charge--
+
+	// Check all rovers
+	for r, rover := range w.Rovers {
+		if rover.Name == i.Name {
+			continue
+		}
+
+		// Check if this rover is within range
+		if i.Pos.Distance(rover.Pos) < float64(i.Range) {
+			rover.AddLogEntryf("recieved %s from %s", string(message), i.Name)
+			w.Rovers[r] = rover
+		}
+	}
+
+	i.AddLogEntryf("broadcasted %s", string(message))
+	w.Rovers[rover] = i
+	return
+}
+
 // DestroyRover Removes an rover from the game
 func (w *World) DestroyRover(rover string) error {
 	w.worldMutex.Lock()
@@ -399,6 +433,15 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 			if _, err := bearing.FromString(c.Bearing); err != nil {
 				return fmt.Errorf("unknown bearing: %s", c.Bearing)
 			}
+		case CommandBroadcast:
+			if len(c.Message) > 3 {
+				return fmt.Errorf("too many characters in message (limit 3): %d", len(c.Message))
+			}
+			for _, b := range c.Message {
+				if b < 37 || b > 126 {
+					return fmt.Errorf("invalid message character: %c", b)
+				}
+			}
 		case CommandStash:
 		case CommandRepair:
 		case CommandRecharge:
@@ -492,6 +535,10 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 	case CommandRecharge:
 		_, err := w.RoverRecharge(rover)
 		if err != nil {
+			return err
+		}
+	case CommandBroadcast:
+		if err := w.RoverBroadcast(rover, c.Message); err != nil {
 			return err
 		}
 	default:
