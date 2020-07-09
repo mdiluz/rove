@@ -94,7 +94,7 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response 
 		for _, log := range rover.Logs {
 			logs = append(logs, &rove.Log{
 				Text: log.Text,
-				Time: log.Time.Unix(),
+				Time: fmt.Sprintf("%d", log.Time.Unix()), // proto uses strings under the hood for 64bit ints anyway
 			})
 		}
 
