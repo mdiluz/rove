@@ -4,16 +4,6 @@ volumes:
   persistent-data:
 
 services:
-  rove-docs:
-    build:
-      context: .
-      dockerfile: Dockerfile.docs
-    image: rove-docs:latest
-    ports:
-      - "80:80"
-    environment: 
-      - PORT=80
-
   rove-server:
     build:
       context: .
@@ -30,29 +20,15 @@ services:
       - persistent-data:/mnt/rove-server:rw
     command: [ "./rove-server"]
 
-  rove:
-    depends_on: [ rove-server, rove-docs ]
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: rove:latest
-    ports:
-      - "8080:8080"
-    environment:
-      - PORT=8080
-      - ROVE_GRPC=rove-server:9090
-    command: [ "./script/wait-for-it.sh", "rove-server:9090", "--", "./rove-server-rest-proxy" ]
-
   rove-tests:
-    depends_on: [ rove ]
+    depends_on: [ rove-server ]
     build:
       context: .
       dockerfile: Dockerfile
     image: rove:latest
     environment:
-      - ROVE_HTTP=rove
       - ROVE_GRPC=rove-server
-    command: [ "./script/wait-for-it.sh", "rove:8080", "--", "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/mnt/coverage-data/c.out", "-count", "1" ]
+    command: [ "./script/wait-for-it.sh", "rove-server:9090", "--", "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/mnt/coverage-data/c.out", "-count", "1" ]
     volumes:
       - /tmp/coverage-data:/mnt/coverage-data:rw
 
