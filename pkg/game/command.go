@@ -12,6 +12,9 @@ const (
 
 	// CommandRecharge Will use one tick to charge the rover
 	CommandRecharge = "recharge"
+
+	// CommandBroadcast will broadcast a message to nearby rovers within range
+	CommandBroadcast = "broadcast"
 )
 
 // Command represends a single command to execute
@@ -20,6 +23,9 @@ type Command struct {
 
 	// Used in the move command
 	Bearing string `json:"bearing,omitempty"`
+
+	// Used in the broadcast command
+	Message []byte `json:"message,omitempty"`
 }
 
 // CommandStream is a list of commands to execute in order

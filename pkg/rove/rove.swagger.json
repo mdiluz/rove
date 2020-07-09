@@ -223,11 +223,16 @@
       "properties": {
         "command": {
           "type": "string",
-          "title": "The command to execute\n\"move\" - Move the rover in a direction, requires bearing\n\"stash\" - Stashes item at current location in rover inventory\n\"repair\" - Repairs the rover using an inventory object\n\"recharge\" - Waits a tick to add more charge to the rover"
+          "title": "The command to execute\n\"move\" - Move the rover in a direction, requires bearing\n\"stash\" - Stashes item at current location in rover inventory\n\"repair\" - Repairs the rover using an inventory object\n\"recharge\" - Waits a tick to add more charge to the rover\n\"broadcast\" - Broadcasts a message to nearby rovers"
         },
         "bearing": {
           "type": "string",
-          "title": "The bearing, example: NE"
+          "title": "A bearing, example: NE"
+        },
+        "message": {
+          "type": "string",
+          "format": "byte",
+          "title": "A simple message, must be composed of printable ASCII glyphs (32-126)\nmaximum of three characters"
         }
       }
     },
@@ -363,7 +368,7 @@
         "range": {
           "type": "integer",
           "format": "int32",
-          "title": "The range of this rover's radar"
+          "title": "The range of this rover's radar and broadcasting"
         },
         "inventory": {
           "type": "string",

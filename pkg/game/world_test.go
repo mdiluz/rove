@@ -365,3 +365,63 @@ func TestWorld_Daytime(t *testing.T) {
 		world.ExecuteCommandQueues()
 	}
 }
+
+func TestWorld_Broadcast(t *testing.T) {
+	world := NewWorld(8)
+
+	a, err := world.SpawnRover()
+	assert.NoError(t, err)
+
+	b, err := world.SpawnRover()
+	assert.NoError(t, err)
+
+	// Warp rovers near to eachother
+	assert.NoError(t, world.WarpRover(a, vector.Vector{X: 0, Y: 0}))
+	assert.NoError(t, world.WarpRover(b, vector.Vector{X: 1, Y: 0}))
+
+	// Broadcast from a
+	assert.NoError(t, world.RoverBroadcast(a, []byte{'A', 'B', 'C'}))
+
+	// Check if b heard it
+	ra, err := world.GetRover(a)
+	assert.NoError(t, err)
+	assert.Equal(t, ra.MaximumCharge-1, ra.Charge, "A should have used a charge to broadcast")
+	assert.Contains(t, ra.Logs[len(ra.Logs)-1].Text, "ABC", "Rover B should have heard the broadcast")
+
+	// Check if a logged it
+	rb, err := world.GetRover(b)
+	assert.NoError(t, err)
+	assert.Contains(t, rb.Logs[len(rb.Logs)-1].Text, "ABC", "Rover A should have logged it's broadcast")
+
+	// Warp B outside of the range of A
+	assert.NoError(t, world.WarpRover(b, vector.Vector{X: ra.Range, Y: 0}))
+
+	// Broadcast from a again
+	assert.NoError(t, world.RoverBroadcast(a, []byte{'X', 'Y', 'Z'}))
+
+	// Check if b heard it
+	ra, err = world.GetRover(b)
+	assert.NoError(t, err)
+	assert.NotContains(t, ra.Logs[len(ra.Logs)-1].Text, "XYZ", "Rover B should not have heard the broadcast")
+
+	// Check if a logged it
+	rb, err = world.GetRover(a)
+	assert.NoError(t, err)
+	assert.Contains(t, rb.Logs[len(rb.Logs)-1].Text, "XYZ", "Rover A should have logged it's broadcast")
+
+	// Warp B outside of the range of A
+	assert.NoError(t, world.WarpRover(b, vector.Vector{X: ra.Range + 1, Y: 0}))
+
+	// Broadcast from a again
+	assert.NoError(t, world.RoverBroadcast(a, []byte{'H', 'J', 'K'}))
+
+	// Check if b heard it
+	ra, err = world.GetRover(b)
+	assert.NoError(t, err)
+	assert.NotContains(t, ra.Logs[len(ra.Logs)-1].Text, "HJK", "Rover B should have heard the broadcast")
+
+	// Check if a logged it
+	rb, err = world.GetRover(a)
+	assert.NoError(t, err)
+	assert.Contains(t, rb.Logs[len(rb.Logs)-1].Text, "HJK", "Rover A should have logged it's broadcast")
+}

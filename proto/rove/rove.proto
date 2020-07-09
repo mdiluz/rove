@@ -66,10 +66,15 @@ message Command {
     // "stash" - Stashes item at current location in rover inventory
     // "repair" - Repairs the rover using an inventory object
     // "recharge" - Waits a tick to add more charge to the rover
+    // "broadcast" - Broadcasts a message to nearby rovers
     string command = 1;
 
-    // The bearing, example: NE
+    // A bearing, example: NE
     string bearing = 2;
+
+    // A simple message, must be composed of printable ASCII glyphs (32-126)
+    // maximum of three characters
+    bytes message = 3;
 }
 
 message CommandRequest {
@@ -135,7 +140,7 @@ message StatusResponse {
     // Position of the rover in world coordinates
     Vector position = 2;
 
-    // The range of this rover's radar
+    // The range of this rover's radar and broadcasting
     int32 range = 3;
 
     // The items in the rover inventory
