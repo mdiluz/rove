@@ -79,18 +79,36 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response 
 		i, q := s.world.RoverCommands(resp)
 		var incoming, queued []*rove.Command
 		for _, i := range i {
-			incoming = append(incoming, &rove.Command{
+			c := &rove.Command{
 				Command: i.Command,
-				Bearing: i.Bearing,
-				Message: i.Message,
-			})
+			}
+			switch i.Command {
+			case rove.CommandType_move:
+				c.Data = &rove.Command_Bearing{
+					Bearing: i.Bearing,
+				}
+			case rove.CommandType_broadcast:
+				c.Data = &rove.Command_Message{
+					Message: i.Message,
+				}
+			}
+			incoming = append(incoming, c)
 		}
 		for _, q := range q {
-			queued = append(queued, &rove.Command{
+			c := &rove.Command{
 				Command: q.Command,
-				Bearing: q.Bearing,
-				Message: q.Message,
-			})
+			}
+			switch q.Command {
+			case rove.CommandType_move:
+				c.Data = &rove.Command_Bearing{
+					Bearing: q.Bearing,
+				}
+			case rove.CommandType_broadcast:
+				c.Data = &rove.Command_Message{
+					Message: q.Message,
+				}
+			}
+			queued = append(queued, c)
 		}
 		var logs []*rove.Log
 		for _, log := range rover.Logs {
@@ -171,9 +189,16 @@ func (s *Server) Command(ctx context.Context, req *rove.CommandRequest) (*rove.C
 
 	var cmds []game.Command
 	for _, c := range req.Commands {
-		cmds = append(cmds, game.Command{
-			Bearing: c.Bearing,
-			Command: c.Command})
+		n := game.Command{
+			Command: c.Command,
+		}
+		switch c.Command {
+		case rove.CommandType_move:
+			n.Bearing = c.GetBearing()
+		case rove.CommandType_broadcast:
+			n.Message = c.GetMessage()
+		}
+		cmds = append(cmds, n)
 	}
 
 	if err := s.world.Enqueue(resp, cmds...); err != nil {

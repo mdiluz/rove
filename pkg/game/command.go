@@ -1,25 +1,10 @@
 package game
 
-const (
-	// CommandMove Moves the rover in the chosen bearing
-	CommandMove = "move"
-
-	// CommandStash Will attempt to stash the object at the current location
-	CommandStash = "stash"
-
-	// CommandRepair Will attempt to repair the rover with an inventory object
-	CommandRepair = "repair"
-
-	// CommandRecharge Will use one tick to charge the rover
-	CommandRecharge = "recharge"
-
-	// CommandBroadcast will broadcast a message to nearby rovers within range
-	CommandBroadcast = "broadcast"
-)
+import "github.com/mdiluz/rove/pkg/rove"
 
 // Command represends a single command to execute
 type Command struct {
-	Command string `json:"command"`
+	Command rove.CommandType `json:"command"`
 
 	// Used in the move command
 	Bearing string `json:"bearing,omitempty"`

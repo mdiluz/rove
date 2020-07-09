@@ -11,168 +11,7 @@
   "produces": [
     "application/json"
   ],
-  "paths": {
-    "/command": {
-      "post": {
-        "summary": "Send commands to rover",
-        "description": "Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent",
-        "operationId": "Rove_Command",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/roveCommandResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/roveCommandRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Rove"
-        ]
-      }
-    },
-    "/radar": {
-      "post": {
-        "summary": "Get radar information",
-        "description": "Gets the radar output for the given rover",
-        "operationId": "Rove_Radar",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/roveRadarResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/roveRadarRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Rove"
-        ]
-      }
-    },
-    "/register": {
-      "post": {
-        "summary": "Register an account",
-        "description": "Tries to register an account with the given name",
-        "operationId": "Rove_Register",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/roveRegisterResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/roveRegisterRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Rove"
-        ]
-      }
-    },
-    "/server-status": {
-      "get": {
-        "summary": "Server status",
-        "description": "Responds with various details about the current server status",
-        "operationId": "Rove_ServerStatus",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/roveServerStatusResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "tags": [
-          "Rove"
-        ]
-      }
-    },
-    "/status": {
-      "post": {
-        "summary": "Get rover information",
-        "description": "Gets information for the account's rover",
-        "operationId": "Rove_Status",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/roveStatusResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/gatewayruntimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/roveStatusRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Rove"
-        ]
-      }
-    }
-  },
+  "paths": {},
   "definitions": {
     "gatewayruntimeError": {
       "type": "object",
@@ -222,39 +61,36 @@
       "type": "object",
       "properties": {
         "command": {
-          "type": "string",
-          "title": "The command to execute\n\"move\" - Move the rover in a direction, requires bearing\n\"stash\" - Stashes item at current location in rover inventory\n\"repair\" - Repairs the rover using an inventory object\n\"recharge\" - Waits a tick to add more charge to the rover\n\"broadcast\" - Broadcasts a message to nearby rovers"
+          "$ref": "#/definitions/roveCommandType",
+          "title": "The command type"
         },
         "bearing": {
           "type": "string",
-          "title": "A bearing, example: NE"
+          "title": "A bearing, example: NE\nUsed with MOVE"
         },
         "message": {
           "type": "string",
           "format": "byte",
-          "title": "A simple message, must be composed of printable ASCII glyphs (32-126)\nmaximum of three characters"
-        }
-      }
-    },
-    "roveCommandRequest": {
-      "type": "object",
-      "properties": {
-        "account": {
-          "$ref": "#/definitions/roveAccount",
-          "title": "The account to execute these commands"
-        },
-        "commands": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/roveCommand"
-          },
-          "title": "The set of desired commands"
+          "title": "A simple message, must be composed of printable ASCII glyphs (32-126)\nmaximum of three characters\nUsed with BROADCAST"
         }
       }
     },
     "roveCommandResponse": {
       "type": "object",
       "title": "Empty placeholder"
+    },
+    "roveCommandType": {
+      "type": "string",
+      "enum": [
+        "none",
+        "move",
+        "stash",
+        "repair",
+        "recharge",
+        "broadcast"
+      ],
+      "default": "none",
+      "title": "- move: Move the rover in a direction, requires bearing\n - stash: Stashes item at current location in rover inventory\n - repair: Repairs the rover using an inventory object\n - recharge: Waits a tick to add more charge to the rover\n - broadcast: Broadcasts a message to nearby rovers"
     },
     "roveLog": {
       "type": "object",
@@ -266,15 +102,6 @@
         "text": {
           "type": "string",
           "title": "The text of the log"
-        }
-      }
-    },
-    "roveRadarRequest": {
-      "type": "object",
-      "properties": {
-        "account": {
-          "$ref": "#/definitions/roveAccount",
-          "title": "The account for this request"
         }
       }
     },
@@ -295,15 +122,6 @@
           "type": "string",
           "format": "byte",
           "title": "A similar array to the tile array, but containing objects"
-        }
-      }
-    },
-    "roveRegisterRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "title": "The desired account name"
         }
       }
     },
@@ -342,15 +160,6 @@
         "next_tick": {
           "type": "string",
           "title": "The time the next tick will occur"
-        }
-      }
-    },
-    "roveStatusRequest": {
-      "type": "object",
-      "properties": {
-        "account": {
-          "$ref": "#/definitions/roveAccount",
-          "title": "The account for this request"
         }
       }
     },

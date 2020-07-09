@@ -7,74 +7,61 @@ package rove;
 
 option go_package = "github.com/mdiluz/rove/pkg/rove";
 
-import "google/api/annotations.proto";
-
 service Rove {
     // Server status
     // 
     // Responds with various details about the current server status
-    rpc ServerStatus(ServerStatusRequest) returns (ServerStatusResponse) {
-        option (google.api.http) = {
-            get: "/server-status"
-          };
-    }
+    rpc ServerStatus(ServerStatusRequest) returns (ServerStatusResponse) {}
 
     // Register an account
     // 
     // Tries to register an account with the given name
-    rpc Register(RegisterRequest) returns (RegisterResponse) {
-        option (google.api.http) = {
-            post: "/register"
-            body: "*"
-          };
-    }
+    rpc Register(RegisterRequest) returns (RegisterResponse) {}
 
     // Send commands to rover
     // 
     // Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent
-    rpc Command(CommandRequest) returns (CommandResponse) {
-        option (google.api.http) = {
-            post: "/command"
-            body: "*"
-          };
-    }
+    rpc Command(CommandRequest) returns (CommandResponse) {}
 
     // Get radar information
     // 
     // Gets the radar output for the given rover
-    rpc Radar(RadarRequest) returns (RadarResponse) {
-        option (google.api.http) = {
-            post: "/radar"
-            body: "*"
-          };
-    }
+    rpc Radar(RadarRequest) returns (RadarResponse) {}
 
     // Get rover information
     // 
     // Gets information for the account's rover
-    rpc Status(StatusRequest) returns (StatusResponse) {
-        option (google.api.http) = {
-            post: "/status"
-            body: "*"
-          };
-    }
+    rpc Status(StatusRequest) returns (StatusResponse) {}
+}
+
+enum CommandType {
+    none = 0;
+    // Move the rover in a direction, requires bearing
+    move = 1;
+    // Stashes item at current location in rover inventory
+    stash = 2;
+    // Repairs the rover using an inventory object
+    repair = 3;
+    // Waits a tick to add more charge to the rover
+    recharge = 4;
+    // Broadcasts a message to nearby rovers
+    broadcast = 5;
 }
 
 message Command {
-    // The command to execute
-    // "move" - Move the rover in a direction, requires bearing
-    // "stash" - Stashes item at current location in rover inventory
-    // "repair" - Repairs the rover using an inventory object
-    // "recharge" - Waits a tick to add more charge to the rover
-    // "broadcast" - Broadcasts a message to nearby rovers
-    string command = 1;
+    // The command type
+    CommandType command = 1;
 
-    // A bearing, example: NE
-    string bearing = 2;
-
-    // A simple message, must be composed of printable ASCII glyphs (32-126)
-    // maximum of three characters
-    bytes message = 3;
+    oneof data {
+        // A bearing, example: NE
+        // Used with MOVE
+        string bearing = 2;
+    
+        // A simple message, must be composed of printable ASCII glyphs (32-126)
+        // maximum of three characters
+        // Used with BROADCAST
+        bytes message = 3;
+    }
 }
 
 message CommandRequest {
