@@ -241,7 +241,6 @@ func (w *World) WarpRover(rover string, pos vector.Vector) error {
 		return fmt.Errorf("can't warp rover to occupied tile, check before warping")
 	}
 
-	i.AddLogEntryf("warped to %+v", pos)
 	i.Pos = pos
 	w.Rovers[rover] = i
 	return nil

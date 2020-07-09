@@ -223,7 +223,6 @@ func TestWorld_RoverDamage(t *testing.T) {
 
 	info, err := world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
-	assert.Contains(t, info.Logs[len(info.Logs)-1].Text, "warped", "Rover logs should contain the warp")
 
 	world.Atlas.SetObject(vector.Vector{X: 0.0, Y: 1.0}, objects.Object{Type: objects.LargeRock})
 
