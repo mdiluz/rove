@@ -82,12 +82,14 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response 
 			incoming = append(incoming, &rove.Command{
 				Command: i.Command,
 				Bearing: i.Bearing,
+				Message: i.Message,
 			})
 		}
 		for _, q := range q {
 			queued = append(queued, &rove.Command{
 				Command: q.Command,
 				Bearing: q.Bearing,
+				Message: q.Message,
 			})
 		}
 		var logs []*rove.Log
