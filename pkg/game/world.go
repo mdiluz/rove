@@ -122,7 +122,8 @@ func (w *World) SpawnRover() (string, error) {
 
 	}
 
-	log.Printf("Spawned rover at %+v\n", rover.Pos)
+	// Add a log entry for robot creation
+	rover.AddLogEntryf("created at %+v", rover.Pos)
 
 	// Append the rover to the list
 	w.Rovers[rover.Name] = rover
@@ -160,6 +161,7 @@ func (w *World) RoverRecharge(rover string) (int, error) {
 	// Add one charge
 	if i.Charge < i.MaximumCharge {
 		i.Charge++
+		i.AddLogEntryf("recharged to %d", i.Charge)
 	}
 	w.Rovers[rover] = i
 
@@ -239,6 +241,7 @@ func (w *World) WarpRover(rover string, pos vector.Vector) error {
 		return fmt.Errorf("can't warp rover to occupied tile, check before warping")
 	}
 
+	i.AddLogEntryf("warped to %+v", pos)
 	i.Pos = pos
 	w.Rovers[rover] = i
 	return nil
@@ -266,12 +269,15 @@ func (w *World) MoveRover(rover string, b bearing.Bearing) (vector.Vector, error
 	// Get the tile and verify it's empty
 	_, obj := w.Atlas.QueryPosition(newPos)
 	if !obj.IsBlocking() {
+		i.AddLogEntryf("moved %s to %+v", b.String(), newPos)
 		// Perform the move
 		i.Pos = newPos
 		w.Rovers[rover] = i
 	} else {
 		// If it is a blocking tile, reduce the rover integrity
+		i.AddLogEntryf("tried to move %s to %+v", b.String(), newPos)
 		i.Integrity = i.Integrity - 1
+		i.AddLogEntryf("had a collision, new integrity %d", i.Integrity)
 		if i.Integrity == 0 {
 			// TODO: The rover needs to be left dormant with the player
 		} else {
@@ -308,6 +314,7 @@ func (w *World) RoverStash(rover string) (objects.Type, error) {
 		return objects.None, nil
 	}
 
+	r.AddLogEntryf("stashed %c", obj.Type)
 	r.Inventory = append(r.Inventory, obj)
 	w.Rovers[rover] = r
 	w.Atlas.SetObject(r.Pos, objects.Object{Type: objects.None})
@@ -480,6 +487,7 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 		if len(r.Inventory) > 0 && r.Integrity < r.MaximumIntegrity {
 			r.Inventory = r.Inventory[:len(r.Inventory)-1]
 			r.Integrity = r.Integrity + 1
+			r.AddLogEntryf("repaired self to %d", r.Integrity)
 			w.Rovers[rover] = r
 		}
 	case CommandRecharge:

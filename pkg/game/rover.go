@@ -1,9 +1,22 @@
 package game
 
 import (
+	"fmt"
+	"log"
+	"time"
+
 	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/vector"
 )
+
+// RoverLogEntry describes a single log entry for the rover
+type RoverLogEntry struct {
+	// Time is the timestamp of the entry
+	Time time.Time `json:"time"`
+
+	// Text contains the information in this log entry
+	Text string `json:"text"`
+}
 
 // Rover describes a single rover in the world
 type Rover struct {
@@ -31,6 +44,21 @@ type Rover struct {
 	// Charge is the amount of energy the rover has
 	Charge int `json:"charge"`
 
-	// ChargeCharge is the maximum charge able to be stored
+	// MaximumCharge is the maximum charge able to be stored
 	MaximumCharge int `json:"maximum-Charge"`
+
+	// Logs Stores log of information
+	Logs []RoverLogEntry `json:"logs"`
+}
+
+// AddLogEntryf adds an entry to the rovers log
+func (r *Rover) AddLogEntryf(format string, args ...interface{}) {
+	text := fmt.Sprintf(format, args...)
+	log.Printf("%s log entry: %s", r.Name, text)
+	r.Logs = append(r.Logs,
+		RoverLogEntry{
+			Time: time.Now(),
+			Text: text,
+		},
+	)
 }
