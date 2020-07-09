@@ -40,6 +40,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\tstash                      stores the object at the rover location in the inventory")
 	fmt.Fprintln(os.Stderr, "\trepair                     uses an inventory object to repair the rover")
 	fmt.Fprintln(os.Stderr, "\trecharge                   wait a tick to recharge the rover")
+	fmt.Fprintln(os.Stderr, "\tbroadcast MSG              broadcast a simple ASCII triplet to nearby rovers")
 	fmt.Fprintln(os.Stderr, "\nEnvironment")
 	fmt.Fprintln(os.Stderr, "\tROVE_USER_DATA             path to user data, defaults to "+defaultDataPath)
 }
@@ -223,6 +224,19 @@ func InnerMain(command string, args ...string) error {
 					&rove.Command{
 						Command: game.CommandMove,
 						Bearing: args[i],
+					},
+				)
+			case "broadcast":
+				i++
+				if len(args) == i {
+					return fmt.Errorf("broadcast command must be passed an ASCII triplet")
+				} else if len(args[i]) > 3 {
+					return fmt.Errorf("broadcast command must be given ASCII triplet of 3 or less: %s", args[i])
+				}
+				commands = append(commands,
+					&rove.Command{
+						Command: game.CommandBroadcast,
+						Message: []byte(args[i]),
 					},
 				)
 			default:
