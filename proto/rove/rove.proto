@@ -2,188 +2,217 @@ syntax = "proto3";
 
 // Rove
 //
-// Rove is an asychronous nomadic game about exploring a planet as part of a loose community
+// Rove is an asychronous nomadic game about exploring a planet as part of a
+// loose community
 package rove;
-
 option go_package = "github.com/mdiluz/rove/pkg/rove";
 
+// The Rove server hosts a single game session and world with multiple players
 service Rove {
-    // Server status
-    // 
-    // Responds with various details about the current server status
-    rpc ServerStatus(ServerStatusRequest) returns (ServerStatusResponse) {}
+  // Server status
+  // Responds with various details about the current server status
+  rpc ServerStatus(ServerStatusRequest) returns (ServerStatusResponse) {}
 
-    // Register an account
-    // 
-    // Tries to register an account with the given name
-    rpc Register(RegisterRequest) returns (RegisterResponse) {}
+  // Register an account
+  // Tries to register an account with the given name
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
 
-    // Send commands to rover
-    // 
-    // Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent
-    rpc Command(CommandRequest) returns (CommandResponse) {}
+  // Send commands to rover
+  // Sending commands to this endpoint will queue them to be executed during the
+  // following ticks, in the order sent. Commands sent within the same tick will
+  // overwrite until the tick has finished and the commands are queued
+  rpc Command(CommandRequest) returns (CommandResponse) {}
 
-    // Get radar information
-    // 
-    // Gets the radar output for the given rover
-    rpc Radar(RadarRequest) returns (RadarResponse) {}
+  // Get radar information
+  // Gets the radar output for the given rover
+  rpc Radar(RadarRequest) returns (RadarResponse) {}
 
-    // Get rover information
-    // 
-    // Gets information for the account's rover
-    rpc Status(StatusRequest) returns (StatusResponse) {}
+  // Get rover information
+  // Gets information for the account's rover
+  rpc Status(StatusRequest) returns (StatusResponse) {}
 }
 
-enum CommandType {
-    none = 0;
-    // Move the rover in a direction, requires bearing
-    move = 1;
-    // Stashes item at current location in rover inventory
-    stash = 2;
-    // Repairs the rover using an inventory object
-    repair = 3;
-    // Waits a tick to add more charge to the rover
-    recharge = 4;
-    // Broadcasts a message to nearby rovers
-    broadcast = 5;
-}
+//
+// ServerStatus
+//
 
-message Command {
-    // The command type
-    CommandType command = 1;
-
-    oneof data {
-        // A bearing, example: NE
-        // Used with MOVE
-        string bearing = 2;
-    
-        // A simple message, must be composed of printable ASCII glyphs (32-126)
-        // maximum of three characters
-        // Used with BROADCAST
-        bytes message = 3;
-    }
-}
-
-message CommandRequest {
-    // The account to execute these commands
-    Account account = 1;
-
-    // The set of desired commands
-    repeated Command commands = 2;
-}
-
-// Empty placeholder
-message CommandResponse {}
-
-message Error {
-    // An explanation for the HTTP error returned
-    string error = 1;
-}
-
-message RadarRequest {
-    // The account for this request
-    Account account = 1;
-}
-
-message RadarResponse {
-    // The range in tiles from the rover of the radar data
-    int32 range = 1;
-
-    // A 1D array representing range*2 + 1 squared set of tiles, origin bottom left and in row->column order
-    bytes tiles = 2;
-
-    // A similar array to the tile array, but containing objects
-    bytes objects = 3;
-}
-
-message RegisterRequest {
-    // The desired account name
-    string name = 1;
-}
-
-// Empty placeholder
-message RegisterResponse{
-    // The registered account information
-    Account account = 1;
-}
-
-message StatusRequest {
-    // The account for this request
-    Account account = 1;
-}
-
-message Log {
-    // The unix timestamp of the log
-    string time = 1;
-
-    // The text of the log
-    string text = 2;
-}
-
-message StatusResponse {
-    // The name of the rover
-    string name = 1;
-
-    // Position of the rover in world coordinates
-    Vector position = 2;
-
-    // The range of this rover's radar and broadcasting
-    int32 range = 3;
-
-    // The items in the rover inventory
-    bytes inventory = 4;
-
-    // The capacity of the inventory
-    int32 capacity = 5;
-
-    // The current health of the rover
-    int32 integrity = 6;
-
-    // The maximum health of the rover
-    int32 maximumIntegrity = 7;
-
-    // The energy stored in the rover
-    int32 charge = 8;
-
-    // The max energy the rover can store
-    int32 maximumCharge = 9;
-
-    // The set of currently incoming commands for this tick
-    repeated Command incomingCommands = 10;
-
-    // The set of currently queued commands
-    repeated Command queuedCommands = 11;
-
-    // The most recent logs
-    repeated Log logs = 12;
-}
-
-// Empty placeholder
+// ServerStatusRequest is an empty placeholder
 message ServerStatusRequest {}
 
+// ServerStatusResponse is a response with useful server information
 message ServerStatusResponse {
-    // The version of the server in v{major}.{minor}-{delta}-{sha} form
-    string version = 1;
+  // The version of the server in v{major}.{minor}-{delta}-{sha} form
+  string version = 1;
 
-    // Whether the server is ready to accept requests
-    bool ready = 2;
+  // Whether the server is ready to accept requests
+  bool ready = 2;
 
-    // The tick rate of the server in minutes (how many minutes per tick)
-    int32 tickRate = 3;
+  // The tick rate of the server in minutes (how many minutes per tick)
+  int32 tickRate = 3;
 
-    // The current tick of the server
-    int32 currentTick = 4;
+  // The current tick of the server
+  int32 currentTick = 4;
 
-    // The time the next tick will occur
-    string next_tick = 5;
+  // The time the next tick will occur
+  string next_tick = 5;
 }
 
-message Vector {
-    int32 x = 1;
-    int32 y = 2;
+//
+// Register
+//
+
+// RegisterRequest contains data to register an account
+message RegisterRequest {
+  // The desired account name
+  string name = 1;
 }
 
+// Account describes a registered account
 message Account {
-    string name = 1;
-    string secret = 2;
+  // The account name
+  string name = 1;
+
+  // The account secret value, given when creating the account
+  string secret = 2;
+}
+
+// RegisterResponse is the response given to registering an account
+message RegisterResponse {
+  // The registered account information
+  Account account = 1;
+}
+
+//
+// Command
+//
+
+// CommandType defines the type of a command to give to the rover
+enum CommandType {
+  none = 0;
+  // Move the rover in a direction, requires bearing
+  move = 1;
+  // Stashes item at current location in rover inventory
+  stash = 2;
+  // Repairs the rover using an inventory object
+  repair = 3;
+  // Waits a tick to add more charge to the rover
+  recharge = 4;
+  // Broadcasts a message to nearby rovers
+  broadcast = 5;
+}
+
+// Command is a single command for a rover
+message Command {
+  // The command type
+  CommandType command = 1;
+
+  oneof data {
+    // A bearing, example: NE
+    // Used with MOVE
+    string bearing = 2;
+
+    // A simple message, must be composed of printable ASCII glyphs (32-126)
+    // maximum of three characters
+    // Used with BROADCAST
+    bytes message = 3;
+  }
+}
+
+// CommandRequest describes a set of commands to be requested for the rover
+message CommandRequest {
+  // The account to execute these commands
+  Account account = 1;
+
+  // The set of desired commands
+  repeated Command commands = 2;
+}
+
+// CommandResponse is an empty placeholder
+message CommandResponse {}
+
+//
+// Radar
+//
+
+// RadarRequest is the data needed to request the radar for a rover
+message RadarRequest {
+  // The account for this request
+  Account account = 1;
+}
+
+// RadarResponse describes radar information
+message RadarResponse {
+  // The range in tiles from the rover of the radar data
+  int32 range = 1;
+
+  // A 1D array representing range*2 + 1 squared set of tiles, origin bottom
+  // left and in row->column order
+  bytes tiles = 2;
+
+  // A similar array to the tile array, but containing objects
+  bytes objects = 3;
+}
+
+//
+// Status
+//
+
+// StatusRequest is information needed to request rover status
+message StatusRequest {
+  // The account for this request
+  Account account = 1;
+}
+
+// Log is a single log item
+message Log {
+  // The unix timestamp of the log
+  string time = 1;
+
+  // The text of the log
+  string text = 2;
+}
+
+// Vector describes a point or vector in 2D space
+message Vector {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+// StatusResponse is the response given to a status request
+message StatusResponse {
+  // The name of the rover
+  string name = 1;
+
+  // Position of the rover in world coordinates
+  Vector position = 2;
+
+  // The range of this rover's radar and broadcasting
+  int32 range = 3;
+
+  // The items in the rover inventory
+  bytes inventory = 4;
+
+  // The capacity of the inventory
+  int32 capacity = 5;
+
+  // The current health of the rover
+  int32 integrity = 6;
+
+  // The maximum health of the rover
+  int32 maximumIntegrity = 7;
+
+  // The energy stored in the rover
+  int32 charge = 8;
+
+  // The max energy the rover can store
+  int32 maximumCharge = 9;
+
+  // The set of currently incoming commands for this tick
+  repeated Command incomingCommands = 10;
+
+  // The set of currently queued commands
+  repeated Command queuedCommands = 11;
+
+  // The most recent logs
+  repeated Log logs = 12;
 }
