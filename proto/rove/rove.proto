@@ -8,6 +8,7 @@ package rove;
 option go_package = "github.com/mdiluz/rove/pkg/rove";
 
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
 
 service Rove {
     // Server status
@@ -120,6 +121,14 @@ message StatusRequest {
     Account account = 1;
 }
 
+message Log {
+    // The timestamp of the log
+    google.protobuf.Timestamp time = 1;
+
+    // The text of the log
+    string text = 2;
+}
+
 message StatusResponse {
     // The name of the rover
     string name = 1;
@@ -153,6 +162,9 @@ message StatusResponse {
 
     // The set of currently queued commands
     repeated Command queuedCommands = 11;
+
+    // The most recent logs
+    repeated Log logs = 12;
 }
 
 // Empty placeholder
