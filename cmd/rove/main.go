@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/mdiluz/rove/pkg/atlas"
-	"github.com/mdiluz/rove/pkg/bearing"
+	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/roveapi"
 	"github.com/mdiluz/rove/pkg/version"
@@ -216,7 +216,7 @@ func InnerMain(command string, args ...string) error {
 				i++
 				if len(args) == i {
 					return fmt.Errorf("move command must be passed bearing")
-				} else if _, err := bearing.FromString(args[i]); err != nil {
+				} else if _, err := maths.FromString(args[i]); err != nil {
 					return err
 				}
 				commands = append(commands,

@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/atlas"
-	"github.com/mdiluz/rove/pkg/bearing"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/roveapi"
@@ -279,7 +278,7 @@ func (w *World) WarpRover(rover string, pos maths.Vector) error {
 }
 
 // MoveRover attempts to move a rover in a specific direction
-func (w *World) MoveRover(rover string, b bearing.Bearing) (maths.Vector, error) {
+func (w *World) MoveRover(rover string, b maths.Bearing) (maths.Vector, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -428,7 +427,7 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 	for _, c := range commands {
 		switch c.Command {
 		case roveapi.CommandType_move:
-			if _, err := bearing.FromString(c.Bearing); err != nil {
+			if _, err := maths.FromString(c.Bearing); err != nil {
 				return fmt.Errorf("unknown bearing: %s", c.Bearing)
 			}
 		case roveapi.CommandType_broadcast:
@@ -507,7 +506,7 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 
 	switch c.Command {
 	case roveapi.CommandType_move:
-		if dir, err := bearing.FromString(c.Bearing); err != nil {
+		if dir, err := maths.FromString(c.Bearing); err != nil {
 			return err
 		} else if _, err := w.MoveRover(rover, dir); err != nil {
 			return err

@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/mdiluz/rove/pkg/atlas"
-	"github.com/mdiluz/rove/pkg/bearing"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/roveapi"
@@ -80,7 +79,7 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.NoError(t, err, "Failed to set position for rover")
 	assert.Equal(t, pos, newPos, "Failed to correctly set position for rover")
 
-	b := bearing.North
+	b := maths.North
 	newPos, err = world.MoveRover(a, b)
 	assert.NoError(t, err, "Failed to set position for rover")
 	pos.Add(maths.Vector{X: 0, Y: 1})
@@ -228,7 +227,7 @@ func TestWorld_RoverDamage(t *testing.T) {
 
 	world.Atlas.SetObject(maths.Vector{X: 0.0, Y: 1.0}, objects.Object{Type: objects.LargeRock})
 
-	vec, err := world.MoveRover(a, bearing.North)
+	vec, err := world.MoveRover(a, maths.North)
 	assert.NoError(t, err, "Failed to move rover")
 	assert.Equal(t, pos, vec, "Rover managed to move into large rock")
 
@@ -266,7 +265,7 @@ func TestWorld_RoverRepair(t *testing.T) {
 	world.Atlas.SetObject(maths.Vector{X: 0.0, Y: 1.0}, objects.Object{Type: objects.LargeRock})
 
 	// Try and bump into the rock
-	vec, err := world.MoveRover(a, bearing.North)
+	vec, err := world.MoveRover(a, maths.North)
 	assert.NoError(t, err, "Failed to move rover")
 	assert.Equal(t, pos, vec, "Rover managed to move into large rock")
 
@@ -313,13 +312,13 @@ func TestWorld_Charge(t *testing.T) {
 		assert.NoError(t, err, "Failed to get position for rover")
 
 		// Ensure the path ahead is empty
-		world.Atlas.SetTile(initialPos.Added(bearing.North.Vector()), atlas.TileRock)
-		world.Atlas.SetObject(initialPos.Added(bearing.North.Vector()), objects.Object{Type: objects.None})
+		world.Atlas.SetTile(initialPos.Added(maths.North.Vector()), atlas.TileRock)
+		world.Atlas.SetObject(initialPos.Added(maths.North.Vector()), objects.Object{Type: objects.None})
 
 		// Try and move north (along unblocked path)
-		newPos, err := world.MoveRover(a, bearing.North)
+		newPos, err := world.MoveRover(a, maths.North)
 		assert.NoError(t, err, "Failed to set position for rover")
-		assert.Equal(t, initialPos.Added(bearing.North.Vector()), newPos, "Failed to correctly move position for rover")
+		assert.Equal(t, initialPos.Added(maths.North.Vector()), newPos, "Failed to correctly move position for rover")
 
 		// Ensure rover lost charge
 		rover, err := world.GetRover(a)
