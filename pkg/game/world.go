@@ -107,8 +107,8 @@ func (w *World) SpawnRover() (string, error) {
 
 	// Spawn in a random place near the origin
 	rover.Pos = vector.Vector{
-		X: w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
-		Y: w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
+		X: 10 - rand.Intn(20),
+		Y: 10 - rand.Intn(20),
 	}
 
 	// Seach until we error (run out of world)

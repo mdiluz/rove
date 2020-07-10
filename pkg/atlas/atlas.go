@@ -27,6 +27,18 @@ const (
 	TileSand = Tile('~')
 )
 
+// Atlas represents a 2D world atlas of tiles and objects
+type Atlas interface {
+	// SetTile sets a location on the Atlas to a type of tile
+	SetTile(v vector.Vector, tile Tile)
+
+	// SetObject will set a location on the Atlas to contain an object
+	SetObject(v vector.Vector, obj objects.Object)
+
+	// QueryPosition queries a position on the atlas
+	QueryPosition(v vector.Vector) (byte, objects.Object)
+}
+
 // Chunk represents a fixed square grid of tiles
 type Chunk struct {
 	// Tiles represents the tiles within the chunk
@@ -37,8 +49,8 @@ type Chunk struct {
 	Objects map[int]objects.Object `json:"objects"`
 }
 
-// Atlas represents a grid of Chunks
-type Atlas struct {
+// ChunkBasedAtlas represents a grid of Chunks
+type ChunkBasedAtlas struct {
 	// Chunks represents all chunks in the world
 	// This is intentionally not a 2D array so it can be expanded in all directions
 	Chunks []Chunk `json:"chunks"`
@@ -68,7 +80,7 @@ const (
 // NewAtlas creates a new empty atlas
 func NewAtlas(chunkSize int) Atlas {
 	// Start up with one chunk
-	a := Atlas{
+	a := ChunkBasedAtlas{
 		ChunkSize:    chunkSize,
 		Chunks:       make([]Chunk, 1),
 		LowerBound:   vector.Vector{X: 0, Y: 0},
@@ -78,25 +90,25 @@ func NewAtlas(chunkSize int) Atlas {
 	}
 	// Initialise the first chunk
 	a.populate(0)
-	return a
+	return &a
 }
 
 // SetTile sets an individual tile's kind
-func (a *Atlas) SetTile(v vector.Vector, tile Tile) {
+func (a *ChunkBasedAtlas) SetTile(v vector.Vector, tile Tile) {
 	c := a.worldSpaceToChunkWithGrow(v)
 	local := a.worldSpaceToChunkLocal(v)
 	a.setTile(c, local, byte(tile))
 }
 
 // SetObject sets the object on a tile
-func (a *Atlas) SetObject(v vector.Vector, obj objects.Object) {
+func (a *ChunkBasedAtlas) SetObject(v vector.Vector, obj objects.Object) {
 	c := a.worldSpaceToChunkWithGrow(v)
 	local := a.worldSpaceToChunkLocal(v)
 	a.setObject(c, local, obj)
 }
 
 // QueryPosition will return information for a specific position
-func (a *Atlas) QueryPosition(v vector.Vector) (byte, objects.Object) {
+func (a *ChunkBasedAtlas) QueryPosition(v vector.Vector) (byte, objects.Object) {
 	c := a.worldSpaceToChunkWithGrow(v)
 	local := a.worldSpaceToChunkLocal(v)
 	a.populate(c)
@@ -106,12 +118,12 @@ func (a *Atlas) QueryPosition(v vector.Vector) (byte, objects.Object) {
 }
 
 // chunkTileID returns the tile index within a chunk
-func (a *Atlas) chunkTileIndex(local vector.Vector) int {
+func (a *ChunkBasedAtlas) chunkTileIndex(local vector.Vector) int {
 	return local.X + local.Y*a.ChunkSize
 }
 
 // populate will fill a chunk with data
-func (a *Atlas) populate(chunk int) {
+func (a *ChunkBasedAtlas) populate(chunk int) {
 	c := a.Chunks[chunk]
 	if c.Tiles != nil {
 		return
@@ -165,7 +177,7 @@ func (a *Atlas) populate(chunk int) {
 }
 
 // setTile sets a tile in a specific chunk
-func (a *Atlas) setTile(chunk int, local vector.Vector, tile byte) {
+func (a *ChunkBasedAtlas) setTile(chunk int, local vector.Vector, tile byte) {
 	a.populate(chunk)
 	c := a.Chunks[chunk]
 	c.Tiles[a.chunkTileIndex(local)] = tile
@@ -173,7 +185,7 @@ func (a *Atlas) setTile(chunk int, local vector.Vector, tile byte) {
 }
 
 // setObject sets an object in a specific chunk
-func (a *Atlas) setObject(chunk int, local vector.Vector, object objects.Object) {
+func (a *ChunkBasedAtlas) setObject(chunk int, local vector.Vector, object objects.Object) {
 	a.populate(chunk)
 
 	c := a.Chunks[chunk]
@@ -187,12 +199,12 @@ func (a *Atlas) setObject(chunk int, local vector.Vector, object objects.Object)
 }
 
 // worldSpaceToChunkLocal gets a chunk local coordinate for a tile
-func (a *Atlas) worldSpaceToChunkLocal(v vector.Vector) vector.Vector {
+func (a *ChunkBasedAtlas) worldSpaceToChunkLocal(v vector.Vector) vector.Vector {
 	return vector.Vector{X: maths.Pmod(v.X, a.ChunkSize), Y: maths.Pmod(v.Y, a.ChunkSize)}
 }
 
 // worldSpaceToChunkID gets the current chunk ID for a position in the world
-func (a *Atlas) worldSpaceToChunkIndex(v vector.Vector) int {
+func (a *ChunkBasedAtlas) worldSpaceToChunkIndex(v vector.Vector) int {
 	// Shift the vector by our current min
 	v = v.Added(a.LowerBound.Negated())
 
@@ -208,7 +220,7 @@ func (a *Atlas) worldSpaceToChunkIndex(v vector.Vector) int {
 }
 
 // chunkOriginInWorldSpace returns the origin of the chunk in world space
-func (a *Atlas) chunkOriginInWorldSpace(chunk int) vector.Vector {
+func (a *ChunkBasedAtlas) chunkOriginInWorldSpace(chunk int) vector.Vector {
 	// Calculate the width
 	width := a.UpperBound.X - a.LowerBound.X
 	widthInChunks := width / a.ChunkSize
@@ -225,7 +237,7 @@ func (a *Atlas) chunkOriginInWorldSpace(chunk int) vector.Vector {
 }
 
 // getNewBounds gets new lower and upper bounds for the world space given a vector
-func (a *Atlas) getNewBounds(v vector.Vector) (lower vector.Vector, upper vector.Vector) {
+func (a *ChunkBasedAtlas) getNewBounds(v vector.Vector) (lower vector.Vector, upper vector.Vector) {
 	lower = vector.Min(v, a.LowerBound)
 	upper = vector.Max(v.Added(vector.Vector{X: 1, Y: 1}), a.UpperBound)
 
@@ -241,7 +253,7 @@ func (a *Atlas) getNewBounds(v vector.Vector) (lower vector.Vector, upper vector
 }
 
 // worldSpaceToTrunkWithGrow will expand the current atlas for a given world space position if needed
-func (a *Atlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
+func (a *ChunkBasedAtlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
 	// If we're within bounds, just return the current chunk
 	if v.X >= a.LowerBound.X && v.Y >= a.LowerBound.Y && v.X < a.UpperBound.X && v.Y < a.UpperBound.Y {
 		return a.worldSpaceToChunkIndex(v)
@@ -253,7 +265,7 @@ func (a *Atlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
 	size = size.Divided(a.ChunkSize)
 
 	// Create the new empty atlas
-	newAtlas := Atlas{
+	newAtlas := ChunkBasedAtlas{
 		ChunkSize:    a.ChunkSize,
 		LowerBound:   lower,
 		UpperBound:   upper,
