@@ -189,7 +189,7 @@ func (s *Server) SaveWorld() error {
 	if s.persistence == PersistentData {
 		s.world.RLock()
 		defer s.world.RUnlock()
-		if err := persistence.SaveAll("world", s.world); err != nil {
+		if err := persistence.SaveAll("world", s.world, "accounts", s.accountant); err != nil {
 			return fmt.Errorf("failed to save out persistent data: %s", err)
 		}
 	}
@@ -201,7 +201,7 @@ func (s *Server) LoadWorld() error {
 	if s.persistence == PersistentData {
 		s.world.Lock()
 		defer s.world.Unlock()
-		if err := persistence.LoadAll("world", &s.world); err != nil {
+		if err := persistence.LoadAll("world", &s.world, "accounts", &s.accountant); err != nil {
 			return err
 		}
 	}
