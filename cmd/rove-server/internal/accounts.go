@@ -1,4 +1,4 @@
-package accounts
+package internal
 
 // Accountant decribes something that stores accounts and account values
 type Accountant interface {

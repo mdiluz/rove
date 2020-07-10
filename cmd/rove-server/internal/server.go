@@ -6,7 +6,6 @@ import (
 	"net"
 	"sync"
 
-	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/persistence"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/roveapi"
@@ -29,7 +28,7 @@ type Server struct {
 	world *rove.World
 
 	// Accountant
-	accountant accounts.Accountant
+	accountant Accountant
 
 	// gRPC server
 	netListener net.Listener
@@ -81,7 +80,7 @@ func NewServer(opts ...ServerOption) *Server {
 		persistence: EphemeralData,
 		schedule:    cron.New(),
 		world:       rove.NewWorld(32),
-		accountant:  accounts.NewSimpleAccountant(),
+		accountant:  NewSimpleAccountant(),
 	}
 
 	// Apply all options

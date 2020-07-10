@@ -3,7 +3,7 @@ VERSION := $(shell git describe --always --long --dirty --tags)
 build:
 	@echo Running no-output build
 	go mod download
-	go build -ldflags="-X 'github.com/mdiluz/rove/pkg/version.Version=${VERSION}'" ./...
+	go build -ldflags="-X 'github.com/mdiluz/rove/cmd/version.Version=${VERSION}'" ./...
 
 install:
 	@echo Installing to GOPATH
