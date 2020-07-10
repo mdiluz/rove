@@ -18,8 +18,8 @@ gen:
 		github.com/golang/protobuf/protoc-gen-go
 	go mod download
 	@echo Generating rove server gRPC and gateway
-	protoc --proto_path proto --go_out=plugins=grpc,paths=source_relative:pkg/ proto/rove/rove.proto
-	protoc --proto_path proto --grpc-gateway_out=paths=source_relative:pkg/ proto/rove/rove.proto
+	protoc --proto_path proto --go_out=plugins=grpc,paths=source_relative:pkg/ proto/roveapi/roveapi.proto
+	protoc --proto_path proto --grpc-gateway_out=paths=source_relative:pkg/ proto/roveapi/roveapi.proto
 
 test:
 	@echo Unit tests

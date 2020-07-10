@@ -7,9 +7,9 @@ import (
 	"sync"
 
 	"github.com/mdiluz/rove/pkg/accounts"
-	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/persistence"
 	"github.com/mdiluz/rove/pkg/rove"
+	"github.com/mdiluz/rove/pkg/roveapi"
 	"github.com/robfig/cron"
 	"google.golang.org/grpc"
 )
@@ -26,7 +26,7 @@ const (
 type Server struct {
 
 	// Internal state
-	world *game.World
+	world *rove.World
 
 	// Accountant
 	accountant accounts.Accountant
@@ -80,7 +80,7 @@ func NewServer(opts ...ServerOption) *Server {
 		address:     "",
 		persistence: EphemeralData,
 		schedule:    cron.New(),
-		world:       game.NewWorld(32),
+		world:       rove.NewWorld(32),
 		accountant:  accounts.NewSimpleAccountant(),
 	}
 
@@ -109,7 +109,7 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s.grpcServ = grpc.NewServer()
-	rove.RegisterRoveServer(s.grpcServ, s)
+	roveapi.RegisterRoveServer(s.grpcServ, s)
 
 	return nil
 }

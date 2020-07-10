@@ -13,7 +13,7 @@ import (
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/bearing"
 	"github.com/mdiluz/rove/pkg/objects"
-	"github.com/mdiluz/rove/pkg/rove"
+	"github.com/mdiluz/rove/pkg/roveapi"
 	"github.com/mdiluz/rove/pkg/version"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -66,7 +66,7 @@ func ConfigPath() string {
 	if len(override) > 0 {
 		datapath = override
 	}
-	datapath = path.Join(datapath, "rove.json")
+	datapath = path.Join(datapath, "roveapi.json")
 
 	return datapath
 }
@@ -163,14 +163,14 @@ func InnerMain(command string, args ...string) error {
 	if err != nil {
 		return err
 	}
-	var client = rove.NewRoveClient(clientConn)
+	var client = roveapi.NewRoveClient(clientConn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// Handle all the commands
 	switch command {
 	case "server-status":
-		response, err := client.ServerStatus(ctx, &rove.ServerStatusRequest{})
+		response, err := client.ServerStatus(ctx, &roveapi.ServerStatusRequest{})
 		switch {
 		case err != nil:
 			return err
@@ -188,7 +188,7 @@ func InnerMain(command string, args ...string) error {
 			return fmt.Errorf("must pass name to 'register'")
 		}
 
-		resp, err := client.Register(ctx, &rove.RegisterRequest{
+		resp, err := client.Register(ctx, &roveapi.RegisterRequest{
 			Name: args[0],
 		})
 		switch {
@@ -209,7 +209,7 @@ func InnerMain(command string, args ...string) error {
 		}
 
 		// Iterate through each command
-		var commands []*rove.Command
+		var commands []*roveapi.Command
 		for i := 0; i < len(args); i++ {
 			switch args[i] {
 			case "move":
@@ -220,9 +220,9 @@ func InnerMain(command string, args ...string) error {
 					return err
 				}
 				commands = append(commands,
-					&rove.Command{
-						Command: rove.CommandType_move,
-						Data:    &rove.Command_Bearing{Bearing: args[i]},
+					&roveapi.Command{
+						Command: roveapi.CommandType_move,
+						Data:    &roveapi.Command_Bearing{Bearing: args[i]},
 					},
 				)
 			case "broadcast":
@@ -233,23 +233,23 @@ func InnerMain(command string, args ...string) error {
 					return fmt.Errorf("broadcast command must be given ASCII triplet of 3 or less: %s", args[i])
 				}
 				commands = append(commands,
-					&rove.Command{
-						Command: rove.CommandType_broadcast,
-						Data:    &rove.Command_Message{Message: []byte(args[i])},
+					&roveapi.Command{
+						Command: roveapi.CommandType_broadcast,
+						Data:    &roveapi.Command_Message{Message: []byte(args[i])},
 					},
 				)
 			default:
 				// By default just use the command literally
 				commands = append(commands,
-					&rove.Command{
-						Command: rove.CommandType(rove.CommandType_value[args[i]]),
+					&roveapi.Command{
+						Command: roveapi.CommandType(roveapi.CommandType_value[args[i]]),
 					},
 				)
 			}
 		}
 
-		_, err := client.Command(ctx, &rove.CommandRequest{
-			Account: &rove.Account{
+		_, err := client.Command(ctx, &roveapi.CommandRequest{
+			Account: &roveapi.Account{
 				Name:   config.Account.Name,
 				Secret: config.Account.Secret,
 			},
@@ -269,8 +269,8 @@ func InnerMain(command string, args ...string) error {
 			return err
 		}
 
-		response, err := client.Radar(ctx, &rove.RadarRequest{
-			Account: &rove.Account{
+		response, err := client.Radar(ctx, &roveapi.RadarRequest{
+			Account: &roveapi.Account{
 				Name:   config.Account.Name,
 				Secret: config.Account.Secret,
 			},
@@ -306,8 +306,8 @@ func InnerMain(command string, args ...string) error {
 			return err
 		}
 
-		response, err := client.Status(ctx, &rove.StatusRequest{
-			Account: &rove.Account{
+		response, err := client.Status(ctx, &roveapi.StatusRequest{
+			Account: &roveapi.Account{
 				Name:   config.Account.Name,
 				Secret: config.Account.Secret,
 			},
