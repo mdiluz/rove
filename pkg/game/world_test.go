@@ -6,6 +6,7 @@ import (
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/bearing"
 	"github.com/mdiluz/rove/pkg/objects"
+	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/vector"
 	"github.com/stretchr/testify/assert"
 )
@@ -272,7 +273,7 @@ func TestWorld_RoverRepair(t *testing.T) {
 	assert.NoError(t, err, "couldn't get rover info")
 	assert.Equal(t, originalInfo.Integrity-1, newinfo.Integrity, "rover should have lost integrity")
 
-	err = world.ExecuteCommand(&Command{Command: CommandRepair}, a)
+	err = world.ExecuteCommand(&Command{Command: rove.CommandType_repair}, a)
 	assert.NoError(t, err, "Failed to repair rover")
 
 	newinfo, err = world.GetRover(a)
@@ -286,7 +287,7 @@ func TestWorld_RoverRepair(t *testing.T) {
 	assert.NoError(t, err, "Failed to stash")
 	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
 
-	err = world.ExecuteCommand(&Command{Command: CommandRepair}, a)
+	err = world.ExecuteCommand(&Command{Command: rove.CommandType_repair}, a)
 	assert.NoError(t, err, "Failed to repair rover")
 
 	newinfo, err = world.GetRover(a)

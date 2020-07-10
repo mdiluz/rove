@@ -27,15 +27,7 @@ apps:
     environment:
       WORDS_FILE : "$SNAP/data/words_alpha.txt"
       DATA_PATH : $SNAP_USER_DATA
-
-  rove-rest-server:
-    command: bin/rove-server-rest-proxy
-    plugs:
-      - network
-      - network-bind
-    environment:
-      DATA_PATH : $SNAP_USER_DATA
-
+      
 parts:
   go-rove:
     plugin: go

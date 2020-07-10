@@ -6,14 +6,14 @@
 
 // Rove
 //
-// Rove is an asychronous nomadic game about exploring a planet as part of a loose community
+// Rove is an asychronous nomadic game about exploring a planet as part of a
+// loose community
 
 package rove
 
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
-	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -34,29 +34,368 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+// CommandType defines the type of a command to give to the rover
+type CommandType int32
+
+const (
+	CommandType_none CommandType = 0
+	// Move the rover in a direction, requires bearing
+	CommandType_move CommandType = 1
+	// Stashes item at current location in rover inventory
+	CommandType_stash CommandType = 2
+	// Repairs the rover using an inventory object
+	CommandType_repair CommandType = 3
+	// Waits a tick to add more charge to the rover
+	CommandType_recharge CommandType = 4
+	// Broadcasts a message to nearby rovers
+	CommandType_broadcast CommandType = 5
+)
+
+// Enum value maps for CommandType.
+var (
+	CommandType_name = map[int32]string{
+		0: "none",
+		1: "move",
+		2: "stash",
+		3: "repair",
+		4: "recharge",
+		5: "broadcast",
+	}
+	CommandType_value = map[string]int32{
+		"none":      0,
+		"move":      1,
+		"stash":     2,
+		"repair":    3,
+		"recharge":  4,
+		"broadcast": 5,
+	}
+)
+
+func (x CommandType) Enum() *CommandType {
+	p := new(CommandType)
+	*p = x
+	return p
+}
+
+func (x CommandType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CommandType) Descriptor() protoreflect.EnumDescriptor {
+	return file_rove_rove_proto_enumTypes[0].Descriptor()
+}
+
+func (CommandType) Type() protoreflect.EnumType {
+	return &file_rove_rove_proto_enumTypes[0]
+}
+
+func (x CommandType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CommandType.Descriptor instead.
+func (CommandType) EnumDescriptor() ([]byte, []int) {
+	return file_rove_rove_proto_rawDescGZIP(), []int{0}
+}
+
+// ServerStatusRequest is an empty placeholder
+type ServerStatusRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *ServerStatusRequest) Reset() {
+	*x = ServerStatusRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_rove_rove_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ServerStatusRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerStatusRequest) ProtoMessage() {}
+
+func (x *ServerStatusRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rove_rove_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerStatusRequest.ProtoReflect.Descriptor instead.
+func (*ServerStatusRequest) Descriptor() ([]byte, []int) {
+	return file_rove_rove_proto_rawDescGZIP(), []int{0}
+}
+
+// ServerStatusResponse is a response with useful server information
+type ServerStatusResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The version of the server in v{major}.{minor}-{delta}-{sha} form
+	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+	// Whether the server is ready to accept requests
+	Ready bool `protobuf:"varint,2,opt,name=ready,proto3" json:"ready,omitempty"`
+	// The tick rate of the server in minutes (how many minutes per tick)
+	TickRate int32 `protobuf:"varint,3,opt,name=tickRate,proto3" json:"tickRate,omitempty"`
+	// The current tick of the server
+	CurrentTick int32 `protobuf:"varint,4,opt,name=currentTick,proto3" json:"currentTick,omitempty"`
+	// The time the next tick will occur
+	NextTick string `protobuf:"bytes,5,opt,name=next_tick,json=nextTick,proto3" json:"next_tick,omitempty"`
+}
+
+func (x *ServerStatusResponse) Reset() {
+	*x = ServerStatusResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_rove_rove_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ServerStatusResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerStatusResponse) ProtoMessage() {}
+
+func (x *ServerStatusResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rove_rove_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerStatusResponse.ProtoReflect.Descriptor instead.
+func (*ServerStatusResponse) Descriptor() ([]byte, []int) {
+	return file_rove_rove_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ServerStatusResponse) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *ServerStatusResponse) GetReady() bool {
+	if x != nil {
+		return x.Ready
+	}
+	return false
+}
+
+func (x *ServerStatusResponse) GetTickRate() int32 {
+	if x != nil {
+		return x.TickRate
+	}
+	return 0
+}
+
+func (x *ServerStatusResponse) GetCurrentTick() int32 {
+	if x != nil {
+		return x.CurrentTick
+	}
+	return 0
+}
+
+func (x *ServerStatusResponse) GetNextTick() string {
+	if x != nil {
+		return x.NextTick
+	}
+	return ""
+}
+
+// RegisterRequest contains data to register an account
+type RegisterRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The desired account name
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+}
+
+func (x *RegisterRequest) Reset() {
+	*x = RegisterRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_rove_rove_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RegisterRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterRequest) ProtoMessage() {}
+
+func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rove_rove_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterRequest.ProtoReflect.Descriptor instead.
+func (*RegisterRequest) Descriptor() ([]byte, []int) {
+	return file_rove_rove_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *RegisterRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+// Account describes a registered account
+type Account struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The account name
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// The account secret value, given when creating the account
+	Secret string `protobuf:"bytes,2,opt,name=secret,proto3" json:"secret,omitempty"`
+}
+
+func (x *Account) Reset() {
+	*x = Account{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_rove_rove_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Account) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Account) ProtoMessage() {}
+
+func (x *Account) ProtoReflect() protoreflect.Message {
+	mi := &file_rove_rove_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Account.ProtoReflect.Descriptor instead.
+func (*Account) Descriptor() ([]byte, []int) {
+	return file_rove_rove_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *Account) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Account) GetSecret() string {
+	if x != nil {
+		return x.Secret
+	}
+	return ""
+}
+
+// RegisterResponse is the response given to registering an account
+type RegisterResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The registered account information
+	Account *Account `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
+}
+
+func (x *RegisterResponse) Reset() {
+	*x = RegisterResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_rove_rove_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RegisterResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterResponse) ProtoMessage() {}
+
+func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rove_rove_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterResponse.ProtoReflect.Descriptor instead.
+func (*RegisterResponse) Descriptor() ([]byte, []int) {
+	return file_rove_rove_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *RegisterResponse) GetAccount() *Account {
+	if x != nil {
+		return x.Account
+	}
+	return nil
+}
+
+// Command is a single command for a rover
 type Command struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The command to execute
-	// "move" - Move the rover in a direction, requires bearing
-	// "stash" - Stashes item at current location in rover inventory
-	// "repair" - Repairs the rover using an inventory object
-	// "recharge" - Waits a tick to add more charge to the rover
-	// "broadcast" - Broadcasts a message to nearby rovers
-	Command string `protobuf:"bytes,1,opt,name=command,proto3" json:"command,omitempty"`
-	// A bearing, example: NE
-	Bearing string `protobuf:"bytes,2,opt,name=bearing,proto3" json:"bearing,omitempty"`
-	// A simple message, must be composed of printable ASCII glyphs (32-126)
-	// maximum of three characters
-	Message []byte `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	// The command type
+	Command CommandType `protobuf:"varint,1,opt,name=command,proto3,enum=rove.CommandType" json:"command,omitempty"`
+	// Types that are assignable to Data:
+	//	*Command_Bearing
+	//	*Command_Message
+	Data isCommand_Data `protobuf_oneof:"data"`
 }
 
 func (x *Command) Reset() {
 	*x = Command{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[0]
+		mi := &file_rove_rove_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -69,7 +408,7 @@ func (x *Command) String() string {
 func (*Command) ProtoMessage() {}
 
 func (x *Command) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[0]
+	mi := &file_rove_rove_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -82,30 +421,59 @@ func (x *Command) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Command.ProtoReflect.Descriptor instead.
 func (*Command) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{0}
+	return file_rove_rove_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *Command) GetCommand() string {
+func (x *Command) GetCommand() CommandType {
 	if x != nil {
 		return x.Command
 	}
-	return ""
+	return CommandType_none
+}
+
+func (m *Command) GetData() isCommand_Data {
+	if m != nil {
+		return m.Data
+	}
+	return nil
 }
 
 func (x *Command) GetBearing() string {
-	if x != nil {
+	if x, ok := x.GetData().(*Command_Bearing); ok {
 		return x.Bearing
 	}
 	return ""
 }
 
 func (x *Command) GetMessage() []byte {
-	if x != nil {
+	if x, ok := x.GetData().(*Command_Message); ok {
 		return x.Message
 	}
 	return nil
 }
 
+type isCommand_Data interface {
+	isCommand_Data()
+}
+
+type Command_Bearing struct {
+	// A bearing, example: NE
+	// Used with MOVE
+	Bearing string `protobuf:"bytes,2,opt,name=bearing,proto3,oneof"`
+}
+
+type Command_Message struct {
+	// A simple message, must be composed of printable ASCII glyphs (32-126)
+	// maximum of three characters
+	// Used with BROADCAST
+	Message []byte `protobuf:"bytes,3,opt,name=message,proto3,oneof"`
+}
+
+func (*Command_Bearing) isCommand_Data() {}
+
+func (*Command_Message) isCommand_Data() {}
+
+// CommandRequest describes a set of commands to be requested for the rover
 type CommandRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -120,7 +488,7 @@ type CommandRequest struct {
 func (x *CommandRequest) Reset() {
 	*x = CommandRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[1]
+		mi := &file_rove_rove_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -133,7 +501,7 @@ func (x *CommandRequest) String() string {
 func (*CommandRequest) ProtoMessage() {}
 
 func (x *CommandRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[1]
+	mi := &file_rove_rove_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -146,7 +514,7 @@ func (x *CommandRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandRequest.ProtoReflect.Descriptor instead.
 func (*CommandRequest) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{1}
+	return file_rove_rove_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CommandRequest) GetAccount() *Account {
@@ -163,7 +531,7 @@ func (x *CommandRequest) GetCommands() []*Command {
 	return nil
 }
 
-// Empty placeholder
+// CommandResponse is an empty placeholder
 type CommandResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -173,7 +541,7 @@ type CommandResponse struct {
 func (x *CommandResponse) Reset() {
 	*x = CommandResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[2]
+		mi := &file_rove_rove_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -186,7 +554,7 @@ func (x *CommandResponse) String() string {
 func (*CommandResponse) ProtoMessage() {}
 
 func (x *CommandResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[2]
+	mi := &file_rove_rove_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -199,57 +567,10 @@ func (x *CommandResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandResponse.ProtoReflect.Descriptor instead.
 func (*CommandResponse) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{2}
+	return file_rove_rove_proto_rawDescGZIP(), []int{7}
 }
 
-type Error struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// An explanation for the HTTP error returned
-	Error string `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
-}
-
-func (x *Error) Reset() {
-	*x = Error{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Error) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Error) ProtoMessage() {}
-
-func (x *Error) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Error.ProtoReflect.Descriptor instead.
-func (*Error) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *Error) GetError() string {
-	if x != nil {
-		return x.Error
-	}
-	return ""
-}
-
+// RadarRequest is the data needed to request the radar for a rover
 type RadarRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -262,7 +583,7 @@ type RadarRequest struct {
 func (x *RadarRequest) Reset() {
 	*x = RadarRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[4]
+		mi := &file_rove_rove_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -275,7 +596,7 @@ func (x *RadarRequest) String() string {
 func (*RadarRequest) ProtoMessage() {}
 
 func (x *RadarRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[4]
+	mi := &file_rove_rove_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -288,7 +609,7 @@ func (x *RadarRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RadarRequest.ProtoReflect.Descriptor instead.
 func (*RadarRequest) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{4}
+	return file_rove_rove_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RadarRequest) GetAccount() *Account {
@@ -298,6 +619,7 @@ func (x *RadarRequest) GetAccount() *Account {
 	return nil
 }
 
+// RadarResponse describes radar information
 type RadarResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -305,7 +627,8 @@ type RadarResponse struct {
 
 	// The range in tiles from the rover of the radar data
 	Range int32 `protobuf:"varint,1,opt,name=range,proto3" json:"range,omitempty"`
-	// A 1D array representing range*2 + 1 squared set of tiles, origin bottom left and in row->column order
+	// A 1D array representing range*2 + 1 squared set of tiles, origin bottom
+	// left and in row->column order
 	Tiles []byte `protobuf:"bytes,2,opt,name=tiles,proto3" json:"tiles,omitempty"`
 	// A similar array to the tile array, but containing objects
 	Objects []byte `protobuf:"bytes,3,opt,name=objects,proto3" json:"objects,omitempty"`
@@ -314,7 +637,7 @@ type RadarResponse struct {
 func (x *RadarResponse) Reset() {
 	*x = RadarResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[5]
+		mi := &file_rove_rove_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -327,7 +650,7 @@ func (x *RadarResponse) String() string {
 func (*RadarResponse) ProtoMessage() {}
 
 func (x *RadarResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[5]
+	mi := &file_rove_rove_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -340,7 +663,7 @@ func (x *RadarResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RadarResponse.ProtoReflect.Descriptor instead.
 func (*RadarResponse) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{5}
+	return file_rove_rove_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *RadarResponse) GetRange() int32 {
@@ -364,103 +687,7 @@ func (x *RadarResponse) GetObjects() []byte {
 	return nil
 }
 
-type RegisterRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// The desired account name
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-}
-
-func (x *RegisterRequest) Reset() {
-	*x = RegisterRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[6]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RegisterRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RegisterRequest) ProtoMessage() {}
-
-func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[6]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RegisterRequest.ProtoReflect.Descriptor instead.
-func (*RegisterRequest) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *RegisterRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-// Empty placeholder
-type RegisterResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// The registered account information
-	Account *Account `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
-}
-
-func (x *RegisterResponse) Reset() {
-	*x = RegisterResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[7]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RegisterResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RegisterResponse) ProtoMessage() {}
-
-func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[7]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RegisterResponse.ProtoReflect.Descriptor instead.
-func (*RegisterResponse) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *RegisterResponse) GetAccount() *Account {
-	if x != nil {
-		return x.Account
-	}
-	return nil
-}
-
+// StatusRequest is information needed to request rover status
 type StatusRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -473,7 +700,7 @@ type StatusRequest struct {
 func (x *StatusRequest) Reset() {
 	*x = StatusRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[8]
+		mi := &file_rove_rove_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -486,7 +713,7 @@ func (x *StatusRequest) String() string {
 func (*StatusRequest) ProtoMessage() {}
 
 func (x *StatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[8]
+	mi := &file_rove_rove_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -499,7 +726,7 @@ func (x *StatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StatusRequest.ProtoReflect.Descriptor instead.
 func (*StatusRequest) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{8}
+	return file_rove_rove_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *StatusRequest) GetAccount() *Account {
@@ -509,6 +736,7 @@ func (x *StatusRequest) GetAccount() *Account {
 	return nil
 }
 
+// Log is a single log item
 type Log struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -523,7 +751,7 @@ type Log struct {
 func (x *Log) Reset() {
 	*x = Log{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[9]
+		mi := &file_rove_rove_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -536,7 +764,7 @@ func (x *Log) String() string {
 func (*Log) ProtoMessage() {}
 
 func (x *Log) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[9]
+	mi := &file_rove_rove_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -549,7 +777,7 @@ func (x *Log) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Log.ProtoReflect.Descriptor instead.
 func (*Log) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{9}
+	return file_rove_rove_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *Log) GetTime() string {
@@ -566,6 +794,63 @@ func (x *Log) GetText() string {
 	return ""
 }
 
+// Vector describes a point or vector in 2D space
+type Vector struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	X int32 `protobuf:"varint,1,opt,name=x,proto3" json:"x,omitempty"`
+	Y int32 `protobuf:"varint,2,opt,name=y,proto3" json:"y,omitempty"`
+}
+
+func (x *Vector) Reset() {
+	*x = Vector{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_rove_rove_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Vector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Vector) ProtoMessage() {}
+
+func (x *Vector) ProtoReflect() protoreflect.Message {
+	mi := &file_rove_rove_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Vector.ProtoReflect.Descriptor instead.
+func (*Vector) Descriptor() ([]byte, []int) {
+	return file_rove_rove_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *Vector) GetX() int32 {
+	if x != nil {
+		return x.X
+	}
+	return 0
+}
+
+func (x *Vector) GetY() int32 {
+	if x != nil {
+		return x.Y
+	}
+	return 0
+}
+
+// StatusResponse is the response given to a status request
 type StatusResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -600,7 +885,7 @@ type StatusResponse struct {
 func (x *StatusResponse) Reset() {
 	*x = StatusResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[10]
+		mi := &file_rove_rove_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -613,7 +898,7 @@ func (x *StatusResponse) String() string {
 func (*StatusResponse) ProtoMessage() {}
 
 func (x *StatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[10]
+	mi := &file_rove_rove_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -626,7 +911,7 @@ func (x *StatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StatusResponse.ProtoReflect.Descriptor instead.
 func (*StatusResponse) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{10}
+	return file_rove_rove_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *StatusResponse) GetName() string {
@@ -713,356 +998,120 @@ func (x *StatusResponse) GetLogs() []*Log {
 	return nil
 }
 
-// Empty placeholder
-type ServerStatusRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *ServerStatusRequest) Reset() {
-	*x = ServerStatusRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[11]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ServerStatusRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ServerStatusRequest) ProtoMessage() {}
-
-func (x *ServerStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[11]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ServerStatusRequest.ProtoReflect.Descriptor instead.
-func (*ServerStatusRequest) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{11}
-}
-
-type ServerStatusResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// The version of the server in v{major}.{minor}-{delta}-{sha} form
-	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
-	// Whether the server is ready to accept requests
-	Ready bool `protobuf:"varint,2,opt,name=ready,proto3" json:"ready,omitempty"`
-	// The tick rate of the server in minutes (how many minutes per tick)
-	TickRate int32 `protobuf:"varint,3,opt,name=tickRate,proto3" json:"tickRate,omitempty"`
-	// The current tick of the server
-	CurrentTick int32 `protobuf:"varint,4,opt,name=currentTick,proto3" json:"currentTick,omitempty"`
-	// The time the next tick will occur
-	NextTick string `protobuf:"bytes,5,opt,name=next_tick,json=nextTick,proto3" json:"next_tick,omitempty"`
-}
-
-func (x *ServerStatusResponse) Reset() {
-	*x = ServerStatusResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[12]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ServerStatusResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ServerStatusResponse) ProtoMessage() {}
-
-func (x *ServerStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[12]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ServerStatusResponse.ProtoReflect.Descriptor instead.
-func (*ServerStatusResponse) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *ServerStatusResponse) GetVersion() string {
-	if x != nil {
-		return x.Version
-	}
-	return ""
-}
-
-func (x *ServerStatusResponse) GetReady() bool {
-	if x != nil {
-		return x.Ready
-	}
-	return false
-}
-
-func (x *ServerStatusResponse) GetTickRate() int32 {
-	if x != nil {
-		return x.TickRate
-	}
-	return 0
-}
-
-func (x *ServerStatusResponse) GetCurrentTick() int32 {
-	if x != nil {
-		return x.CurrentTick
-	}
-	return 0
-}
-
-func (x *ServerStatusResponse) GetNextTick() string {
-	if x != nil {
-		return x.NextTick
-	}
-	return ""
-}
-
-type Vector struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	X int32 `protobuf:"varint,1,opt,name=x,proto3" json:"x,omitempty"`
-	Y int32 `protobuf:"varint,2,opt,name=y,proto3" json:"y,omitempty"`
-}
-
-func (x *Vector) Reset() {
-	*x = Vector{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[13]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Vector) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Vector) ProtoMessage() {}
-
-func (x *Vector) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[13]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Vector.ProtoReflect.Descriptor instead.
-func (*Vector) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *Vector) GetX() int32 {
-	if x != nil {
-		return x.X
-	}
-	return 0
-}
-
-func (x *Vector) GetY() int32 {
-	if x != nil {
-		return x.Y
-	}
-	return 0
-}
-
-type Account struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name   string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Secret string `protobuf:"bytes,2,opt,name=secret,proto3" json:"secret,omitempty"`
-}
-
-func (x *Account) Reset() {
-	*x = Account{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rove_rove_proto_msgTypes[14]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Account) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Account) ProtoMessage() {}
-
-func (x *Account) ProtoReflect() protoreflect.Message {
-	mi := &file_rove_rove_proto_msgTypes[14]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Account.ProtoReflect.Descriptor instead.
-func (*Account) Descriptor() ([]byte, []int) {
-	return file_rove_rove_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *Account) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Account) GetSecret() string {
-	if x != nil {
-		return x.Secret
-	}
-	return ""
-}
-
 var File_rove_rove_proto protoreflect.FileDescriptor
 
 var file_rove_rove_proto_rawDesc = []byte{
 	0x0a, 0x0f, 0x72, 0x6f, 0x76, 0x65, 0x2f, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x12, 0x04, 0x72, 0x6f, 0x76, 0x65, 0x1a, 0x1c, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f,
-	0x61, 0x70, 0x69, 0x2f, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x57, 0x0a, 0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64,
-	0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x62, 0x65,
-	0x61, 0x72, 0x69, 0x6e, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x62, 0x65, 0x61,
-	0x72, 0x69, 0x6e, 0x67, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x64,
-	0x0a, 0x0e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x12, 0x27, 0x0a, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74,
-	0x52, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x29, 0x0a, 0x08, 0x63, 0x6f, 0x6d,
-	0x6d, 0x61, 0x6e, 0x64, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x72, 0x6f,
-	0x76, 0x65, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x08, 0x63, 0x6f, 0x6d, 0x6d,
-	0x61, 0x6e, 0x64, 0x73, 0x22, 0x11, 0x0a, 0x0f, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x1d, 0x0a, 0x05, 0x45, 0x72, 0x72, 0x6f, 0x72,
-	0x12, 0x14, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x22, 0x37, 0x0a, 0x0c, 0x52, 0x61, 0x64, 0x61, 0x72, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x27, 0x0a, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e,
-	0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x41,
-	0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x22,
-	0x55, 0x0a, 0x0d, 0x52, 0x61, 0x64, 0x61, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x12, 0x14, 0x0a, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52,
-	0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x69, 0x6c, 0x65, 0x73, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x74, 0x69, 0x6c, 0x65, 0x73, 0x12, 0x18, 0x0a, 0x07,
-	0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x6f,
-	0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x22, 0x25, 0x0a, 0x0f, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d,
-	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x3b, 0x0a,
-	0x10, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x27, 0x0a, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e,
-	0x74, 0x52, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x38, 0x0a, 0x0d, 0x53, 0x74,
-	0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x27, 0x0a, 0x07, 0x61,
-	0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x72,
-	0x6f, 0x76, 0x65, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x07, 0x61, 0x63, 0x63,
-	0x6f, 0x75, 0x6e, 0x74, 0x22, 0x2d, 0x0a, 0x03, 0x4c, 0x6f, 0x67, 0x12, 0x12, 0x0a, 0x04, 0x74,
-	0x69, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x69, 0x6d, 0x65, 0x12,
-	0x12, 0x0a, 0x04, 0x74, 0x65, 0x78, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74,
-	0x65, 0x78, 0x74, 0x22, 0xb7, 0x03, 0x0a, 0x0e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x28, 0x0a, 0x08, 0x70, 0x6f,
-	0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x72,
-	0x6f, 0x76, 0x65, 0x2e, 0x56, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x08, 0x70, 0x6f, 0x73, 0x69,
-	0x74, 0x69, 0x6f, 0x6e, 0x12, 0x14, 0x0a, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x05, 0x52, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x69, 0x6e,
-	0x76, 0x65, 0x6e, 0x74, 0x6f, 0x72, 0x79, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x69,
-	0x6e, 0x76, 0x65, 0x6e, 0x74, 0x6f, 0x72, 0x79, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x61, 0x70, 0x61,
-	0x63, 0x69, 0x74, 0x79, 0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52, 0x08, 0x63, 0x61, 0x70, 0x61,
-	0x63, 0x69, 0x74, 0x79, 0x12, 0x1c, 0x0a, 0x09, 0x69, 0x6e, 0x74, 0x65, 0x67, 0x72, 0x69, 0x74,
-	0x79, 0x18, 0x06, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x69, 0x6e, 0x74, 0x65, 0x67, 0x72, 0x69,
-	0x74, 0x79, 0x12, 0x2a, 0x0a, 0x10, 0x6d, 0x61, 0x78, 0x69, 0x6d, 0x75, 0x6d, 0x49, 0x6e, 0x74,
-	0x65, 0x67, 0x72, 0x69, 0x74, 0x79, 0x18, 0x07, 0x20, 0x01, 0x28, 0x05, 0x52, 0x10, 0x6d, 0x61,
-	0x78, 0x69, 0x6d, 0x75, 0x6d, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x72, 0x69, 0x74, 0x79, 0x12, 0x16,
-	0x0a, 0x06, 0x63, 0x68, 0x61, 0x72, 0x67, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06,
-	0x63, 0x68, 0x61, 0x72, 0x67, 0x65, 0x12, 0x24, 0x0a, 0x0d, 0x6d, 0x61, 0x78, 0x69, 0x6d, 0x75,
-	0x6d, 0x43, 0x68, 0x61, 0x72, 0x67, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0d, 0x6d,
-	0x61, 0x78, 0x69, 0x6d, 0x75, 0x6d, 0x43, 0x68, 0x61, 0x72, 0x67, 0x65, 0x12, 0x39, 0x0a, 0x10,
-	0x69, 0x6e, 0x63, 0x6f, 0x6d, 0x69, 0x6e, 0x67, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x73,
-	0x18, 0x0a, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x43, 0x6f,
-	0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x10, 0x69, 0x6e, 0x63, 0x6f, 0x6d, 0x69, 0x6e, 0x67, 0x43,
-	0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x12, 0x35, 0x0a, 0x0e, 0x71, 0x75, 0x65, 0x75, 0x65,
-	0x64, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x18, 0x0b, 0x20, 0x03, 0x28, 0x0b, 0x32,
-	0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x0e,
-	0x71, 0x75, 0x65, 0x75, 0x65, 0x64, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x12, 0x1d,
-	0x0a, 0x04, 0x6c, 0x6f, 0x67, 0x73, 0x18, 0x0c, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x72,
-	0x6f, 0x76, 0x65, 0x2e, 0x4c, 0x6f, 0x67, 0x52, 0x04, 0x6c, 0x6f, 0x67, 0x73, 0x22, 0x15, 0x0a,
-	0x13, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x22, 0xa1, 0x01, 0x0a, 0x14, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53,
-	0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a,
-	0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
-	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x14, 0x0a, 0x05, 0x72, 0x65, 0x61, 0x64, 0x79,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x05, 0x72, 0x65, 0x61, 0x64, 0x79, 0x12, 0x1a, 0x0a,
-	0x08, 0x74, 0x69, 0x63, 0x6b, 0x52, 0x61, 0x74, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52,
-	0x08, 0x74, 0x69, 0x63, 0x6b, 0x52, 0x61, 0x74, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x63, 0x75, 0x72,
-	0x72, 0x65, 0x6e, 0x74, 0x54, 0x69, 0x63, 0x6b, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0b,
-	0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x54, 0x69, 0x63, 0x6b, 0x12, 0x1b, 0x0a, 0x09, 0x6e,
-	0x65, 0x78, 0x74, 0x5f, 0x74, 0x69, 0x63, 0x6b, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08,
-	0x6e, 0x65, 0x78, 0x74, 0x54, 0x69, 0x63, 0x6b, 0x22, 0x24, 0x0a, 0x06, 0x56, 0x65, 0x63, 0x74,
-	0x6f, 0x72, 0x12, 0x0c, 0x0a, 0x01, 0x78, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x01, 0x78,
-	0x12, 0x0c, 0x0a, 0x01, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x01, 0x79, 0x22, 0x35,
-	0x0a, 0x07, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d,
-	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a,
-	0x06, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73,
-	0x65, 0x63, 0x72, 0x65, 0x74, 0x32, 0x91, 0x03, 0x0a, 0x04, 0x52, 0x6f, 0x76, 0x65, 0x12, 0x5d,
-	0x0a, 0x0c, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x19,
-	0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74,
-	0x75, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x72, 0x6f, 0x76, 0x65,
-	0x2e, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x16, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x10, 0x12, 0x0e, 0x2f,
-	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2d, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x4f, 0x0a,
-	0x08, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x12, 0x15, 0x2e, 0x72, 0x6f, 0x76, 0x65,
-	0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x16, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x14, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x0e,
-	0x22, 0x09, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x3a, 0x01, 0x2a, 0x12, 0x4b,
-	0x0a, 0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x14, 0x2e, 0x72, 0x6f, 0x76, 0x65,
-	0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x15, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x13, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x0d, 0x22, 0x08,
-	0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x3a, 0x01, 0x2a, 0x12, 0x43, 0x0a, 0x05, 0x52,
-	0x61, 0x64, 0x61, 0x72, 0x12, 0x12, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x61, 0x64, 0x61,
-	0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x13, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e,
-	0x52, 0x61, 0x64, 0x61, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x11, 0x82,
-	0xd3, 0xe4, 0x93, 0x02, 0x0b, 0x22, 0x06, 0x2f, 0x72, 0x61, 0x64, 0x61, 0x72, 0x3a, 0x01, 0x2a,
-	0x12, 0x47, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x13, 0x2e, 0x72, 0x6f, 0x76,
-	0x65, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x14, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x12, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x0c, 0x22, 0x07, 0x2f,
-	0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x3a, 0x01, 0x2a, 0x42, 0x21, 0x5a, 0x1f, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x64, 0x69, 0x6c, 0x75, 0x7a, 0x2f, 0x72,
-	0x6f, 0x76, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x72, 0x6f, 0x76, 0x65, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x12, 0x04, 0x72, 0x6f, 0x76, 0x65, 0x22, 0x15, 0x0a, 0x13, 0x53, 0x65, 0x72, 0x76, 0x65,
+	0x72, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0xa1,
+	0x01, 0x0a, 0x14, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69,
+	0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f,
+	0x6e, 0x12, 0x14, 0x0a, 0x05, 0x72, 0x65, 0x61, 0x64, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08,
+	0x52, 0x05, 0x72, 0x65, 0x61, 0x64, 0x79, 0x12, 0x1a, 0x0a, 0x08, 0x74, 0x69, 0x63, 0x6b, 0x52,
+	0x61, 0x74, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x08, 0x74, 0x69, 0x63, 0x6b, 0x52,
+	0x61, 0x74, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x54, 0x69,
+	0x63, 0x6b, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0b, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e,
+	0x74, 0x54, 0x69, 0x63, 0x6b, 0x12, 0x1b, 0x0a, 0x09, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x74, 0x69,
+	0x63, 0x6b, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6e, 0x65, 0x78, 0x74, 0x54, 0x69,
+	0x63, 0x6b, 0x22, 0x25, 0x0a, 0x0f, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x35, 0x0a, 0x07, 0x41, 0x63, 0x63,
+	0x6f, 0x75, 0x6e, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x63, 0x72,
+	0x65, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74,
+	0x22, 0x3b, 0x0a, 0x10, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x27, 0x0a, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x41, 0x63, 0x63,
+	0x6f, 0x75, 0x6e, 0x74, 0x52, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x76, 0x0a,
+	0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x2b, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x6d,
+	0x61, 0x6e, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x11, 0x2e, 0x72, 0x6f, 0x76, 0x65,
+	0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x54, 0x79, 0x70, 0x65, 0x52, 0x07, 0x63, 0x6f,
+	0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x1a, 0x0a, 0x07, 0x62, 0x65, 0x61, 0x72, 0x69, 0x6e, 0x67,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x07, 0x62, 0x65, 0x61, 0x72, 0x69, 0x6e,
+	0x67, 0x12, 0x1a, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x0c, 0x48, 0x00, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x42, 0x06, 0x0a,
+	0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x64, 0x0a, 0x0e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x27, 0x0a, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75,
+	0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e,
+	0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74,
+	0x12, 0x29, 0x0a, 0x08, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x18, 0x02, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e,
+	0x64, 0x52, 0x08, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x22, 0x11, 0x0a, 0x0f, 0x43,
+	0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x37,
+	0x0a, 0x0c, 0x52, 0x61, 0x64, 0x61, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x27,
+	0x0a, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x07,
+	0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x55, 0x0a, 0x0d, 0x52, 0x61, 0x64, 0x61, 0x72,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x72, 0x61, 0x6e, 0x67,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x12, 0x14,
+	0x0a, 0x05, 0x74, 0x69, 0x6c, 0x65, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x74,
+	0x69, 0x6c, 0x65, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x22, 0x38,
+	0x0a, 0x0d, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x27, 0x0a, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52,
+	0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x2d, 0x0a, 0x03, 0x4c, 0x6f, 0x67, 0x12,
+	0x12, 0x0a, 0x04, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74,
+	0x69, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x78, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x04, 0x74, 0x65, 0x78, 0x74, 0x22, 0x24, 0x0a, 0x06, 0x56, 0x65, 0x63, 0x74, 0x6f,
+	0x72, 0x12, 0x0c, 0x0a, 0x01, 0x78, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x01, 0x78, 0x12,
+	0x0c, 0x0a, 0x01, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x01, 0x79, 0x22, 0xb7, 0x03,
+	0x0a, 0x0e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
+	0x6e, 0x61, 0x6d, 0x65, 0x12, 0x28, 0x0a, 0x08, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x56, 0x65,
+	0x63, 0x74, 0x6f, 0x72, 0x52, 0x08, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x14,
+	0x0a, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x72,
+	0x61, 0x6e, 0x67, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x69, 0x6e, 0x76, 0x65, 0x6e, 0x74, 0x6f, 0x72,
+	0x79, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x69, 0x6e, 0x76, 0x65, 0x6e, 0x74, 0x6f,
+	0x72, 0x79, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x61, 0x70, 0x61, 0x63, 0x69, 0x74, 0x79, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x05, 0x52, 0x08, 0x63, 0x61, 0x70, 0x61, 0x63, 0x69, 0x74, 0x79, 0x12, 0x1c,
+	0x0a, 0x09, 0x69, 0x6e, 0x74, 0x65, 0x67, 0x72, 0x69, 0x74, 0x79, 0x18, 0x06, 0x20, 0x01, 0x28,
+	0x05, 0x52, 0x09, 0x69, 0x6e, 0x74, 0x65, 0x67, 0x72, 0x69, 0x74, 0x79, 0x12, 0x2a, 0x0a, 0x10,
+	0x6d, 0x61, 0x78, 0x69, 0x6d, 0x75, 0x6d, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x72, 0x69, 0x74, 0x79,
+	0x18, 0x07, 0x20, 0x01, 0x28, 0x05, 0x52, 0x10, 0x6d, 0x61, 0x78, 0x69, 0x6d, 0x75, 0x6d, 0x49,
+	0x6e, 0x74, 0x65, 0x67, 0x72, 0x69, 0x74, 0x79, 0x12, 0x16, 0x0a, 0x06, 0x63, 0x68, 0x61, 0x72,
+	0x67, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x63, 0x68, 0x61, 0x72, 0x67, 0x65,
+	0x12, 0x24, 0x0a, 0x0d, 0x6d, 0x61, 0x78, 0x69, 0x6d, 0x75, 0x6d, 0x43, 0x68, 0x61, 0x72, 0x67,
+	0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0d, 0x6d, 0x61, 0x78, 0x69, 0x6d, 0x75, 0x6d,
+	0x43, 0x68, 0x61, 0x72, 0x67, 0x65, 0x12, 0x39, 0x0a, 0x10, 0x69, 0x6e, 0x63, 0x6f, 0x6d, 0x69,
+	0x6e, 0x67, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x18, 0x0a, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52,
+	0x10, 0x69, 0x6e, 0x63, 0x6f, 0x6d, 0x69, 0x6e, 0x67, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64,
+	0x73, 0x12, 0x35, 0x0a, 0x0e, 0x71, 0x75, 0x65, 0x75, 0x65, 0x64, 0x43, 0x6f, 0x6d, 0x6d, 0x61,
+	0x6e, 0x64, 0x73, 0x18, 0x0b, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x72, 0x6f, 0x76, 0x65,
+	0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x0e, 0x71, 0x75, 0x65, 0x75, 0x65, 0x64,
+	0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x12, 0x1d, 0x0a, 0x04, 0x6c, 0x6f, 0x67, 0x73,
+	0x18, 0x0c, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x4c, 0x6f,
+	0x67, 0x52, 0x04, 0x6c, 0x6f, 0x67, 0x73, 0x2a, 0x55, 0x0a, 0x0b, 0x43, 0x6f, 0x6d, 0x6d, 0x61,
+	0x6e, 0x64, 0x54, 0x79, 0x70, 0x65, 0x12, 0x08, 0x0a, 0x04, 0x6e, 0x6f, 0x6e, 0x65, 0x10, 0x00,
+	0x12, 0x08, 0x0a, 0x04, 0x6d, 0x6f, 0x76, 0x65, 0x10, 0x01, 0x12, 0x09, 0x0a, 0x05, 0x73, 0x74,
+	0x61, 0x73, 0x68, 0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06, 0x72, 0x65, 0x70, 0x61, 0x69, 0x72, 0x10,
+	0x03, 0x12, 0x0c, 0x0a, 0x08, 0x72, 0x65, 0x63, 0x68, 0x61, 0x72, 0x67, 0x65, 0x10, 0x04, 0x12,
+	0x0d, 0x0a, 0x09, 0x62, 0x72, 0x6f, 0x61, 0x64, 0x63, 0x61, 0x73, 0x74, 0x10, 0x05, 0x32, 0xb1,
+	0x02, 0x0a, 0x04, 0x52, 0x6f, 0x76, 0x65, 0x12, 0x47, 0x0a, 0x0c, 0x53, 0x65, 0x72, 0x76, 0x65,
+	0x72, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x19, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x53,
+	0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72,
+	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00,
+	0x12, 0x3b, 0x0a, 0x08, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x12, 0x15, 0x2e, 0x72,
+	0x6f, 0x76, 0x65, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73,
+	0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x38, 0x0a,
+	0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x14, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e,
+	0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15,
+	0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x32, 0x0a, 0x05, 0x52, 0x61, 0x64, 0x61, 0x72,
+	0x12, 0x12, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x61, 0x64, 0x61, 0x72, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x13, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x52, 0x61, 0x64, 0x61,
+	0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x35, 0x0a, 0x06, 0x53,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x13, 0x2e, 0x72, 0x6f, 0x76, 0x65, 0x2e, 0x53, 0x74, 0x61,
+	0x74, 0x75, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x72, 0x6f, 0x76,
+	0x65, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x22, 0x00, 0x42, 0x21, 0x5a, 0x1f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x6d, 0x64, 0x69, 0x6c, 0x75, 0x7a, 0x2f, 0x72, 0x6f, 0x76, 0x65, 0x2f, 0x70, 0x6b, 0x67,
+	0x2f, 0x72, 0x6f, 0x76, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1077,49 +1126,51 @@ func file_rove_rove_proto_rawDescGZIP() []byte {
 	return file_rove_rove_proto_rawDescData
 }
 
-var file_rove_rove_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_rove_rove_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_rove_rove_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_rove_rove_proto_goTypes = []interface{}{
-	(*Command)(nil),              // 0: rove.Command
-	(*CommandRequest)(nil),       // 1: rove.CommandRequest
-	(*CommandResponse)(nil),      // 2: rove.CommandResponse
-	(*Error)(nil),                // 3: rove.Error
-	(*RadarRequest)(nil),         // 4: rove.RadarRequest
-	(*RadarResponse)(nil),        // 5: rove.RadarResponse
-	(*RegisterRequest)(nil),      // 6: rove.RegisterRequest
-	(*RegisterResponse)(nil),     // 7: rove.RegisterResponse
-	(*StatusRequest)(nil),        // 8: rove.StatusRequest
-	(*Log)(nil),                  // 9: rove.Log
-	(*StatusResponse)(nil),       // 10: rove.StatusResponse
-	(*ServerStatusRequest)(nil),  // 11: rove.ServerStatusRequest
-	(*ServerStatusResponse)(nil), // 12: rove.ServerStatusResponse
+	(CommandType)(0),             // 0: rove.CommandType
+	(*ServerStatusRequest)(nil),  // 1: rove.ServerStatusRequest
+	(*ServerStatusResponse)(nil), // 2: rove.ServerStatusResponse
+	(*RegisterRequest)(nil),      // 3: rove.RegisterRequest
+	(*Account)(nil),              // 4: rove.Account
+	(*RegisterResponse)(nil),     // 5: rove.RegisterResponse
+	(*Command)(nil),              // 6: rove.Command
+	(*CommandRequest)(nil),       // 7: rove.CommandRequest
+	(*CommandResponse)(nil),      // 8: rove.CommandResponse
+	(*RadarRequest)(nil),         // 9: rove.RadarRequest
+	(*RadarResponse)(nil),        // 10: rove.RadarResponse
+	(*StatusRequest)(nil),        // 11: rove.StatusRequest
+	(*Log)(nil),                  // 12: rove.Log
 	(*Vector)(nil),               // 13: rove.Vector
-	(*Account)(nil),              // 14: rove.Account
+	(*StatusResponse)(nil),       // 14: rove.StatusResponse
 }
 var file_rove_rove_proto_depIdxs = []int32{
-	14, // 0: rove.CommandRequest.account:type_name -> rove.Account
-	0,  // 1: rove.CommandRequest.commands:type_name -> rove.Command
-	14, // 2: rove.RadarRequest.account:type_name -> rove.Account
-	14, // 3: rove.RegisterResponse.account:type_name -> rove.Account
-	14, // 4: rove.StatusRequest.account:type_name -> rove.Account
-	13, // 5: rove.StatusResponse.position:type_name -> rove.Vector
-	0,  // 6: rove.StatusResponse.incomingCommands:type_name -> rove.Command
-	0,  // 7: rove.StatusResponse.queuedCommands:type_name -> rove.Command
-	9,  // 8: rove.StatusResponse.logs:type_name -> rove.Log
-	11, // 9: rove.Rove.ServerStatus:input_type -> rove.ServerStatusRequest
-	6,  // 10: rove.Rove.Register:input_type -> rove.RegisterRequest
-	1,  // 11: rove.Rove.Command:input_type -> rove.CommandRequest
-	4,  // 12: rove.Rove.Radar:input_type -> rove.RadarRequest
-	8,  // 13: rove.Rove.Status:input_type -> rove.StatusRequest
-	12, // 14: rove.Rove.ServerStatus:output_type -> rove.ServerStatusResponse
-	7,  // 15: rove.Rove.Register:output_type -> rove.RegisterResponse
-	2,  // 16: rove.Rove.Command:output_type -> rove.CommandResponse
-	5,  // 17: rove.Rove.Radar:output_type -> rove.RadarResponse
-	10, // 18: rove.Rove.Status:output_type -> rove.StatusResponse
-	14, // [14:19] is the sub-list for method output_type
-	9,  // [9:14] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	4,  // 0: rove.RegisterResponse.account:type_name -> rove.Account
+	0,  // 1: rove.Command.command:type_name -> rove.CommandType
+	4,  // 2: rove.CommandRequest.account:type_name -> rove.Account
+	6,  // 3: rove.CommandRequest.commands:type_name -> rove.Command
+	4,  // 4: rove.RadarRequest.account:type_name -> rove.Account
+	4,  // 5: rove.StatusRequest.account:type_name -> rove.Account
+	13, // 6: rove.StatusResponse.position:type_name -> rove.Vector
+	6,  // 7: rove.StatusResponse.incomingCommands:type_name -> rove.Command
+	6,  // 8: rove.StatusResponse.queuedCommands:type_name -> rove.Command
+	12, // 9: rove.StatusResponse.logs:type_name -> rove.Log
+	1,  // 10: rove.Rove.ServerStatus:input_type -> rove.ServerStatusRequest
+	3,  // 11: rove.Rove.Register:input_type -> rove.RegisterRequest
+	7,  // 12: rove.Rove.Command:input_type -> rove.CommandRequest
+	9,  // 13: rove.Rove.Radar:input_type -> rove.RadarRequest
+	11, // 14: rove.Rove.Status:input_type -> rove.StatusRequest
+	2,  // 15: rove.Rove.ServerStatus:output_type -> rove.ServerStatusResponse
+	5,  // 16: rove.Rove.Register:output_type -> rove.RegisterResponse
+	8,  // 17: rove.Rove.Command:output_type -> rove.CommandResponse
+	10, // 18: rove.Rove.Radar:output_type -> rove.RadarResponse
+	14, // 19: rove.Rove.Status:output_type -> rove.StatusResponse
+	15, // [15:20] is the sub-list for method output_type
+	10, // [10:15] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_rove_rove_proto_init() }
@@ -1129,138 +1180,6 @@ func file_rove_rove_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_rove_rove_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Command); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rove_rove_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommandRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rove_rove_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommandResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rove_rove_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Error); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rove_rove_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RadarRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rove_rove_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RadarResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rove_rove_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RegisterRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rove_rove_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RegisterResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rove_rove_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StatusRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rove_rove_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Log); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rove_rove_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StatusResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rove_rove_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ServerStatusRequest); i {
 			case 0:
 				return &v.state
@@ -1272,7 +1191,7 @@ func file_rove_rove_proto_init() {
 				return nil
 			}
 		}
-		file_rove_rove_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_rove_rove_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ServerStatusResponse); i {
 			case 0:
 				return &v.state
@@ -1284,8 +1203,8 @@ func file_rove_rove_proto_init() {
 				return nil
 			}
 		}
-		file_rove_rove_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Vector); i {
+		file_rove_rove_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RegisterRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1296,7 +1215,7 @@ func file_rove_rove_proto_init() {
 				return nil
 			}
 		}
-		file_rove_rove_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_rove_rove_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Account); i {
 			case 0:
 				return &v.state
@@ -1308,19 +1227,144 @@ func file_rove_rove_proto_init() {
 				return nil
 			}
 		}
+		file_rove_rove_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RegisterResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_rove_rove_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Command); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_rove_rove_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommandRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_rove_rove_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommandResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_rove_rove_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RadarRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_rove_rove_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RadarResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_rove_rove_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*StatusRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_rove_rove_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Log); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_rove_rove_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Vector); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_rove_rove_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*StatusResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+	}
+	file_rove_rove_proto_msgTypes[5].OneofWrappers = []interface{}{
+		(*Command_Bearing)(nil),
+		(*Command_Message)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_rove_rove_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   15,
+			NumEnums:      1,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_rove_rove_proto_goTypes,
 		DependencyIndexes: file_rove_rove_proto_depIdxs,
+		EnumInfos:         file_rove_rove_proto_enumTypes,
 		MessageInfos:      file_rove_rove_proto_msgTypes,
 	}.Build()
 	File_rove_rove_proto = out.File
@@ -1342,23 +1386,20 @@ const _ = grpc.SupportPackageIsVersion6
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type RoveClient interface {
 	// Server status
-	//
 	// Responds with various details about the current server status
 	ServerStatus(ctx context.Context, in *ServerStatusRequest, opts ...grpc.CallOption) (*ServerStatusResponse, error)
 	// Register an account
-	//
 	// Tries to register an account with the given name
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	// Send commands to rover
-	//
-	// Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent
+	// Sending commands to this endpoint will queue them to be executed during the
+	// following ticks, in the order sent. Commands sent within the same tick will
+	// overwrite until the tick has finished and the commands are queued
 	Command(ctx context.Context, in *CommandRequest, opts ...grpc.CallOption) (*CommandResponse, error)
 	// Get radar information
-	//
 	// Gets the radar output for the given rover
 	Radar(ctx context.Context, in *RadarRequest, opts ...grpc.CallOption) (*RadarResponse, error)
 	// Get rover information
-	//
 	// Gets information for the account's rover
 	Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 }
@@ -1419,23 +1460,20 @@ func (c *roveClient) Status(ctx context.Context, in *StatusRequest, opts ...grpc
 // RoveServer is the server API for Rove service.
 type RoveServer interface {
 	// Server status
-	//
 	// Responds with various details about the current server status
 	ServerStatus(context.Context, *ServerStatusRequest) (*ServerStatusResponse, error)
 	// Register an account
-	//
 	// Tries to register an account with the given name
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	// Send commands to rover
-	//
-	// Sending commands to this endpoint will queue them to be executed during the following ticks, in the order sent
+	// Sending commands to this endpoint will queue them to be executed during the
+	// following ticks, in the order sent. Commands sent within the same tick will
+	// overwrite until the tick has finished and the commands are queued
 	Command(context.Context, *CommandRequest) (*CommandResponse, error)
 	// Get radar information
-	//
 	// Gets the radar output for the given rover
 	Radar(context.Context, *RadarRequest) (*RadarResponse, error)
 	// Get rover information
-	//
 	// Gets information for the account's rover
 	Status(context.Context, *StatusRequest) (*StatusResponse, error)
 }

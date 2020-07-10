@@ -12,7 +12,6 @@ import (
 
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/bearing"
-	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
@@ -222,8 +221,8 @@ func InnerMain(command string, args ...string) error {
 				}
 				commands = append(commands,
 					&rove.Command{
-						Command: game.CommandMove,
-						Bearing: args[i],
+						Command: rove.CommandType_move,
+						Data:    &rove.Command_Bearing{Bearing: args[i]},
 					},
 				)
 			case "broadcast":
@@ -235,15 +234,15 @@ func InnerMain(command string, args ...string) error {
 				}
 				commands = append(commands,
 					&rove.Command{
-						Command: game.CommandBroadcast,
-						Message: []byte(args[i]),
+						Command: rove.CommandType_broadcast,
+						Data:    &rove.Command_Message{Message: []byte(args[i])},
 					},
 				)
 			default:
 				// By default just use the command literally
 				commands = append(commands,
 					&rove.Command{
-						Command: args[i],
+						Command: rove.CommandType(rove.CommandType_value[args[i]]),
 					},
 				)
 			}

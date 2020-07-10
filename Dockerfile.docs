@@ -1,8 +1,0 @@
-FROM quay.io/goswagger/swagger:latest
-LABEL maintainer="Marc Di Luzio <marc.diluzio@gmail.com>"
-
-WORKDIR /app
-COPY . .
-
-CMD [ "serve", "pkg/rove/rove.swagger.json", "--no-open" ]
-

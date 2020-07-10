@@ -20,8 +20,6 @@ gen:
 	@echo Generating rove server gRPC and gateway
 	protoc --proto_path proto --go_out=plugins=grpc,paths=source_relative:pkg/ proto/rove/rove.proto
 	protoc --proto_path proto --grpc-gateway_out=paths=source_relative:pkg/ proto/rove/rove.proto
-	@echo Generating rove server swagger
-	protoc --proto_path proto --swagger_out=logtostderr=true:pkg/ proto/rove/rove.proto
 
 test:
 	@echo Unit tests

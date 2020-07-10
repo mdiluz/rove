@@ -3,6 +3,7 @@ package game
 import (
 	"testing"
 
+	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/vector"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +21,7 @@ func TestCommand_Move(t *testing.T) {
 	assert.NoError(t, err, "Failed to set position for rover")
 
 	// Try the move command
-	moveCommand := Command{Command: CommandMove, Bearing: "N"}
+	moveCommand := Command{Command: rove.CommandType_move, Bearing: "N"}
 	assert.NoError(t, world.Enqueue(a, moveCommand), "Failed to execute move command")
 
 	// Tick the world
@@ -46,7 +47,7 @@ func TestCommand_Recharge(t *testing.T) {
 	assert.NoError(t, err, "Failed to set position for rover")
 
 	// Move to use up some charge
-	moveCommand := Command{Command: CommandMove, Bearing: "N"}
+	moveCommand := Command{Command: rove.CommandType_move, Bearing: "N"}
 	assert.NoError(t, world.Enqueue(a, moveCommand), "Failed to queue move command")
 
 	// Tick the world
@@ -56,7 +57,7 @@ func TestCommand_Recharge(t *testing.T) {
 	rover, _ := world.GetRover(a)
 	assert.Equal(t, rover.MaximumCharge-1, rover.Charge)
 
-	chargeCommand := Command{Command: CommandRecharge}
+	chargeCommand := Command{Command: rove.CommandType_recharge}
 	assert.NoError(t, world.Enqueue(a, chargeCommand), "Failed to queue recharge command")
 
 	// Tick the world
