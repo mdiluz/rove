@@ -144,6 +144,7 @@ func TestWorld_RoverStash(t *testing.T) {
 		Y: 0.0,
 	}
 
+	world.Atlas.SetObject(pos, objects.Object{Type: objects.None})
 	err = world.WarpRover(a, pos)
 	assert.NoError(t, err, "Failed to set position for rover")
 
