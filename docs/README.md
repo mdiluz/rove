@@ -1,67 +1,61 @@
 Rove
 =====
 
-An asynchronous nomadic game about exploring a planet as part of a loose community.
+Rove is asynchronous nomadic game about exploring a planet as part of a loose community.
 
 -------------------------------------------
 
-## The Basics
+## Core gameplay
 
-### Core
+Remotely explore the surface of a planet with an upgradable and customisable rover. Send commands to be executed asynchronously, view the rover's radar, and communicate and coordinate with other nearby rovers.
 
-Control a rover on the surface of the planet using a remote control interface.
+### Key Components
 
-Commands are sent and happen asynchronously, and the rover feeds back information about position and surroundings, as well as photos.
-
-### General
-
-Movement is slow and sometimes dangerous.
-
-Resources can be collected, and rovers recharge power during the day.
-
-Hazards damage the rover. Resources can be spent to repair.
-
-Spend resources to create and spawn a new improved rover a significant distance away, leaving the current one dormant.
-
-"Dying" leaves the current rover dormant and assigns the users a new rover.
-
-Players can repair dormant rovers to gain control of them, taking on their improvements and inventory.
-
-### Multiplayer
-
-Players can see each other and use very rudimentary signals.
-
-Dormant rovers store full history of travel and owners, as well as their improvements and resources.
+* Navigate an expansive world
+* Collect resources to repair and upgrade
+* Keep the rover batteries charged as you explore
+* Help other players on their journey
+* Explore north to discover more
 
 -------------------------------------------
 
-### Implementation
+## Installing
 
-* A server that receives the commands, sends out data, and handles interactions between players.
+On Ubuntu:
+```
+$ snap install rove
+```
 
-* An app, or apps, that interface with the server to let you control and view rover information
+Elsewhere (with [go](https://golang.org/doc/install) installed)
+```
+go get github.com/mdiluz/rove
+cd $GOPATH/src/github.com/mdiluz/rove/
+make install
+```
 
 -------------------------------------------
 
-### To Solve
+### Implementation Details
+
+`rove-server` hosts the game world and a gRPC server to allow users to interact from any client.
+
+`rove` is a basic example command-line client that allows for simple play, to explore it's usage, see the output of `rove help`
+
+-------------------------------------------
+
+### "Find the fun" issues to solve
 
 * What kinds of progression/upgrades exist?
-
 * How does the game encourage cooperation?
-
 * How would the gameplay prevent griefing?
-
 * What drives the exploration?
 
 -------------------------------------------
 
 ### Key ideas left to integrate
 
-Feeling “known for” something -  the person who did X thing. Limit number of  X things that can be done, possibly over time.
-
-A significant aspect of failure - failing must be a focus of the game. Winning the game might actually be failing in some specific way.
-
-A clear and well  defined investment vs. payoff curve.
-
-Not an infinite game, let the game have a point where you’re done and can move on.
+* Feeling “known for” something -  the person who did X thing. Limit number of  X things that can be done, possibly over time.
+* A significant aspect of failure - failing must be a focus of the game. Winning the game might actually be failing in some specific way.
+* A clear and well  defined investment vs. payoff curve.
+* Not an infinite game, let the game have a point where you’re done and can move on.
 
