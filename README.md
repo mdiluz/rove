@@ -6,6 +6,4 @@ Rove
 
 Rove is an asynchronous nomadic game about exploring as part of a loose community.
 
-This repository is a [living document](https://github.com/mdiluz/rove/tree/master/docs) of current game design, as well as source code for the `rove-server` deployment and the `rove` command line client.
-
-See [roveapi.proto](https://github.com/mdiluz/rove/blob/master/proto/rove/roveapi.proto) for the current server-client API.
+This repository contains the source code for the `rove-server` deployment and the `rove` command line client. See [mdiluz.github.io/rove](https://mdiluz.github.io/rove/) for game details, and [roveapi.proto](https://github.com/mdiluz/rove/blob/master/proto/roveapi/roveapi.proto) for the current server-client API.
