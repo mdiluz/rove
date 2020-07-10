@@ -395,6 +395,7 @@ func TestWorld_Broadcast(t *testing.T) {
 	assert.Contains(t, rb.Logs[len(rb.Logs)-1].Text, "ABC", "Rover A should have logged it's broadcast")
 
 	// Warp B outside of the range of A
+	world.Atlas.SetObject(vector.Vector{X: ra.Range, Y: 0}, objects.Object{Type: objects.None})
 	assert.NoError(t, world.WarpRover(b, vector.Vector{X: ra.Range, Y: 0}))
 
 	// Broadcast from a again
@@ -411,6 +412,7 @@ func TestWorld_Broadcast(t *testing.T) {
 	assert.Contains(t, rb.Logs[len(rb.Logs)-1].Text, "XYZ", "Rover A should have logged it's broadcast")
 
 	// Warp B outside of the range of A
+	world.Atlas.SetObject(vector.Vector{X: ra.Range + 1, Y: 0}, objects.Object{Type: objects.None})
 	assert.NoError(t, world.WarpRover(b, vector.Vector{X: ra.Range + 1, Y: 0}))
 
 	// Broadcast from a again
