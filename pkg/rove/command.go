@@ -1,6 +1,6 @@
 package rove
 
-import "github.com/mdiluz/rove/pkg/roveapi"
+import "github.com/mdiluz/rove/proto/roveapi"
 
 // Command represends a single command to execute
 type Command struct {

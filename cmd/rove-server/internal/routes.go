@@ -6,8 +6,8 @@ import (
 	"log"
 
 	"github.com/mdiluz/rove/pkg/rove"
-	"github.com/mdiluz/rove/pkg/roveapi"
 	"github.com/mdiluz/rove/pkg/version"
+	"github.com/mdiluz/rove/proto/roveapi"
 )
 
 // ServerStatus returns the status of the current server to a gRPC request

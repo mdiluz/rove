@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
-	"github.com/mdiluz/rove/pkg/roveapi"
+	"github.com/mdiluz/rove/proto/roveapi"
 )
 
 // World describes a self contained universe and everything in it

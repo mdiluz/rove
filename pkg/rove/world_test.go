@@ -5,7 +5,7 @@ import (
 
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
-	"github.com/mdiluz/rove/pkg/roveapi"
+	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/stretchr/testify/assert"
 )
 

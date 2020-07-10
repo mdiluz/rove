@@ -12,14 +12,10 @@ install:
 
 gen:
 	@echo Installing go dependencies
-	go install \
-		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
-		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
-		github.com/golang/protobuf/protoc-gen-go
+	go install github.com/golang/protobuf/protoc-gen-go
 	go mod download
-	@echo Generating rove server gRPC and gateway
-	protoc --proto_path proto --go_out=plugins=grpc,paths=source_relative:pkg/ proto/roveapi/roveapi.proto
-	protoc --proto_path proto --grpc-gateway_out=paths=source_relative:pkg/ proto/roveapi/roveapi.proto
+	@echo Generating rove server gRPC
+	protoc --proto_path proto --go_out=plugins=grpc,paths=source_relative:proto/ proto/roveapi/roveapi.proto
 
 test:
 	@echo Unit tests

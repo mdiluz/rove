@@ -12,8 +12,8 @@ import (
 
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
-	"github.com/mdiluz/rove/pkg/roveapi"
 	"github.com/mdiluz/rove/pkg/version"
+	"github.com/mdiluz/rove/proto/roveapi"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )

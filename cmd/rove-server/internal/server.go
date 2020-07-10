@@ -8,7 +8,7 @@ import (
 
 	"github.com/mdiluz/rove/pkg/persistence"
 	"github.com/mdiluz/rove/pkg/rove"
-	"github.com/mdiluz/rove/pkg/roveapi"
+	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/robfig/cron"
 	"google.golang.org/grpc"
 )

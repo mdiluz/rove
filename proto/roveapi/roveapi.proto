@@ -5,7 +5,7 @@ syntax = "proto3";
 // Rove is an asychronous nomadic game about exploring a planet as part of a
 // loose community
 package roveapi;
-option go_package = "github.com/mdiluz/rove/pkg/roveapi";
+option go_package = "github.com/mdiluz/rove/proto/roveapi";
 
 // The Rove server hosts a single game session and world with multiple players
 service Rove {
