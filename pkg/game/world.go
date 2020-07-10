@@ -70,7 +70,7 @@ func NewWorld(chunkSize int) *World {
 		Rovers:          make(map[string]Rover),
 		CommandQueue:    make(map[string]CommandStream),
 		CommandIncoming: make(map[string]CommandStream),
-		Atlas:           atlas.NewAtlas(chunkSize),
+		Atlas:           atlas.NewChunkAtlas(chunkSize),
 		words:           lines,
 		TicksPerDay:     24,
 		CurrentTicks:    0,

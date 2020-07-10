@@ -10,14 +10,14 @@ import (
 )
 
 func TestAtlas_NewAtlas(t *testing.T) {
-	a := NewAtlas(1).(*ChunkBasedAtlas)
+	a := NewChunkAtlas(1).(*ChunkBasedAtlas)
 	assert.NotNil(t, a)
 	assert.Equal(t, 1, a.ChunkSize)
 	assert.Equal(t, 1, len(a.Chunks)) // Should start empty
 }
 
 func TestAtlas_toChunk(t *testing.T) {
-	a := NewAtlas(1).(*ChunkBasedAtlas)
+	a := NewChunkAtlas(1).(*ChunkBasedAtlas)
 	assert.NotNil(t, a)
 
 	// Get a tile to spawn the chunks
@@ -38,7 +38,7 @@ func TestAtlas_toChunk(t *testing.T) {
 	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: -1, Y: 0})
 	assert.Equal(t, 2, chunkID)
 
-	a = NewAtlas(2).(*ChunkBasedAtlas)
+	a = NewChunkAtlas(2).(*ChunkBasedAtlas)
 	assert.NotNil(t, a)
 	// Get a tile to spawn the chunks
 	a.QueryPosition(vector.Vector{X: -2, Y: -2})
@@ -58,7 +58,7 @@ func TestAtlas_toChunk(t *testing.T) {
 	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: -2, Y: 1})
 	assert.Equal(t, 2, chunkID)
 
-	a = NewAtlas(2).(*ChunkBasedAtlas)
+	a = NewChunkAtlas(2).(*ChunkBasedAtlas)
 	assert.NotNil(t, a)
 	// Get a tile to spawn a 4x4 grid of chunks
 	a.QueryPosition(vector.Vector{X: 3, Y: 3})
@@ -83,7 +83,7 @@ func TestAtlas_toChunk(t *testing.T) {
 	chunkID = a.worldSpaceToChunkIndex(vector.Vector{X: -2, Y: 2})
 	assert.Equal(t, 13, chunkID)
 
-	a = NewAtlas(3).(*ChunkBasedAtlas)
+	a = NewChunkAtlas(3).(*ChunkBasedAtlas)
 	assert.NotNil(t, a)
 	// Get a tile to spawn a 4x4 grid of chunks
 	a.QueryPosition(vector.Vector{X: 3, Y: 3})
@@ -105,7 +105,7 @@ func TestAtlas_toChunk(t *testing.T) {
 }
 
 func TestAtlas_toWorld(t *testing.T) {
-	a := NewAtlas(1).(*ChunkBasedAtlas)
+	a := NewChunkAtlas(1).(*ChunkBasedAtlas)
 	assert.NotNil(t, a)
 
 	// Get a tile to spawn some chunks
@@ -119,7 +119,7 @@ func TestAtlas_toWorld(t *testing.T) {
 	assert.Equal(t, vector.Vector{X: -1, Y: -1}, a.chunkOriginInWorldSpace(0))
 	assert.Equal(t, vector.Vector{X: 0, Y: -1}, a.chunkOriginInWorldSpace(1))
 
-	a = NewAtlas(2).(*ChunkBasedAtlas)
+	a = NewChunkAtlas(2).(*ChunkBasedAtlas)
 	assert.NotNil(t, a)
 	// Get a tile to spawn the chunks
 	a.QueryPosition(vector.Vector{X: -2, Y: -2})
@@ -133,7 +133,7 @@ func TestAtlas_toWorld(t *testing.T) {
 	assert.Equal(t, vector.Vector{X: -2, Y: -2}, a.chunkOriginInWorldSpace(0))
 	assert.Equal(t, vector.Vector{X: -2, Y: 0}, a.chunkOriginInWorldSpace(2))
 
-	a = NewAtlas(2).(*ChunkBasedAtlas)
+	a = NewChunkAtlas(2).(*ChunkBasedAtlas)
 	assert.NotNil(t, a)
 	// Get a tile to spawn a 4x4 grid of chunks
 	a.QueryPosition(vector.Vector{X: 3, Y: 3})
@@ -152,7 +152,7 @@ func TestAtlas_toWorld(t *testing.T) {
 	assert.Equal(t, vector.Vector{X: -4, Y: -4}, a.chunkOriginInWorldSpace(0))
 	assert.Equal(t, vector.Vector{X: 2, Y: -2}, a.chunkOriginInWorldSpace(7))
 
-	a = NewAtlas(3).(*ChunkBasedAtlas)
+	a = NewChunkAtlas(3).(*ChunkBasedAtlas)
 	assert.NotNil(t, a)
 	// Get a tile to spawn a 4x4 grid of chunks
 	a.QueryPosition(vector.Vector{X: 3, Y: 3})
@@ -167,7 +167,7 @@ func TestAtlas_toWorld(t *testing.T) {
 }
 
 func TestAtlas_GetSetTile(t *testing.T) {
-	a := NewAtlas(10)
+	a := NewChunkAtlas(10)
 	assert.NotNil(t, a)
 
 	// Set the origin tile to 1 and test it
@@ -182,7 +182,7 @@ func TestAtlas_GetSetTile(t *testing.T) {
 }
 
 func TestAtlas_GetSetObject(t *testing.T) {
-	a := NewAtlas(10)
+	a := NewChunkAtlas(10)
 	assert.NotNil(t, a)
 
 	// Set the origin tile to 1 and test it
@@ -198,7 +198,7 @@ func TestAtlas_GetSetObject(t *testing.T) {
 
 func TestAtlas_Grown(t *testing.T) {
 	// Start with a small example
-	a := NewAtlas(2).(*ChunkBasedAtlas)
+	a := NewChunkAtlas(2).(*ChunkBasedAtlas)
 	assert.NotNil(t, a)
 	assert.Equal(t, 1, len(a.Chunks))
 
@@ -233,7 +233,7 @@ func TestAtlas_GetSetCorrect(t *testing.T) {
 
 		for x := -i * 2; x < i*2; x++ {
 			for y := -i * 2; y < i*2; y++ {
-				a := NewAtlas(i).(*ChunkBasedAtlas)
+				a := NewChunkAtlas(i).(*ChunkBasedAtlas)
 				assert.NotNil(t, a)
 				assert.Equal(t, 1, len(a.Chunks))
 
@@ -251,7 +251,7 @@ func TestAtlas_GetSetCorrect(t *testing.T) {
 }
 
 func TestAtlas_WorldGen(t *testing.T) {
-	a := NewAtlas(8)
+	a := NewChunkAtlas(8)
 	// Spawn a large world
 	_, _ = a.QueryPosition(vector.Vector{X: 20, Y: 20})
 
