@@ -11,9 +11,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/bearing"
+	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/roveapi"
-	"github.com/mdiluz/rove/pkg/vector"
 )
 
 // World describes a self contained universe and everything in it
@@ -103,7 +103,7 @@ func (w *World) SpawnRover() (string, error) {
 	}
 
 	// Spawn in a random place near the origin
-	rover.Pos = vector.Vector{
+	rover.Pos = maths.Vector{
 		X: 10 - rand.Intn(20),
 		Y: 10 - rand.Intn(20),
 	}
@@ -115,7 +115,7 @@ func (w *World) SpawnRover() (string, error) {
 			break
 		} else {
 			// Try and spawn to the east of the blockage
-			rover.Pos.Add(vector.Vector{X: 1, Y: 0})
+			rover.Pos.Add(maths.Vector{X: 1, Y: 0})
 		}
 
 	}
@@ -215,19 +215,19 @@ func (w *World) DestroyRover(rover string) error {
 }
 
 // RoverPosition returns the position of the rover
-func (w *World) RoverPosition(rover string) (vector.Vector, error) {
+func (w *World) RoverPosition(rover string) (maths.Vector, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
 	i, ok := w.Rovers[rover]
 	if !ok {
-		return vector.Vector{}, fmt.Errorf("no rover matching id")
+		return maths.Vector{}, fmt.Errorf("no rover matching id")
 	}
 	return i.Pos, nil
 }
 
 // SetRoverPosition sets the position of the rover
-func (w *World) SetRoverPosition(rover string, pos vector.Vector) error {
+func (w *World) SetRoverPosition(rover string, pos maths.Vector) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -254,7 +254,7 @@ func (w *World) RoverInventory(rover string) ([]objects.Object, error) {
 }
 
 // WarpRover sets an rovers position
-func (w *World) WarpRover(rover string, pos vector.Vector) error {
+func (w *World) WarpRover(rover string, pos maths.Vector) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -279,13 +279,13 @@ func (w *World) WarpRover(rover string, pos vector.Vector) error {
 }
 
 // MoveRover attempts to move a rover in a specific direction
-func (w *World) MoveRover(rover string, b bearing.Bearing) (vector.Vector, error) {
+func (w *World) MoveRover(rover string, b bearing.Bearing) (maths.Vector, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
 	i, ok := w.Rovers[rover]
 	if !ok {
-		return vector.Vector{}, fmt.Errorf("no rover matching id")
+		return maths.Vector{}, fmt.Errorf("no rover matching id")
 	}
 
 	// Ensure the rover has energy
@@ -368,11 +368,11 @@ func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err err
 	roverPos := r.Pos
 
 	// Get the radar min and max values
-	radarMin := vector.Vector{
+	radarMin := maths.Vector{
 		X: roverPos.X - r.Range,
 		Y: roverPos.Y - r.Range,
 	}
-	radarMax := vector.Vector{
+	radarMax := maths.Vector{
 		X: roverPos.X + r.Range,
 		Y: roverPos.Y + r.Range,
 	}
@@ -382,7 +382,7 @@ func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err err
 	objs = make([]byte, radarSpan*radarSpan)
 	for j := radarMin.Y; j <= radarMax.Y; j++ {
 		for i := radarMin.X; i <= radarMax.X; i++ {
-			q := vector.Vector{X: i, Y: j}
+			q := maths.Vector{X: i, Y: j}
 
 			tile, obj := w.Atlas.QueryPosition(q)
 

@@ -3,8 +3,8 @@ package rove
 import (
 	"testing"
 
+	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/roveapi"
-	"github.com/mdiluz/rove/pkg/vector"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,7 +12,7 @@ func TestCommand_Move(t *testing.T) {
 	world := NewWorld(8)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
-	pos := vector.Vector{
+	pos := maths.Vector{
 		X: 1.0,
 		Y: 2.0,
 	}
@@ -30,7 +30,7 @@ func TestCommand_Move(t *testing.T) {
 
 	newPos, err := world.RoverPosition(a)
 	assert.NoError(t, err, "Failed to set position for rover")
-	pos.Add(vector.Vector{X: 0.0, Y: 1})
+	pos.Add(maths.Vector{X: 0.0, Y: 1})
 	assert.Equal(t, pos, newPos, "Failed to correctly set position for rover")
 }
 
@@ -38,7 +38,7 @@ func TestCommand_Recharge(t *testing.T) {
 	world := NewWorld(8)
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
-	pos := vector.Vector{
+	pos := maths.Vector{
 		X: 1.0,
 		Y: 2.0,
 	}

@@ -3,7 +3,7 @@ package bearing
 import (
 	"testing"
 
-	"github.com/mdiluz/rove/pkg/vector"
+	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,7 +12,7 @@ func TestDirection(t *testing.T) {
 
 	assert.Equal(t, "North", dir.String())
 	assert.Equal(t, "N", dir.ShortString())
-	assert.Equal(t, vector.Vector{X: 0, Y: 1}, dir.Vector())
+	assert.Equal(t, maths.Vector{X: 0, Y: 1}, dir.Vector())
 
 	dir, err := FromString("N")
 	assert.NoError(t, err)

@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/objects"
-	"github.com/mdiluz/rove/pkg/vector"
 )
 
 // RoverLogEntry describes a single log entry for the rover
@@ -24,7 +24,7 @@ type Rover struct {
 	Name string `json:"name"`
 
 	// Pos represents where this rover is in the world
-	Pos vector.Vector `json:"pos"`
+	Pos maths.Vector `json:"pos"`
 
 	// Range represents the distance the unit's radar can see
 	Range int `json:"range"`

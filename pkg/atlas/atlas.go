@@ -1,8 +1,8 @@
 package atlas
 
 import (
+	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/objects"
-	"github.com/mdiluz/rove/pkg/vector"
 )
 
 // Tile describes the type of terrain
@@ -25,11 +25,11 @@ const (
 // Atlas represents a 2D world atlas of tiles and objects
 type Atlas interface {
 	// SetTile sets a location on the Atlas to a type of tile
-	SetTile(v vector.Vector, tile Tile)
+	SetTile(v maths.Vector, tile Tile)
 
 	// SetObject will set a location on the Atlas to contain an object
-	SetObject(v vector.Vector, obj objects.Object)
+	SetObject(v maths.Vector, obj objects.Object)
 
 	// QueryPosition queries a position on the atlas
-	QueryPosition(v vector.Vector) (byte, objects.Object)
+	QueryPosition(v maths.Vector) (byte, objects.Object)
 }

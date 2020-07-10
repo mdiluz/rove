@@ -6,7 +6,6 @@ import (
 
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/objects"
-	"github.com/mdiluz/rove/pkg/vector"
 	"github.com/ojrac/opensimplex-go"
 )
 
@@ -27,10 +26,10 @@ type chunkBasedAtlas struct {
 	Chunks []chunk `json:"chunks"`
 
 	// LowerBound is the origin of the bottom left corner of the current chunks in world space (current chunks cover >= this value)
-	LowerBound vector.Vector `json:"lowerBound"`
+	LowerBound maths.Vector `json:"lowerBound"`
 
 	// UpperBound is the top left corner of the current chunks (curent chunks cover < this value)
-	UpperBound vector.Vector `json:"upperBound"`
+	UpperBound maths.Vector `json:"upperBound"`
 
 	// ChunkSize is the x/y dimensions of each square chunk
 	ChunkSize int `json:"chunksize"`
@@ -54,8 +53,8 @@ func NewChunkAtlas(chunkSize int) Atlas {
 	a := chunkBasedAtlas{
 		ChunkSize:    chunkSize,
 		Chunks:       make([]chunk, 1),
-		LowerBound:   vector.Vector{X: 0, Y: 0},
-		UpperBound:   vector.Vector{X: chunkSize, Y: chunkSize},
+		LowerBound:   maths.Vector{X: 0, Y: 0},
+		UpperBound:   maths.Vector{X: chunkSize, Y: chunkSize},
 		terrainNoise: opensimplex.New(noiseSeed),
 		objectNoise:  opensimplex.New(noiseSeed),
 	}
@@ -65,21 +64,21 @@ func NewChunkAtlas(chunkSize int) Atlas {
 }
 
 // SetTile sets an individual tile's kind
-func (a *chunkBasedAtlas) SetTile(v vector.Vector, tile Tile) {
+func (a *chunkBasedAtlas) SetTile(v maths.Vector, tile Tile) {
 	c := a.worldSpaceToChunkWithGrow(v)
 	local := a.worldSpaceToChunkLocal(v)
 	a.setTile(c, local, byte(tile))
 }
 
 // SetObject sets the object on a tile
-func (a *chunkBasedAtlas) SetObject(v vector.Vector, obj objects.Object) {
+func (a *chunkBasedAtlas) SetObject(v maths.Vector, obj objects.Object) {
 	c := a.worldSpaceToChunkWithGrow(v)
 	local := a.worldSpaceToChunkLocal(v)
 	a.setObject(c, local, obj)
 }
 
 // QueryPosition will return information for a specific position
-func (a *chunkBasedAtlas) QueryPosition(v vector.Vector) (byte, objects.Object) {
+func (a *chunkBasedAtlas) QueryPosition(v maths.Vector) (byte, objects.Object) {
 	c := a.worldSpaceToChunkWithGrow(v)
 	local := a.worldSpaceToChunkLocal(v)
 	a.populate(c)
@@ -89,7 +88,7 @@ func (a *chunkBasedAtlas) QueryPosition(v vector.Vector) (byte, objects.Object) 
 }
 
 // chunkTileID returns the tile index within a chunk
-func (a *chunkBasedAtlas) chunkTileIndex(local vector.Vector) int {
+func (a *chunkBasedAtlas) chunkTileIndex(local maths.Vector) int {
 	return local.X + local.Y*a.ChunkSize
 }
 
@@ -148,7 +147,7 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 }
 
 // setTile sets a tile in a specific chunk
-func (a *chunkBasedAtlas) setTile(chunk int, local vector.Vector, tile byte) {
+func (a *chunkBasedAtlas) setTile(chunk int, local maths.Vector, tile byte) {
 	a.populate(chunk)
 	c := a.Chunks[chunk]
 	c.Tiles[a.chunkTileIndex(local)] = tile
@@ -156,7 +155,7 @@ func (a *chunkBasedAtlas) setTile(chunk int, local vector.Vector, tile byte) {
 }
 
 // setObject sets an object in a specific chunk
-func (a *chunkBasedAtlas) setObject(chunk int, local vector.Vector, object objects.Object) {
+func (a *chunkBasedAtlas) setObject(chunk int, local maths.Vector, object objects.Object) {
 	a.populate(chunk)
 
 	c := a.Chunks[chunk]
@@ -170,12 +169,12 @@ func (a *chunkBasedAtlas) setObject(chunk int, local vector.Vector, object objec
 }
 
 // worldSpaceToChunkLocal gets a chunk local coordinate for a tile
-func (a *chunkBasedAtlas) worldSpaceToChunkLocal(v vector.Vector) vector.Vector {
-	return vector.Vector{X: maths.Pmod(v.X, a.ChunkSize), Y: maths.Pmod(v.Y, a.ChunkSize)}
+func (a *chunkBasedAtlas) worldSpaceToChunkLocal(v maths.Vector) maths.Vector {
+	return maths.Vector{X: maths.Pmod(v.X, a.ChunkSize), Y: maths.Pmod(v.Y, a.ChunkSize)}
 }
 
 // worldSpaceToChunkID gets the current chunk ID for a position in the world
-func (a *chunkBasedAtlas) worldSpaceToChunkIndex(v vector.Vector) int {
+func (a *chunkBasedAtlas) worldSpaceToChunkIndex(v maths.Vector) int {
 	// Shift the vector by our current min
 	v = v.Added(a.LowerBound.Negated())
 
@@ -191,13 +190,13 @@ func (a *chunkBasedAtlas) worldSpaceToChunkIndex(v vector.Vector) int {
 }
 
 // chunkOriginInWorldSpace returns the origin of the chunk in world space
-func (a *chunkBasedAtlas) chunkOriginInWorldSpace(chunk int) vector.Vector {
+func (a *chunkBasedAtlas) chunkOriginInWorldSpace(chunk int) maths.Vector {
 	// Calculate the width
 	width := a.UpperBound.X - a.LowerBound.X
 	widthInChunks := width / a.ChunkSize
 
 	// Reverse the along the corridor and up the stairs
-	v := vector.Vector{
+	v := maths.Vector{
 		X: chunk % widthInChunks,
 		Y: chunk / widthInChunks,
 	}
@@ -208,15 +207,15 @@ func (a *chunkBasedAtlas) chunkOriginInWorldSpace(chunk int) vector.Vector {
 }
 
 // getNewBounds gets new lower and upper bounds for the world space given a vector
-func (a *chunkBasedAtlas) getNewBounds(v vector.Vector) (lower vector.Vector, upper vector.Vector) {
-	lower = vector.Min(v, a.LowerBound)
-	upper = vector.Max(v.Added(vector.Vector{X: 1, Y: 1}), a.UpperBound)
+func (a *chunkBasedAtlas) getNewBounds(v maths.Vector) (lower maths.Vector, upper maths.Vector) {
+	lower = maths.Min2(v, a.LowerBound)
+	upper = maths.Max2(v.Added(maths.Vector{X: 1, Y: 1}), a.UpperBound)
 
-	lower = vector.Vector{
+	lower = maths.Vector{
 		X: maths.RoundDown(lower.X, a.ChunkSize),
 		Y: maths.RoundDown(lower.Y, a.ChunkSize),
 	}
-	upper = vector.Vector{
+	upper = maths.Vector{
 		X: maths.RoundUp(upper.X, a.ChunkSize),
 		Y: maths.RoundUp(upper.Y, a.ChunkSize),
 	}
@@ -224,7 +223,7 @@ func (a *chunkBasedAtlas) getNewBounds(v vector.Vector) (lower vector.Vector, up
 }
 
 // worldSpaceToTrunkWithGrow will expand the current atlas for a given world space position if needed
-func (a *chunkBasedAtlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
+func (a *chunkBasedAtlas) worldSpaceToChunkWithGrow(v maths.Vector) int {
 	// If we're within bounds, just return the current chunk
 	if v.X >= a.LowerBound.X && v.Y >= a.LowerBound.Y && v.X < a.UpperBound.X && v.Y < a.UpperBound.Y {
 		return a.worldSpaceToChunkIndex(v)
