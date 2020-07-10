@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
-	"github.com/mdiluz/rove/pkg/objects"
 )
 
 // RoverLogEntry describes a single log entry for the rover
@@ -30,7 +30,7 @@ type Rover struct {
 	Range int `json:"range"`
 
 	// Inventory represents any items the rover is carrying
-	Inventory []objects.Object `json:"inventory"`
+	Inventory []atlas.Object `json:"inventory"`
 
 	// Capacity is the maximum number of inventory items
 	Capacity int `json:"capacity"`

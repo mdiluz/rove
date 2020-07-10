@@ -12,7 +12,6 @@ import (
 
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
-	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/roveapi"
 	"github.com/mdiluz/rove/pkg/version"
 	"golang.org/x/net/context"
@@ -288,7 +287,7 @@ func InnerMain(command string, args ...string) error {
 				for i := 0; i < num; i++ {
 					t := response.Tiles[i+num*j]
 					o := response.Objects[i+num*j]
-					if o != byte(objects.None) {
+					if o != byte(atlas.ObjectNone) {
 						fmt.Printf("%c", o)
 					} else if t != byte(atlas.TileNone) {
 						fmt.Printf("%c", t)

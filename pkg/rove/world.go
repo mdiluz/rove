@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
-	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/mdiluz/rove/pkg/roveapi"
 )
 
@@ -241,7 +240,7 @@ func (w *World) SetRoverPosition(rover string, pos maths.Vector) error {
 }
 
 // RoverInventory returns the inventory of a requested rover
-func (w *World) RoverInventory(rover string) ([]objects.Object, error) {
+func (w *World) RoverInventory(rover string) ([]atlas.Object, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
@@ -319,35 +318,35 @@ func (w *World) MoveRover(rover string, b maths.Bearing) (maths.Vector, error) {
 }
 
 // RoverStash will stash an item at the current rovers position
-func (w *World) RoverStash(rover string) (objects.Type, error) {
+func (w *World) RoverStash(rover string) (atlas.Type, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
 	r, ok := w.Rovers[rover]
 	if !ok {
-		return objects.None, fmt.Errorf("no rover matching id")
+		return atlas.ObjectNone, fmt.Errorf("no rover matching id")
 	}
 
 	// Can't pick up when full
 	if len(r.Inventory) >= r.Capacity {
-		return objects.None, nil
+		return atlas.ObjectNone, nil
 	}
 
 	// Ensure the rover has energy
 	if r.Charge <= 0 {
-		return objects.None, nil
+		return atlas.ObjectNone, nil
 	}
 	r.Charge--
 
 	_, obj := w.Atlas.QueryPosition(r.Pos)
 	if !obj.IsStashable() {
-		return objects.None, nil
+		return atlas.ObjectNone, nil
 	}
 
 	r.AddLogEntryf("stashed %c", obj.Type)
 	r.Inventory = append(r.Inventory, obj)
 	w.Rovers[rover] = r
-	w.Atlas.SetObject(r.Pos, objects.Object{Type: objects.None})
+	w.Atlas.SetObject(r.Pos, atlas.Object{Type: atlas.ObjectNone})
 	return obj.Type, nil
 }
 
@@ -402,7 +401,7 @@ func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err err
 		if dist.X <= r.Range && dist.Y <= r.Range {
 			relative := r.Pos.Added(radarMin.Negated())
 			index := relative.X + relative.Y*radarSpan
-			objs[index] = byte(objects.Rover)
+			objs[index] = byte(atlas.ObjectRover)
 		}
 	}
 

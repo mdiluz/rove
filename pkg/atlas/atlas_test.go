@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/mdiluz/rove/pkg/maths"
-	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -186,14 +185,14 @@ func TestAtlas_GetSetObject(t *testing.T) {
 	assert.NotNil(t, a)
 
 	// Set the origin tile to 1 and test it
-	a.SetObject(maths.Vector{X: 0, Y: 0}, objects.Object{Type: objects.LargeRock})
+	a.SetObject(maths.Vector{X: 0, Y: 0}, Object{Type: ObjectLargeRock})
 	_, obj := a.QueryPosition(maths.Vector{X: 0, Y: 0})
-	assert.Equal(t, objects.Object{Type: objects.LargeRock}, obj)
+	assert.Equal(t, Object{Type: ObjectLargeRock}, obj)
 
 	// Set another tile to 1 and test it
-	a.SetObject(maths.Vector{X: 5, Y: -2}, objects.Object{Type: objects.SmallRock})
+	a.SetObject(maths.Vector{X: 5, Y: -2}, Object{Type: ObjectSmallRock})
 	_, obj = a.QueryPosition(maths.Vector{X: 5, Y: -2})
-	assert.Equal(t, objects.Object{Type: objects.SmallRock}, obj)
+	assert.Equal(t, Object{Type: ObjectSmallRock}, obj)
 }
 
 func TestAtlas_Grown(t *testing.T) {
@@ -239,11 +238,11 @@ func TestAtlas_GetSetCorrect(t *testing.T) {
 
 				pos := maths.Vector{X: x, Y: y}
 				a.SetTile(pos, TileRock)
-				a.SetObject(pos, objects.Object{Type: objects.LargeRock})
+				a.SetObject(pos, Object{Type: ObjectLargeRock})
 				tile, obj := a.QueryPosition(pos)
 
 				assert.Equal(t, TileRock, Tile(tile))
-				assert.Equal(t, objects.Object{Type: objects.LargeRock}, obj)
+				assert.Equal(t, Object{Type: ObjectLargeRock}, obj)
 
 			}
 		}
@@ -260,7 +259,7 @@ func TestAtlas_WorldGen(t *testing.T) {
 	for j := num - 1; j >= 0; j-- {
 		for i := 0; i < num; i++ {
 			t, o := a.QueryPosition(maths.Vector{X: i, Y: j})
-			if o.Type != objects.None {
+			if o.Type != ObjectNone {
 				fmt.Printf("%c", o.Type)
 			} else if t != byte(TileNone) {
 				fmt.Printf("%c", t)

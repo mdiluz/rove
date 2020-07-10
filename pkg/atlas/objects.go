@@ -1,21 +1,21 @@
-package objects
+package atlas
 
 // Type represents an object type
 type Type byte
 
 // Types of objects
 const (
-	// None represents no object at all
-	None = Type(0)
+	// ObjectNone represents no object at all
+	ObjectNone = Type(0)
 
-	// Rover represents a live rover
-	Rover = Type('R')
+	// ObjectRover represents a live rover
+	ObjectRover = Type('R')
 
-	// SmallRock is a small stashable rock
-	SmallRock = Type('o')
+	// ObjectSmallRock is a small stashable rock
+	ObjectSmallRock = Type('o')
 
-	// LargeRock is a large blocking rock
-	LargeRock = Type('O')
+	// ObjectLargeRock is a large blocking rock
+	ObjectLargeRock = Type('O')
 )
 
 // Object represents an object in the world
@@ -26,8 +26,8 @@ type Object struct {
 // IsBlocking checks if an object is a blocking object
 func (o *Object) IsBlocking() bool {
 	var blocking = [...]Type{
-		Rover,
-		LargeRock,
+		ObjectRover,
+		ObjectLargeRock,
 	}
 
 	for _, t := range blocking {
@@ -41,7 +41,7 @@ func (o *Object) IsBlocking() bool {
 // IsStashable checks if an object is stashable
 func (o *Object) IsStashable() bool {
 	var stashable = [...]Type{
-		SmallRock,
+		ObjectSmallRock,
 	}
 
 	for _, t := range stashable {

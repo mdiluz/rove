@@ -5,7 +5,6 @@ import (
 	"math/rand"
 
 	"github.com/mdiluz/rove/pkg/maths"
-	"github.com/mdiluz/rove/pkg/objects"
 	"github.com/ojrac/opensimplex-go"
 )
 
@@ -16,7 +15,7 @@ type chunk struct {
 
 	// Objects represents the objects within the chunk
 	// only one possible object per tile for now
-	Objects map[int]objects.Object `json:"objects"`
+	Objects map[int]Object `json:"objects"`
 }
 
 // chunkBasedAtlas represents a grid of Chunks
@@ -71,14 +70,14 @@ func (a *chunkBasedAtlas) SetTile(v maths.Vector, tile Tile) {
 }
 
 // SetObject sets the object on a tile
-func (a *chunkBasedAtlas) SetObject(v maths.Vector, obj objects.Object) {
+func (a *chunkBasedAtlas) SetObject(v maths.Vector, obj Object) {
 	c := a.worldSpaceToChunkWithGrow(v)
 	local := a.worldSpaceToChunkLocal(v)
 	a.setObject(c, local, obj)
 }
 
 // QueryPosition will return information for a specific position
-func (a *chunkBasedAtlas) QueryPosition(v maths.Vector) (byte, objects.Object) {
+func (a *chunkBasedAtlas) QueryPosition(v maths.Vector) (byte, Object) {
 	c := a.worldSpaceToChunkWithGrow(v)
 	local := a.worldSpaceToChunkLocal(v)
 	a.populate(c)
@@ -100,7 +99,7 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 	}
 
 	c.Tiles = make([]byte, a.ChunkSize*a.ChunkSize)
-	c.Objects = make(map[int]objects.Object)
+	c.Objects = make(map[int]Object)
 
 	origin := a.chunkOriginInWorldSpace(chunk)
 	for i := 0; i < a.ChunkSize; i++ {
@@ -121,15 +120,15 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 
 			// Get the object noise value for this location
 			o := a.objectNoise.Eval2(float64(origin.X+i)/objectNoiseScale, float64(origin.Y+j)/objectNoiseScale)
-			var obj = objects.None
+			var obj = ObjectNone
 			switch {
 			case o > 0.6:
-				obj = objects.LargeRock
+				obj = ObjectLargeRock
 			case o > 0.5:
-				obj = objects.SmallRock
+				obj = ObjectSmallRock
 			}
-			if obj != objects.None {
-				c.Objects[j*a.ChunkSize+i] = objects.Object{Type: obj}
+			if obj != ObjectNone {
+				c.Objects[j*a.ChunkSize+i] = Object{Type: obj}
 			}
 		}
 	}
@@ -137,9 +136,9 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 	// Set up any objects
 	for i := 0; i < len(c.Tiles); i++ {
 		if rand.Intn(16) == 0 {
-			c.Objects[i] = objects.Object{Type: objects.LargeRock}
+			c.Objects[i] = Object{Type: ObjectLargeRock}
 		} else if rand.Intn(32) == 0 {
-			c.Objects[i] = objects.Object{Type: objects.SmallRock}
+			c.Objects[i] = Object{Type: ObjectSmallRock}
 		}
 	}
 
@@ -155,12 +154,12 @@ func (a *chunkBasedAtlas) setTile(chunk int, local maths.Vector, tile byte) {
 }
 
 // setObject sets an object in a specific chunk
-func (a *chunkBasedAtlas) setObject(chunk int, local maths.Vector, object objects.Object) {
+func (a *chunkBasedAtlas) setObject(chunk int, local maths.Vector, object Object) {
 	a.populate(chunk)
 
 	c := a.Chunks[chunk]
 	i := a.chunkTileIndex(local)
-	if object.Type != objects.None {
+	if object.Type != ObjectNone {
 		c.Objects[i] = object
 	} else {
 		delete(c.Objects, i)
