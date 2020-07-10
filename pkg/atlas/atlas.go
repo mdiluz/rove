@@ -39,8 +39,8 @@ type Atlas interface {
 	QueryPosition(v vector.Vector) (byte, objects.Object)
 }
 
-// Chunk represents a fixed square grid of tiles
-type Chunk struct {
+// chunk represents a fixed square grid of tiles
+type chunk struct {
 	// Tiles represents the tiles within the chunk
 	Tiles []byte `json:"tiles"`
 
@@ -53,7 +53,7 @@ type Chunk struct {
 type ChunkBasedAtlas struct {
 	// Chunks represents all chunks in the world
 	// This is intentionally not a 2D array so it can be expanded in all directions
-	Chunks []Chunk `json:"chunks"`
+	Chunks []chunk `json:"chunks"`
 
 	// LowerBound is the origin of the bottom left corner of the current chunks in world space (current chunks cover >= this value)
 	LowerBound vector.Vector `json:"lowerBound"`
@@ -82,7 +82,7 @@ func NewAtlas(chunkSize int) Atlas {
 	// Start up with one chunk
 	a := ChunkBasedAtlas{
 		ChunkSize:    chunkSize,
-		Chunks:       make([]Chunk, 1),
+		Chunks:       make([]chunk, 1),
 		LowerBound:   vector.Vector{X: 0, Y: 0},
 		UpperBound:   vector.Vector{X: chunkSize, Y: chunkSize},
 		terrainNoise: opensimplex.New(noiseSeed),
@@ -269,7 +269,7 @@ func (a *ChunkBasedAtlas) worldSpaceToChunkWithGrow(v vector.Vector) int {
 		ChunkSize:    a.ChunkSize,
 		LowerBound:   lower,
 		UpperBound:   upper,
-		Chunks:       make([]Chunk, size.X*size.Y),
+		Chunks:       make([]chunk, size.X*size.Y),
 		terrainNoise: a.terrainNoise,
 		objectNoise:  a.objectNoise,
 	}
