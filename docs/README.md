@@ -1,7 +1,7 @@
 Rove
 =====
 
-Rove is asynchronous nomadic game about exploring a planet as part of a loose community.
+Rove is an asynchronous nomadic game about exploring a planet as part of a loose community.
 
 -------------------------------------------
 
