@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
+	"github.com/mdiluz/rove/proto/roveapi"
 )
 
 // ServerStatus returns the status of the current server to a gRPC request
-func (s *Server) ServerStatus(context.Context, *rove.ServerStatusRequest) (*rove.ServerStatusResponse, error) {
-	response := &rove.ServerStatusResponse{
+func (s *Server) ServerStatus(context.Context, *roveapi.ServerStatusRequest) (*roveapi.ServerStatusResponse, error) {
+	response := &roveapi.ServerStatusResponse{
 		Ready:       true,
 		Version:     version.Version,
 		TickRate:    int32(s.minutesPerTick),
@@ -28,7 +28,7 @@ func (s *Server) ServerStatus(context.Context, *rove.ServerStatusRequest) (*rove
 }
 
 // Register registers a new account for a gRPC request
-func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove.RegisterResponse, error) {
+func (s *Server) Register(ctx context.Context, req *roveapi.RegisterRequest) (*roveapi.RegisterResponse, error) {
 	log.Printf("Handling register request: %s\n", req.Name)
 
 	if len(req.Name) == 0 {
@@ -45,8 +45,8 @@ func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove
 		return nil, fmt.Errorf("internal server error when saving world: %s", err)
 
 	} else {
-		return &rove.RegisterResponse{
-			Account: &rove.Account{
+		return &roveapi.RegisterResponse{
+			Account: &roveapi.Account{
 				Name:   acc.Name,
 				Secret: acc.Data["secret"],
 			},
@@ -55,7 +55,7 @@ func (s *Server) Register(ctx context.Context, req *rove.RegisterRequest) (*rove
 }
 
 // Status returns rover information for a gRPC request
-func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response *rove.StatusResponse, err error) {
+func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (response *roveapi.StatusResponse, err error) {
 	log.Printf("Handling status request: %s\n", req.Account.Name)
 
 	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
@@ -77,50 +77,50 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response 
 		}
 
 		i, q := s.world.RoverCommands(resp)
-		var incoming, queued []*rove.Command
+		var incoming, queued []*roveapi.Command
 		for _, i := range i {
-			c := &rove.Command{
+			c := &roveapi.Command{
 				Command: i.Command,
 			}
 			switch i.Command {
-			case rove.CommandType_move:
-				c.Data = &rove.Command_Bearing{
+			case roveapi.CommandType_move:
+				c.Data = &roveapi.Command_Bearing{
 					Bearing: i.Bearing,
 				}
-			case rove.CommandType_broadcast:
-				c.Data = &rove.Command_Message{
+			case roveapi.CommandType_broadcast:
+				c.Data = &roveapi.Command_Message{
 					Message: i.Message,
 				}
 			}
 			incoming = append(incoming, c)
 		}
 		for _, q := range q {
-			c := &rove.Command{
+			c := &roveapi.Command{
 				Command: q.Command,
 			}
 			switch q.Command {
-			case rove.CommandType_move:
-				c.Data = &rove.Command_Bearing{
+			case roveapi.CommandType_move:
+				c.Data = &roveapi.Command_Bearing{
 					Bearing: q.Bearing,
 				}
-			case rove.CommandType_broadcast:
-				c.Data = &rove.Command_Message{
+			case roveapi.CommandType_broadcast:
+				c.Data = &roveapi.Command_Message{
 					Message: q.Message,
 				}
 			}
 			queued = append(queued, c)
 		}
-		var logs []*rove.Log
+		var logs []*roveapi.Log
 		for _, log := range rover.Logs {
-			logs = append(logs, &rove.Log{
+			logs = append(logs, &roveapi.Log{
 				Text: log.Text,
 				Time: fmt.Sprintf("%d", log.Time.Unix()), // proto uses strings under the hood for 64bit ints anyway
 			})
 		}
 
-		response = &rove.StatusResponse{
+		response = &roveapi.StatusResponse{
 			Name: rover.Name,
-			Position: &rove.Vector{
+			Position: &roveapi.Vector{
 				X: int32(rover.Pos.X),
 				Y: int32(rover.Pos.Y),
 			},
@@ -140,7 +140,7 @@ func (s *Server) Status(ctx context.Context, req *rove.StatusRequest) (response 
 }
 
 // Radar returns the radar information for a rover
-func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.RadarResponse, error) {
+func (s *Server) Radar(ctx context.Context, req *roveapi.RadarRequest) (*roveapi.RadarResponse, error) {
 	log.Printf("Handling radar request: %s\n", req.Account.Name)
 
 	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
@@ -150,7 +150,7 @@ func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.Radar
 		return nil, fmt.Errorf("Secret incorrect for account %s", req.Account.Name)
 	}
 
-	response := &rove.RadarResponse{}
+	response := &roveapi.RadarResponse{}
 
 	resp, err := s.accountant.GetValue(req.Account.Name, "rover")
 	if err != nil {
@@ -172,7 +172,7 @@ func (s *Server) Radar(ctx context.Context, req *rove.RadarRequest) (*rove.Radar
 }
 
 // Command issues commands to the world based on a gRPC request
-func (s *Server) Command(ctx context.Context, req *rove.CommandRequest) (*rove.CommandResponse, error) {
+func (s *Server) Command(ctx context.Context, req *roveapi.CommandRequest) (*roveapi.CommandResponse, error) {
 	log.Printf("Handling command request: %s and %+v\n", req.Account.Name, req.Commands)
 
 	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
@@ -187,15 +187,15 @@ func (s *Server) Command(ctx context.Context, req *rove.CommandRequest) (*rove.C
 		return nil, err
 	}
 
-	var cmds []game.Command
+	var cmds []rove.Command
 	for _, c := range req.Commands {
-		n := game.Command{
+		n := rove.Command{
 			Command: c.Command,
 		}
 		switch c.Command {
-		case rove.CommandType_move:
+		case roveapi.CommandType_move:
 			n.Bearing = c.GetBearing()
-		case rove.CommandType_broadcast:
+		case roveapi.CommandType_broadcast:
 			n.Message = c.GetMessage()
 		}
 		cmds = append(cmds, n)
@@ -205,5 +205,5 @@ func (s *Server) Command(ctx context.Context, req *rove.CommandRequest) (*rove.C
 		return nil, err
 	}
 
-	return &rove.CommandResponse{}, nil
+	return &roveapi.CommandResponse{}, nil
 }

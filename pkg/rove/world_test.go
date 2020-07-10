@@ -1,13 +1,11 @@
-package game
+package rove
 
 import (
 	"testing"
 
 	"github.com/mdiluz/rove/pkg/atlas"
-	"github.com/mdiluz/rove/pkg/bearing"
-	"github.com/mdiluz/rove/pkg/objects"
-	"github.com/mdiluz/rove/pkg/rove"
-	"github.com/mdiluz/rove/pkg/vector"
+	"github.com/mdiluz/rove/pkg/maths"
+	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -68,7 +66,7 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 
-	pos := vector.Vector{
+	pos := maths.Vector{
 		X: 0.0,
 		Y: 0.0,
 	}
@@ -80,10 +78,10 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.NoError(t, err, "Failed to set position for rover")
 	assert.Equal(t, pos, newPos, "Failed to correctly set position for rover")
 
-	b := bearing.North
+	b := maths.North
 	newPos, err = world.MoveRover(a, b)
 	assert.NoError(t, err, "Failed to set position for rover")
-	pos.Add(vector.Vector{X: 0, Y: 1})
+	pos.Add(maths.Vector{X: 0, Y: 1})
 	assert.Equal(t, pos, newPos, "Failed to correctly move position for rover")
 
 	rover, err := world.GetRover(a)
@@ -92,7 +90,7 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.Contains(t, rover.Logs[len(rover.Logs)-1].Text, "moved", "Rover logs should contain the move")
 
 	// Place a tile in front of the rover
-	world.Atlas.SetObject(vector.Vector{X: 0, Y: 2}, objects.Object{Type: objects.LargeRock})
+	world.Atlas.SetObject(maths.Vector{X: 0, Y: 2}, atlas.Object{Type: atlas.ObjectLargeRock})
 	newPos, err = world.MoveRover(a, b)
 	assert.NoError(t, err, "Failed to move rover")
 	assert.Equal(t, pos, newPos, "Failed to correctly not move position for rover into wall")
@@ -111,9 +109,9 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Warp the rovers into position
-	bpos := vector.Vector{X: -3, Y: -3}
+	bpos := maths.Vector{X: -3, Y: -3}
 	assert.NoError(t, world.WarpRover(b, bpos), "Failed to warp rover")
-	assert.NoError(t, world.WarpRover(a, vector.Vector{X: 0, Y: 0}), "Failed to warp rover")
+	assert.NoError(t, world.WarpRover(a, maths.Vector{X: 0, Y: 0}), "Failed to warp rover")
 
 	radar, objs, err := world.RadarFromRover(a)
 	assert.NoError(t, err, "Failed to get radar from rover")
@@ -122,8 +120,8 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	assert.Equal(t, fullRange*fullRange, len(objs), "Radar returned wrong length")
 
 	// Test the expected values
-	assert.Equal(t, byte(objects.Rover), objs[1+fullRange])
-	assert.Equal(t, byte(objects.Rover), objs[4+4*fullRange])
+	assert.Equal(t, byte(atlas.ObjectRover), objs[1+fullRange])
+	assert.Equal(t, byte(atlas.ObjectRover), objs[4+4*fullRange])
 
 	// Check the radar results are stable
 	radar1, objs1, err := world.RadarFromRover(a)
@@ -139,11 +137,12 @@ func TestWorld_RoverStash(t *testing.T) {
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 
-	pos := vector.Vector{
+	pos := maths.Vector{
 		X: 0.0,
 		Y: 0.0,
 	}
 
+	world.Atlas.SetObject(pos, atlas.Object{Type: atlas.ObjectNone})
 	err = world.WarpRover(a, pos)
 	assert.NoError(t, err, "Failed to set position for rover")
 
@@ -155,22 +154,22 @@ func TestWorld_RoverStash(t *testing.T) {
 
 	for i := 0; i < rover.Capacity; i++ {
 		// Place an object
-		world.Atlas.SetObject(pos, objects.Object{Type: objects.SmallRock})
+		world.Atlas.SetObject(pos, atlas.Object{Type: atlas.ObjectSmallRock})
 
 		// Pick it up
 		o, err := world.RoverStash(a)
 		assert.NoError(t, err, "Failed to stash")
-		assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
+		assert.Equal(t, atlas.ObjectSmallRock, o, "Failed to get correct object")
 
 		// Check it's gone
 		_, obj := world.Atlas.QueryPosition(pos)
-		assert.Equal(t, objects.None, obj.Type, "Stash failed to remove object from atlas")
+		assert.Equal(t, atlas.ObjectNone, obj.Type, "Stash failed to remove object from atlas")
 
 		// Check we have it
 		inv, err := world.RoverInventory(a)
 		assert.NoError(t, err, "Failed to get inventory")
 		assert.Equal(t, i+1, len(inv))
-		assert.Equal(t, objects.Object{Type: objects.SmallRock}, inv[i])
+		assert.Equal(t, atlas.Object{Type: atlas.ObjectSmallRock}, inv[i])
 
 		// Check that this did reduce the charge
 		info, err := world.GetRover(a)
@@ -187,16 +186,16 @@ func TestWorld_RoverStash(t *testing.T) {
 	}
 
 	// Place an object
-	world.Atlas.SetObject(pos, objects.Object{Type: objects.SmallRock})
+	world.Atlas.SetObject(pos, atlas.Object{Type: atlas.ObjectSmallRock})
 
 	// Try to pick it up
 	o, err := world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
-	assert.Equal(t, objects.None, o, "Failed to get correct object")
+	assert.Equal(t, atlas.ObjectNone, o, "Failed to get correct object")
 
 	// Check it's still there
 	_, obj := world.Atlas.QueryPosition(pos)
-	assert.Equal(t, objects.SmallRock, obj.Type, "Stash failed to remove object from atlas")
+	assert.Equal(t, atlas.ObjectSmallRock, obj.Type, "Stash failed to remove object from atlas")
 
 	// Check we don't have it
 	inv, err := world.RoverInventory(a)
@@ -214,7 +213,7 @@ func TestWorld_RoverDamage(t *testing.T) {
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 
-	pos := vector.Vector{
+	pos := maths.Vector{
 		X: 0.0,
 		Y: 0.0,
 	}
@@ -225,9 +224,9 @@ func TestWorld_RoverDamage(t *testing.T) {
 	info, err := world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 
-	world.Atlas.SetObject(vector.Vector{X: 0.0, Y: 1.0}, objects.Object{Type: objects.LargeRock})
+	world.Atlas.SetObject(maths.Vector{X: 0.0, Y: 1.0}, atlas.Object{Type: atlas.ObjectLargeRock})
 
-	vec, err := world.MoveRover(a, bearing.North)
+	vec, err := world.MoveRover(a, maths.North)
 	assert.NoError(t, err, "Failed to move rover")
 	assert.Equal(t, pos, vec, "Rover managed to move into large rock")
 
@@ -242,13 +241,13 @@ func TestWorld_RoverRepair(t *testing.T) {
 	a, err := world.SpawnRover()
 	assert.NoError(t, err)
 
-	pos := vector.Vector{
+	pos := maths.Vector{
 		X: 0.0,
 		Y: 0.0,
 	}
 
 	world.Atlas.SetTile(pos, atlas.TileNone)
-	world.Atlas.SetObject(pos, objects.Object{Type: objects.None})
+	world.Atlas.SetObject(pos, atlas.Object{Type: atlas.ObjectNone})
 
 	err = world.WarpRover(a, pos)
 	assert.NoError(t, err, "Failed to set position for rover")
@@ -257,15 +256,15 @@ func TestWorld_RoverRepair(t *testing.T) {
 	assert.NoError(t, err, "couldn't get rover info")
 
 	// Pick up something to repair with
-	world.Atlas.SetObject(pos, objects.Object{Type: objects.SmallRock})
+	world.Atlas.SetObject(pos, atlas.Object{Type: atlas.ObjectSmallRock})
 	o, err := world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
-	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
+	assert.Equal(t, atlas.ObjectSmallRock, o, "Failed to get correct object")
 
-	world.Atlas.SetObject(vector.Vector{X: 0.0, Y: 1.0}, objects.Object{Type: objects.LargeRock})
+	world.Atlas.SetObject(maths.Vector{X: 0.0, Y: 1.0}, atlas.Object{Type: atlas.ObjectLargeRock})
 
 	// Try and bump into the rock
-	vec, err := world.MoveRover(a, bearing.North)
+	vec, err := world.MoveRover(a, maths.North)
 	assert.NoError(t, err, "Failed to move rover")
 	assert.Equal(t, pos, vec, "Rover managed to move into large rock")
 
@@ -273,7 +272,7 @@ func TestWorld_RoverRepair(t *testing.T) {
 	assert.NoError(t, err, "couldn't get rover info")
 	assert.Equal(t, originalInfo.Integrity-1, newinfo.Integrity, "rover should have lost integrity")
 
-	err = world.ExecuteCommand(&Command{Command: rove.CommandType_repair}, a)
+	err = world.ExecuteCommand(&Command{Command: roveapi.CommandType_repair}, a)
 	assert.NoError(t, err, "Failed to repair rover")
 
 	newinfo, err = world.GetRover(a)
@@ -282,12 +281,12 @@ func TestWorld_RoverRepair(t *testing.T) {
 	assert.Contains(t, newinfo.Logs[len(newinfo.Logs)-1].Text, "repair", "Rover logs should contain the repair")
 
 	// Check again that it can't repair past the max
-	world.Atlas.SetObject(pos, objects.Object{Type: objects.SmallRock})
+	world.Atlas.SetObject(pos, atlas.Object{Type: atlas.ObjectSmallRock})
 	o, err = world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
-	assert.Equal(t, objects.SmallRock, o, "Failed to get correct object")
+	assert.Equal(t, atlas.ObjectSmallRock, o, "Failed to get correct object")
 
-	err = world.ExecuteCommand(&Command{Command: rove.CommandType_repair}, a)
+	err = world.ExecuteCommand(&Command{Command: roveapi.CommandType_repair}, a)
 	assert.NoError(t, err, "Failed to repair rover")
 
 	newinfo, err = world.GetRover(a)
@@ -312,13 +311,13 @@ func TestWorld_Charge(t *testing.T) {
 		assert.NoError(t, err, "Failed to get position for rover")
 
 		// Ensure the path ahead is empty
-		world.Atlas.SetTile(initialPos.Added(bearing.North.Vector()), atlas.TileRock)
-		world.Atlas.SetObject(initialPos.Added(bearing.North.Vector()), objects.Object{Type: objects.None})
+		world.Atlas.SetTile(initialPos.Added(maths.North.Vector()), atlas.TileRock)
+		world.Atlas.SetObject(initialPos.Added(maths.North.Vector()), atlas.Object{Type: atlas.ObjectNone})
 
 		// Try and move north (along unblocked path)
-		newPos, err := world.MoveRover(a, bearing.North)
+		newPos, err := world.MoveRover(a, maths.North)
 		assert.NoError(t, err, "Failed to set position for rover")
-		assert.Equal(t, initialPos.Added(bearing.North.Vector()), newPos, "Failed to correctly move position for rover")
+		assert.Equal(t, initialPos.Added(maths.North.Vector()), newPos, "Failed to correctly move position for rover")
 
 		// Ensure rover lost charge
 		rover, err := world.GetRover(a)
@@ -377,8 +376,8 @@ func TestWorld_Broadcast(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Warp rovers near to eachother
-	assert.NoError(t, world.WarpRover(a, vector.Vector{X: 0, Y: 0}))
-	assert.NoError(t, world.WarpRover(b, vector.Vector{X: 1, Y: 0}))
+	assert.NoError(t, world.WarpRover(a, maths.Vector{X: 0, Y: 0}))
+	assert.NoError(t, world.WarpRover(b, maths.Vector{X: 1, Y: 0}))
 
 	// Broadcast from a
 	assert.NoError(t, world.RoverBroadcast(a, []byte{'A', 'B', 'C'}))
@@ -395,7 +394,8 @@ func TestWorld_Broadcast(t *testing.T) {
 	assert.Contains(t, rb.Logs[len(rb.Logs)-1].Text, "ABC", "Rover A should have logged it's broadcast")
 
 	// Warp B outside of the range of A
-	assert.NoError(t, world.WarpRover(b, vector.Vector{X: ra.Range, Y: 0}))
+	world.Atlas.SetObject(maths.Vector{X: ra.Range, Y: 0}, atlas.Object{Type: atlas.ObjectNone})
+	assert.NoError(t, world.WarpRover(b, maths.Vector{X: ra.Range, Y: 0}))
 
 	// Broadcast from a again
 	assert.NoError(t, world.RoverBroadcast(a, []byte{'X', 'Y', 'Z'}))
@@ -411,7 +411,8 @@ func TestWorld_Broadcast(t *testing.T) {
 	assert.Contains(t, rb.Logs[len(rb.Logs)-1].Text, "XYZ", "Rover A should have logged it's broadcast")
 
 	// Warp B outside of the range of A
-	assert.NoError(t, world.WarpRover(b, vector.Vector{X: ra.Range + 1, Y: 0}))
+	world.Atlas.SetObject(maths.Vector{X: ra.Range + 1, Y: 0}, atlas.Object{Type: atlas.ObjectNone})
+	assert.NoError(t, world.WarpRover(b, maths.Vector{X: ra.Range + 1, Y: 0}))
 
 	// Broadcast from a again
 	assert.NoError(t, world.RoverBroadcast(a, []byte{'H', 'J', 'K'}))

@@ -52,7 +52,9 @@ func InnerMain() {
 	log.Printf("Initialising version %s...\n", version.Version)
 
 	// Set the persistence path
-	if err := persistence.SetPath(data); err != nil {
+	if len(data) == 0 {
+		log.Fatal("DATA_PATH not set")
+	} else if err := persistence.SetPath(data); err != nil {
 		log.Fatal(err)
 	}
 

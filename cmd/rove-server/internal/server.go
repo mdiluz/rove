@@ -6,10 +6,9 @@ import (
 	"net"
 	"sync"
 
-	"github.com/mdiluz/rove/pkg/accounts"
-	"github.com/mdiluz/rove/pkg/game"
 	"github.com/mdiluz/rove/pkg/persistence"
 	"github.com/mdiluz/rove/pkg/rove"
+	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/robfig/cron"
 	"google.golang.org/grpc"
 )
@@ -26,10 +25,10 @@ const (
 type Server struct {
 
 	// Internal state
-	world *game.World
+	world *rove.World
 
 	// Accountant
-	accountant *accounts.Accountant
+	accountant Accountant
 
 	// gRPC server
 	netListener net.Listener
@@ -80,8 +79,8 @@ func NewServer(opts ...ServerOption) *Server {
 		address:     "",
 		persistence: EphemeralData,
 		schedule:    cron.New(),
-		world:       game.NewWorld(32),
-		accountant:  accounts.NewAccountant(),
+		world:       rove.NewWorld(32),
+		accountant:  NewSimpleAccountant(),
 	}
 
 	// Apply all options
@@ -109,7 +108,7 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s.grpcServ = grpc.NewServer()
-	rove.RegisterRoveServer(s.grpcServ, s)
+	roveapi.RegisterRoveServer(s.grpcServ, s)
 
 	return nil
 }
@@ -189,7 +188,7 @@ func (s *Server) SaveWorld() error {
 	if s.persistence == PersistentData {
 		s.world.RLock()
 		defer s.world.RUnlock()
-		if err := persistence.SaveAll("world", s.world); err != nil {
+		if err := persistence.SaveAll("world", s.world, "accounts", s.accountant); err != nil {
 			return fmt.Errorf("failed to save out persistent data: %s", err)
 		}
 	}
@@ -201,7 +200,7 @@ func (s *Server) LoadWorld() error {
 	if s.persistence == PersistentData {
 		s.world.Lock()
 		defer s.world.Unlock()
-		if err := persistence.LoadAll("world", &s.world); err != nil {
+		if err := persistence.LoadAll("world", &s.world, "accounts", &s.accountant); err != nil {
 			return err
 		}
 	}

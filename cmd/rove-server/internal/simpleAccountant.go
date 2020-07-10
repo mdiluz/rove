@@ -1,4 +1,4 @@
-package accounts
+package internal
 
 import (
 	"fmt"
@@ -7,29 +7,20 @@ import (
 	"github.com/google/uuid"
 )
 
-// Account represents a registered user
-type Account struct {
-	// Name simply describes the account and must be unique
-	Name string `json:"name"`
-
-	// Data represents internal account data
-	Data map[string]string `json:"data"`
-}
-
-// Accountant manages a set of accounts
-type Accountant struct {
+// SimpleAccountant manages a set of accounts
+type SimpleAccountant struct {
 	Accounts map[string]Account `json:"accounts"`
 }
 
-// NewAccountant creates a new accountant
-func NewAccountant() *Accountant {
-	return &Accountant{
+// NewSimpleAccountant creates a new accountant
+func NewSimpleAccountant() Accountant {
+	return &SimpleAccountant{
 		Accounts: make(map[string]Account),
 	}
 }
 
 // RegisterAccount adds an account to the set of internal accounts
-func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
+func (a *SimpleAccountant) RegisterAccount(name string) (acc Account, err error) {
 
 	// Set up the account info
 	acc.Name = name
@@ -55,7 +46,7 @@ func (a *Accountant) RegisterAccount(name string) (acc Account, err error) {
 }
 
 // VerifySecret verifies if an account secret is correct
-func (a *Accountant) VerifySecret(account string, secret string) (bool, error) {
+func (a *SimpleAccountant) VerifySecret(account string, secret string) (bool, error) {
 	// Find the account matching the ID
 	if this, ok := a.Accounts[account]; ok {
 		return this.Data["secret"] == secret, nil
@@ -64,8 +55,18 @@ func (a *Accountant) VerifySecret(account string, secret string) (bool, error) {
 	return false, fmt.Errorf("no account found for id: %s", account)
 }
 
+// GetSecret gets the internal secret
+func (a *SimpleAccountant) GetSecret(account string) (string, error) {
+	// Find the account matching the ID
+	if this, ok := a.Accounts[account]; ok {
+		return this.Data["secret"], nil
+	}
+
+	return "", fmt.Errorf("no account found for id: %s", account)
+}
+
 // AssignData assigns data to an account
-func (a *Accountant) AssignData(account string, key string, value string) error {
+func (a *SimpleAccountant) AssignData(account string, key string, value string) error {
 
 	// Find the account matching the ID
 	if this, ok := a.Accounts[account]; ok {
@@ -79,7 +80,7 @@ func (a *Accountant) AssignData(account string, key string, value string) error 
 }
 
 // GetValue gets the rover rover for the account
-func (a *Accountant) GetValue(account string, key string) (string, error) {
+func (a *SimpleAccountant) GetValue(account string, key string) (string, error) {
 	// Find the account matching the ID
 	this, ok := a.Accounts[account]
 	if !ok {

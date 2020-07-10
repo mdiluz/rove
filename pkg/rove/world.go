@@ -1,4 +1,4 @@
-package game
+package rove
 
 import (
 	"bufio"
@@ -10,40 +10,35 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/atlas"
-	"github.com/mdiluz/rove/pkg/bearing"
-	"github.com/mdiluz/rove/pkg/objects"
-	"github.com/mdiluz/rove/pkg/rove"
-	"github.com/mdiluz/rove/pkg/vector"
+	"github.com/mdiluz/rove/pkg/maths"
+	"github.com/mdiluz/rove/proto/roveapi"
 )
 
 // World describes a self contained universe and everything in it
 type World struct {
+	// TicksPerDay is the amount of ticks in a single day
+	TicksPerDay int `json:"ticks-per-day"`
+
+	// Current number of ticks from the start
+	CurrentTicks int `json:"current-ticks"`
+
 	// Rovers is a id->data map of all the rovers in the game
 	Rovers map[string]Rover `json:"rovers"`
 
 	// Atlas represends the world map of chunks and tiles
 	Atlas atlas.Atlas `json:"atlas"`
 
-	// Mutex to lock around all world operations
-	worldMutex sync.RWMutex
-
 	// Commands is the set of currently executing command streams per rover
 	CommandQueue map[string]CommandStream `json:"commands"`
-
 	// Incoming represents the set of commands to add to the queue at the end of the current tick
 	CommandIncoming map[string]CommandStream `json:"incoming"`
 
+	// Mutex to lock around all world operations
+	worldMutex sync.RWMutex
 	// Mutex to lock around command operations
 	cmdMutex sync.RWMutex
-
 	// Set of possible words to use for names
 	words []string
-
-	// TicksPerDay is the amount of ticks in a single day
-	TicksPerDay int `json:"ticks-per-day"`
-
-	// Current number of ticks from the start
-	CurrentTicks int `json:"current-ticks"`
 }
 
 var wordsFile = os.Getenv("WORDS_FILE")
@@ -70,7 +65,7 @@ func NewWorld(chunkSize int) *World {
 		Rovers:          make(map[string]Rover),
 		CommandQueue:    make(map[string]CommandStream),
 		CommandIncoming: make(map[string]CommandStream),
-		Atlas:           atlas.NewAtlas(chunkSize),
+		Atlas:           atlas.NewChunkAtlas(chunkSize),
 		words:           lines,
 		TicksPerDay:     24,
 		CurrentTicks:    0,
@@ -106,9 +101,9 @@ func (w *World) SpawnRover() (string, error) {
 	}
 
 	// Spawn in a random place near the origin
-	rover.Pos = vector.Vector{
-		X: w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
-		Y: w.Atlas.ChunkSize/2 - rand.Intn(w.Atlas.ChunkSize),
+	rover.Pos = maths.Vector{
+		X: 10 - rand.Intn(20),
+		Y: 10 - rand.Intn(20),
 	}
 
 	// Seach until we error (run out of world)
@@ -118,7 +113,7 @@ func (w *World) SpawnRover() (string, error) {
 			break
 		} else {
 			// Try and spawn to the east of the blockage
-			rover.Pos.Add(vector.Vector{X: 1, Y: 0})
+			rover.Pos.Add(maths.Vector{X: 1, Y: 0})
 		}
 
 	}
@@ -218,19 +213,19 @@ func (w *World) DestroyRover(rover string) error {
 }
 
 // RoverPosition returns the position of the rover
-func (w *World) RoverPosition(rover string) (vector.Vector, error) {
+func (w *World) RoverPosition(rover string) (maths.Vector, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
 	i, ok := w.Rovers[rover]
 	if !ok {
-		return vector.Vector{}, fmt.Errorf("no rover matching id")
+		return maths.Vector{}, fmt.Errorf("no rover matching id")
 	}
 	return i.Pos, nil
 }
 
 // SetRoverPosition sets the position of the rover
-func (w *World) SetRoverPosition(rover string, pos vector.Vector) error {
+func (w *World) SetRoverPosition(rover string, pos maths.Vector) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -245,7 +240,7 @@ func (w *World) SetRoverPosition(rover string, pos vector.Vector) error {
 }
 
 // RoverInventory returns the inventory of a requested rover
-func (w *World) RoverInventory(rover string) ([]objects.Object, error) {
+func (w *World) RoverInventory(rover string) ([]atlas.Object, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
@@ -257,7 +252,7 @@ func (w *World) RoverInventory(rover string) ([]objects.Object, error) {
 }
 
 // WarpRover sets an rovers position
-func (w *World) WarpRover(rover string, pos vector.Vector) error {
+func (w *World) WarpRover(rover string, pos maths.Vector) error {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -282,13 +277,13 @@ func (w *World) WarpRover(rover string, pos vector.Vector) error {
 }
 
 // MoveRover attempts to move a rover in a specific direction
-func (w *World) MoveRover(rover string, b bearing.Bearing) (vector.Vector, error) {
+func (w *World) MoveRover(rover string, b maths.Bearing) (maths.Vector, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
 	i, ok := w.Rovers[rover]
 	if !ok {
-		return vector.Vector{}, fmt.Errorf("no rover matching id")
+		return maths.Vector{}, fmt.Errorf("no rover matching id")
 	}
 
 	// Ensure the rover has energy
@@ -323,35 +318,35 @@ func (w *World) MoveRover(rover string, b bearing.Bearing) (vector.Vector, error
 }
 
 // RoverStash will stash an item at the current rovers position
-func (w *World) RoverStash(rover string) (objects.Type, error) {
+func (w *World) RoverStash(rover string) (atlas.Type, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
 	r, ok := w.Rovers[rover]
 	if !ok {
-		return objects.None, fmt.Errorf("no rover matching id")
+		return atlas.ObjectNone, fmt.Errorf("no rover matching id")
 	}
 
 	// Can't pick up when full
 	if len(r.Inventory) >= r.Capacity {
-		return objects.None, nil
+		return atlas.ObjectNone, nil
 	}
 
 	// Ensure the rover has energy
 	if r.Charge <= 0 {
-		return objects.None, nil
+		return atlas.ObjectNone, nil
 	}
 	r.Charge--
 
 	_, obj := w.Atlas.QueryPosition(r.Pos)
 	if !obj.IsStashable() {
-		return objects.None, nil
+		return atlas.ObjectNone, nil
 	}
 
 	r.AddLogEntryf("stashed %c", obj.Type)
 	r.Inventory = append(r.Inventory, obj)
 	w.Rovers[rover] = r
-	w.Atlas.SetObject(r.Pos, objects.Object{Type: objects.None})
+	w.Atlas.SetObject(r.Pos, atlas.Object{Type: atlas.ObjectNone})
 	return obj.Type, nil
 }
 
@@ -371,11 +366,11 @@ func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err err
 	roverPos := r.Pos
 
 	// Get the radar min and max values
-	radarMin := vector.Vector{
+	radarMin := maths.Vector{
 		X: roverPos.X - r.Range,
 		Y: roverPos.Y - r.Range,
 	}
-	radarMax := vector.Vector{
+	radarMax := maths.Vector{
 		X: roverPos.X + r.Range,
 		Y: roverPos.Y + r.Range,
 	}
@@ -385,7 +380,7 @@ func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err err
 	objs = make([]byte, radarSpan*radarSpan)
 	for j := radarMin.Y; j <= radarMax.Y; j++ {
 		for i := radarMin.X; i <= radarMax.X; i++ {
-			q := vector.Vector{X: i, Y: j}
+			q := maths.Vector{X: i, Y: j}
 
 			tile, obj := w.Atlas.QueryPosition(q)
 
@@ -406,7 +401,7 @@ func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err err
 		if dist.X <= r.Range && dist.Y <= r.Range {
 			relative := r.Pos.Added(radarMin.Negated())
 			index := relative.X + relative.Y*radarSpan
-			objs[index] = byte(objects.Rover)
+			objs[index] = byte(atlas.ObjectRover)
 		}
 	}
 
@@ -430,11 +425,11 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 	// First validate the commands
 	for _, c := range commands {
 		switch c.Command {
-		case rove.CommandType_move:
-			if _, err := bearing.FromString(c.Bearing); err != nil {
+		case roveapi.CommandType_move:
+			if _, err := maths.FromString(c.Bearing); err != nil {
 				return fmt.Errorf("unknown bearing: %s", c.Bearing)
 			}
-		case rove.CommandType_broadcast:
+		case roveapi.CommandType_broadcast:
 			if len(c.Message) > 3 {
 				return fmt.Errorf("too many characters in message (limit 3): %d", len(c.Message))
 			}
@@ -443,9 +438,9 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 					return fmt.Errorf("invalid message character: %c", b)
 				}
 			}
-		case rove.CommandType_stash:
-		case rove.CommandType_repair:
-		case rove.CommandType_recharge:
+		case roveapi.CommandType_stash:
+		case roveapi.CommandType_repair:
+		case roveapi.CommandType_recharge:
 			// Nothing to verify
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
@@ -509,19 +504,19 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 	log.Printf("Executing command: %+v for %s\n", *c, rover)
 
 	switch c.Command {
-	case rove.CommandType_move:
-		if dir, err := bearing.FromString(c.Bearing); err != nil {
+	case roveapi.CommandType_move:
+		if dir, err := maths.FromString(c.Bearing); err != nil {
 			return err
 		} else if _, err := w.MoveRover(rover, dir); err != nil {
 			return err
 		}
 
-	case rove.CommandType_stash:
+	case roveapi.CommandType_stash:
 		if _, err := w.RoverStash(rover); err != nil {
 			return err
 		}
 
-	case rove.CommandType_repair:
+	case roveapi.CommandType_repair:
 		r, err := w.GetRover(rover)
 		if err != nil {
 			return err
@@ -533,12 +528,12 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 			r.AddLogEntryf("repaired self to %d", r.Integrity)
 			w.Rovers[rover] = r
 		}
-	case rove.CommandType_recharge:
+	case roveapi.CommandType_recharge:
 		_, err := w.RoverRecharge(rover)
 		if err != nil {
 			return err
 		}
-	case rove.CommandType_broadcast:
+	case roveapi.CommandType_broadcast:
 		if err := w.RoverBroadcast(rover, c.Message); err != nil {
 			return err
 		}

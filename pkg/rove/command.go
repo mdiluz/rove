@@ -1,10 +1,10 @@
-package game
+package rove
 
-import "github.com/mdiluz/rove/pkg/rove"
+import "github.com/mdiluz/rove/proto/roveapi"
 
 // Command represends a single command to execute
 type Command struct {
-	Command rove.CommandType `json:"command"`
+	Command roveapi.CommandType `json:"command"`
 
 	// Used in the move command
 	Bearing string `json:"bearing,omitempty"`

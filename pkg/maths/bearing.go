@@ -1,10 +1,8 @@
-package bearing
+package maths
 
 import (
 	"fmt"
 	"strings"
-
-	"github.com/mdiluz/rove/pkg/vector"
 )
 
 // Bearing describes a compass direction
@@ -67,7 +65,7 @@ func FromString(s string) (Bearing, error) {
 	return -1, fmt.Errorf("unknown bearing: %s", s)
 }
 
-var bearingVectors = []vector.Vector{
+var bearingVectors = []Vector{
 	{X: 0, Y: 1},  // N
 	{X: 1, Y: 1},  // NE
 	{X: 1, Y: 0},  // E
@@ -79,6 +77,6 @@ var bearingVectors = []vector.Vector{
 }
 
 // Vector converts a Direction to a Vector
-func (d Bearing) Vector() vector.Vector {
+func (d Bearing) Vector() Vector {
 	return bearingVectors[d]
 }

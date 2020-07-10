@@ -1,9 +1,7 @@
-package vector
+package maths
 
 import (
 	"math"
-
-	"github.com/mdiluz/rove/pkg/maths"
 )
 
 // Vector desribes a 3D vector
@@ -71,15 +69,15 @@ func (v Vector) DividedFloor(val int) Vector {
 
 // Abs returns an absolute version of the vector
 func (v Vector) Abs() Vector {
-	return Vector{maths.Abs(v.X), maths.Abs(v.Y)}
+	return Vector{Abs(v.X), Abs(v.Y)}
 }
 
-// Min returns the minimum values in both vectors
-func Min(v1 Vector, v2 Vector) Vector {
-	return Vector{maths.Min(v1.X, v2.X), maths.Min(v1.Y, v2.Y)}
+// Min2 returns the minimum values in both vectors
+func Min2(v1 Vector, v2 Vector) Vector {
+	return Vector{Min(v1.X, v2.X), Min(v1.Y, v2.Y)}
 }
 
-// Max returns the max values in both vectors
-func Max(v1 Vector, v2 Vector) Vector {
-	return Vector{maths.Max(v1.X, v2.X), maths.Max(v1.Y, v2.Y)}
+// Max2 returns the max values in both vectors
+func Max2(v1 Vector, v2 Vector) Vector {
+	return Vector{Max(v1.X, v2.X), Max(v1.Y, v2.Y)}
 }

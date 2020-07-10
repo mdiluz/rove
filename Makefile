@@ -3,7 +3,7 @@ VERSION := $(shell git describe --always --long --dirty --tags)
 build:
 	@echo Running no-output build
 	go mod download
-	go build -ldflags="-X 'github.com/mdiluz/rove/pkg/version.Version=${VERSION}'" ./...
+	go build -ldflags="-X 'github.com/mdiluz/rove/cmd/version.Version=${VERSION}'" ./...
 
 install:
 	@echo Installing to GOPATH
@@ -12,14 +12,10 @@ install:
 
 gen:
 	@echo Installing go dependencies
-	go install \
-		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
-		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
-		github.com/golang/protobuf/protoc-gen-go
+	go install github.com/golang/protobuf/protoc-gen-go
 	go mod download
-	@echo Generating rove server gRPC and gateway
-	protoc --proto_path proto --go_out=plugins=grpc,paths=source_relative:pkg/ proto/rove/rove.proto
-	protoc --proto_path proto --grpc-gateway_out=paths=source_relative:pkg/ proto/rove/rove.proto
+	@echo Generating rove server gRPC
+	protoc --proto_path proto --go_out=plugins=grpc,paths=source_relative:proto/ proto/roveapi/roveapi.proto
 
 test:
 	@echo Unit tests
