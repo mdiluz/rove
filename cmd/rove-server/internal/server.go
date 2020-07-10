@@ -29,7 +29,7 @@ type Server struct {
 	world *game.World
 
 	// Accountant
-	accountant *accounts.Accountant
+	accountant accounts.Accountant
 
 	// gRPC server
 	netListener net.Listener
@@ -81,7 +81,7 @@ func NewServer(opts ...ServerOption) *Server {
 		persistence: EphemeralData,
 		schedule:    cron.New(),
 		world:       game.NewWorld(32),
-		accountant:  accounts.NewAccountant(),
+		accountant:  accounts.NewSimpleAccountant(),
 	}
 
 	// Apply all options

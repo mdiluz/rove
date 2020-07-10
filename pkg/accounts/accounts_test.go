@@ -8,7 +8,7 @@ import (
 
 func TestNewAccountant(t *testing.T) {
 	// Very basic verify here for now
-	accountant := NewAccountant()
+	accountant := NewSimpleAccountant()
 	if accountant == nil {
 		t.Error("Failed to create accountant")
 	}
@@ -16,7 +16,7 @@ func TestNewAccountant(t *testing.T) {
 
 func TestAccountant_RegisterAccount(t *testing.T) {
 
-	accountant := NewAccountant()
+	accountant := NewSimpleAccountant()
 
 	// Start by making two accounts
 
@@ -44,10 +44,7 @@ func TestAccountant_RegisterAccount(t *testing.T) {
 }
 
 func TestAccountant_AssignGetData(t *testing.T) {
-	accountant := NewAccountant()
-	if len(accountant.Accounts) != 0 {
-		t.Error("New accountant created with non-zero account number")
-	}
+	accountant := NewSimpleAccountant()
 
 	name := uuid.New().String()
 	a, err := accountant.RegisterAccount(name)
