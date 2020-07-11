@@ -66,14 +66,14 @@ func FromString(s string) (Bearing, error) {
 }
 
 var bearingVectors = []Vector{
-	{X: 0, Y: 1},  // N
-	{X: 1, Y: 1},  // NE
-	{X: 1, Y: 0},  // E
-	{X: 1, Y: -1}, // SE
-	{X: 0, Y: -1}, // S
-	{X: -1, Y: 1}, // SW
-	{X: -1, Y: 0}, // W
-	{X: -1, Y: 1}, // NW
+	{X: 0, Y: 1},   // N
+	{X: 1, Y: 1},   // NE
+	{X: 1, Y: 0},   // E
+	{X: 1, Y: -1},  // SE
+	{X: 0, Y: -1},  // S
+	{X: -1, Y: -1}, // SW
+	{X: -1, Y: 0},  // W
+	{X: -1, Y: 1},  // NW
 }
 
 // Vector converts a Direction to a Vector
