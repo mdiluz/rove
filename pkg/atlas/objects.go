@@ -8,16 +8,16 @@ type ObjectType byte
 // Types of objects
 const (
 	// ObjectNone represents no object at all
-	ObjectNone = iota
+	ObjectNone = ObjectType(0)
 
 	// ObjectRover represents a live rover
-	ObjectRoverLive
+	ObjectRoverLive = ObjectType(1)
 
 	// ObjectSmallRock is a small stashable rock
-	ObjectRockSmall
+	ObjectRockSmall = ObjectType(2)
 
 	// ObjectLargeRock is a large blocking rock
-	ObjectRockLarge
+	ObjectRockLarge = ObjectType(3)
 )
 
 // Glyph returns the glyph for this object type
