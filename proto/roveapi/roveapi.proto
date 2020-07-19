@@ -152,13 +152,13 @@ enum Object {
   RoverLive = 1;
 
   // RoverDormant describes a dormant rover
-  RoverDormant = 4;
+  RoverDormant = 2;
 
   // RockSmall is a small stashable rock
-  RockSmall = 2;
+  RockSmall = 3;
 
   // RockLarge is a large blocking rock
-  RockLarge = 3;
+  RockLarge = 4;
 }
 
 enum Tile {
