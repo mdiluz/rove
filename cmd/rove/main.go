@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/version"
 	"github.com/mdiluz/rove/proto/roveapi"
 	"golang.org/x/net/context"
@@ -123,6 +122,21 @@ func checkAccount(a Account) error {
 	return nil
 }
 
+// StringToBearing converts a string to a bearing
+func StringToBearing(s string) roveapi.Bearing {
+	switch s {
+	case "N":
+		return roveapi.Bearing_North
+	case "E":
+		return roveapi.Bearing_East
+	case "S":
+		return roveapi.Bearing_South
+	case "W":
+		return roveapi.Bearing_West
+	}
+	return roveapi.Bearing_BearingUnknown
+}
+
 // InnerMain wraps the main function so we can test it
 func InnerMain(command string, args ...string) error {
 
@@ -214,13 +228,15 @@ func InnerMain(command string, args ...string) error {
 				i++
 				if len(args) == i {
 					return fmt.Errorf("move command must be passed bearing")
-				} else if _, err := maths.BearingFromString(args[i]); err != nil {
-					return err
+				}
+				var b roveapi.Bearing
+				if b = StringToBearing(args[i]); b == roveapi.Bearing_BearingUnknown {
+					return fmt.Errorf("unrecognised bearing: %s", args[i])
 				}
 				commands = append(commands,
 					&roveapi.Command{
 						Command: roveapi.CommandType_move,
-						Data:    &roveapi.Command_Bearing{Bearing: args[i]},
+						Data:    &roveapi.Command_Bearing{Bearing: b},
 					},
 				)
 			case "broadcast":

@@ -2,6 +2,8 @@ package maths
 
 import (
 	"math"
+
+	"github.com/mdiluz/rove/proto/roveapi"
 )
 
 // Vector desribes a 3D vector
@@ -80,4 +82,20 @@ func Min2(v1 Vector, v2 Vector) Vector {
 // Max2 returns the max values in both vectors
 func Max2(v1 Vector, v2 Vector) Vector {
 	return Vector{Max(v1.X, v2.X), Max(v1.Y, v2.Y)}
+}
+
+// BearingToVector converts a bearing to a vector
+func BearingToVector(b roveapi.Bearing) Vector {
+	switch b {
+	case roveapi.Bearing_North:
+		return Vector{Y: 1}
+	case roveapi.Bearing_East:
+		return Vector{X: 1}
+	case roveapi.Bearing_South:
+		return Vector{Y: -1}
+	case roveapi.Bearing_West:
+		return Vector{X: -1}
+	}
+
+	return Vector{}
 }
