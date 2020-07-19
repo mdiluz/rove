@@ -1,6 +1,9 @@
 package rove
 
 import (
+	"encoding/json"
+	"log"
+
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/ojrac/opensimplex-go"
@@ -63,6 +66,22 @@ func (g *NoiseWorldGen) GetObject(v maths.Vector) (obj Object) {
 		if o > 0.8 {
 			obj.Type = roveapi.Object_RoverDormant
 		}
+	}
+
+	// Post process any spawned objects
+	switch obj.Type {
+	case roveapi.Object_RoverDormant:
+		// Create the rover
+		r := DefaultRover()
+
+		// Set the rover variables
+		r.Pos = v
+
+		// Marshal the rover data into the object data
+		obj.Data, err := json.Marshal(r)
+		if err == nil {
+			log.Fatalf("couldn't marshal rover, should never fail: %s", err)
+		}		
 	}
 
 	return obj
