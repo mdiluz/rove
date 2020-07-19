@@ -136,8 +136,8 @@ message CommandResponse {}
 
 // Types of objects
 enum Object {
-	// ObjectNone represents no object at all
-	ObjectNone = 0;
+	// ObjectUnknown represents no object at all
+	ObjectUnknown = 0;
 
 	// RoverLive represents a live rover
 	RoverLive = 1;
@@ -150,8 +150,8 @@ enum Object {
 }
 
 enum Tile {
-	// TileNone is a keyword for nothing
-	TileNone = 0;
+	// TileUnknown is a keyword for nothing
+	TileUnknown = 0;
 
 	// Rock is solid rock ground
 	Rock = 1;

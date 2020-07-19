@@ -10,8 +10,6 @@ import (
 // TileGlyph returns the glyph for this tile type
 func TileGlyph(t roveapi.Tile) Glyph {
 	switch t {
-	case roveapi.Tile_TileNone:
-		return GlyphNone
 	case roveapi.Tile_Rock:
 		return GlyphGroundRock
 	case roveapi.Tile_Gravel:
@@ -21,7 +19,7 @@ func TileGlyph(t roveapi.Tile) Glyph {
 	}
 
 	log.Fatalf("Unknown tile type: %c", t)
-	return GlyphNone
+	return 0
 }
 
 // Atlas represents a 2D world atlas of tiles and objects

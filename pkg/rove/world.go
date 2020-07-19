@@ -324,29 +324,29 @@ func (w *World) RoverStash(rover string) (roveapi.Object, error) {
 
 	r, ok := w.Rovers[rover]
 	if !ok {
-		return roveapi.Object_ObjectNone, fmt.Errorf("no rover matching id")
+		return roveapi.Object_ObjectUnknown, fmt.Errorf("no rover matching id")
 	}
 
 	// Can't pick up when full
 	if len(r.Inventory) >= r.Capacity {
-		return roveapi.Object_ObjectNone, nil
+		return roveapi.Object_ObjectUnknown, nil
 	}
 
 	// Ensure the rover has energy
 	if r.Charge <= 0 {
-		return roveapi.Object_ObjectNone, nil
+		return roveapi.Object_ObjectUnknown, nil
 	}
 	r.Charge--
 
 	_, obj := w.Atlas.QueryPosition(r.Pos)
 	if !obj.IsStashable() {
-		return roveapi.Object_ObjectNone, nil
+		return roveapi.Object_ObjectUnknown, nil
 	}
 
 	r.AddLogEntryf("stashed %c", obj.Type)
 	r.Inventory = append(r.Inventory, obj)
 	w.Rovers[rover] = r
-	w.Atlas.SetObject(r.Pos, atlas.Object{Type: roveapi.Object_ObjectNone})
+	w.Atlas.SetObject(r.Pos, atlas.Object{Type: roveapi.Object_ObjectUnknown})
 	return obj.Type, nil
 }
 

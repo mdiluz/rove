@@ -260,12 +260,10 @@ func TestAtlas_WorldGen(t *testing.T) {
 	for j := num - 1; j >= 0; j-- {
 		for i := 0; i < num; i++ {
 			t, o := a.QueryPosition(maths.Vector{X: i, Y: j})
-			if o.Type != roveapi.Object_ObjectNone {
+			if o.Type != roveapi.Object_ObjectUnknown {
 				fmt.Printf("%c", ObjectGlyph(o.Type))
-			} else if t != roveapi.Tile_TileNone {
-				fmt.Printf("%c", TileGlyph(t))
 			} else {
-				fmt.Printf(" ")
+				fmt.Printf("%c", TileGlyph(t))
 			}
 
 		}

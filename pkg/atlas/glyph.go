@@ -4,9 +4,6 @@ package atlas
 type Glyph byte
 
 const (
-	// GlyphNone is a keyword for nothing
-	GlyphNone = Glyph(0)
-
 	// GlyphGroundRock is solid rock ground
 	GlyphGroundRock = Glyph('-')
 

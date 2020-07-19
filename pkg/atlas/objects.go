@@ -9,8 +9,6 @@ import (
 // ObjectGlyph returns the glyph for this object type
 func ObjectGlyph(o roveapi.Object) Glyph {
 	switch o {
-	case roveapi.Object_ObjectNone:
-		return GlyphNone
 	case roveapi.Object_RoverLive:
 		return GlyphRoverLive
 	case roveapi.Object_RockSmall:
@@ -20,7 +18,7 @@ func ObjectGlyph(o roveapi.Object) Glyph {
 	}
 
 	log.Fatalf("Unknown object type: %c", o)
-	return GlyphNone
+	return 0
 }
 
 // Object represents an object in the world

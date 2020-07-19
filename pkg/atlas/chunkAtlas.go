@@ -121,14 +121,14 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 
 			// Get the object noise value for this location
 			o := a.objectNoise.Eval2(float64(origin.X+i)/objectNoiseScale, float64(origin.Y+j)/objectNoiseScale)
-			var obj = roveapi.Object_ObjectNone
+			var obj = roveapi.Object_ObjectUnknown
 			switch {
 			case o > 0.6:
 				obj = roveapi.Object_RockLarge
 			case o > 0.5:
 				obj = roveapi.Object_RockSmall
 			}
-			if obj != roveapi.Object_ObjectNone {
+			if obj != roveapi.Object_ObjectUnknown {
 				c.Objects[j*a.ChunkSize+i] = Object{Type: roveapi.Object(obj)}
 			}
 		}
@@ -160,7 +160,7 @@ func (a *chunkBasedAtlas) setObject(chunk int, local maths.Vector, object Object
 
 	c := a.Chunks[chunk]
 	i := a.chunkTileIndex(local)
-	if object.Type != roveapi.Object_ObjectNone {
+	if object.Type != roveapi.Object_ObjectUnknown {
 		c.Objects[i] = object
 	} else {
 		delete(c.Objects, i)
