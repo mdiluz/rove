@@ -1,6 +1,8 @@
 package atlas
 
 import (
+	"log"
+
 	"github.com/mdiluz/rove/pkg/maths"
 )
 
@@ -20,6 +22,23 @@ const (
 	// TileSand is sand
 	TileSand = Tile(GlyphSand)
 )
+
+// Glyph returns the glyph for this tile type
+func (t Tile) Glyph() Glyph {
+	switch t {
+	case TileNone:
+		return GlyphNone
+	case TileRock:
+		return GlyphRock
+	case TileGravel:
+		return GlyphGravel
+	case TileSand:
+		return GlyphSand
+	}
+
+	log.Fatalf("Unknown tile type: %c", t)
+	return GlyphNone
+}
 
 // Atlas represents a 2D world atlas of tiles and objects
 type Atlas interface {
