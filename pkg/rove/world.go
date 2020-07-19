@@ -1,15 +1,11 @@
 package rove
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"math/rand"
-	"os"
 	"sync"
 
-	"github.com/google/uuid"
-	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
 )
@@ -26,7 +22,7 @@ type World struct {
 	Rovers map[string]Rover `json:"rovers"`
 
 	// Atlas represends the world map of chunks and tiles
-	Atlas atlas.Atlas `json:"atlas"`
+	Atlas Atlas `json:"atlas"`
 
 	// Commands is the set of currently executing command streams per rover
 	CommandQueue map[string]CommandStream `json:"commands"`
@@ -37,36 +33,15 @@ type World struct {
 	worldMutex sync.RWMutex
 	// Mutex to lock around command operations
 	cmdMutex sync.RWMutex
-	// Set of possible words to use for names
-	words []string
 }
-
-var wordsFile = os.Getenv("WORDS_FILE")
 
 // NewWorld creates a new world object
 func NewWorld(chunkSize int) *World {
-
-	// Try and load the words file
-	var lines []string
-	if file, err := os.Open(wordsFile); err != nil {
-		log.Printf("Couldn't read words file [%s], running without words: %s\n", wordsFile, err)
-	} else {
-		defer file.Close()
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			lines = append(lines, scanner.Text())
-		}
-		if scanner.Err() != nil {
-			log.Printf("Failure during word file scan: %s\n", scanner.Err())
-		}
-	}
-
 	return &World{
 		Rovers:          make(map[string]Rover),
 		CommandQueue:    make(map[string]CommandStream),
 		CommandIncoming: make(map[string]CommandStream),
-		Atlas:           atlas.NewChunkAtlas(chunkSize),
-		words:           lines,
+		Atlas:           NewChunkAtlas(chunkSize),
 		TicksPerDay:     24,
 		CurrentTicks:    0,
 	}
@@ -78,27 +53,7 @@ func (w *World) SpawnRover() (string, error) {
 	defer w.worldMutex.Unlock()
 
 	// Initialise the rover
-	rover := Rover{
-		Range:            4,
-		Integrity:        10,
-		MaximumIntegrity: 10,
-		Capacity:         10,
-		Charge:           10,
-		MaximumCharge:    10,
-		Name:             uuid.New().String(),
-	}
-
-	// Assign a random name if we have words
-	if len(w.words) > 0 {
-		for {
-			// Loop until we find a unique name
-			name := fmt.Sprintf("%s-%s", w.words[rand.Intn(len(w.words))], w.words[rand.Intn(len(w.words))])
-			if _, ok := w.Rovers[name]; !ok {
-				rover.Name = name
-				break
-			}
-		}
-	}
+	rover := DefaultRover()
 
 	// Spawn in a random place near the origin
 	rover.Pos = maths.Vector{
@@ -240,7 +195,7 @@ func (w *World) SetRoverPosition(rover string, pos maths.Vector) error {
 }
 
 // RoverInventory returns the inventory of a requested rover
-func (w *World) RoverInventory(rover string) ([]atlas.Object, error) {
+func (w *World) RoverInventory(rover string) ([]Object, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
@@ -346,7 +301,7 @@ func (w *World) RoverStash(rover string) (roveapi.Object, error) {
 	r.AddLogEntryf("stashed %c", obj.Type)
 	r.Inventory = append(r.Inventory, obj)
 	w.Rovers[rover] = r
-	w.Atlas.SetObject(r.Pos, atlas.Object{Type: roveapi.Object_ObjectUnknown})
+	w.Atlas.SetObject(r.Pos, Object{Type: roveapi.Object_ObjectUnknown})
 	return obj.Type, nil
 }
 

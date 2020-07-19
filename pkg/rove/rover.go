@@ -1,11 +1,14 @@
 package rove
 
 import (
+	"bufio"
 	"fmt"
 	"log"
+	"math/rand"
+	"os"
 	"time"
 
-	"github.com/mdiluz/rove/pkg/atlas"
+	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/maths"
 )
 
@@ -30,7 +33,7 @@ type Rover struct {
 	Range int `json:"range"`
 
 	// Inventory represents any items the rover is carrying
-	Inventory []atlas.Object `json:"inventory"`
+	Inventory []Object `json:"inventory"`
 
 	// Capacity is the maximum number of inventory items
 	Capacity int `json:"capacity"`
@@ -51,6 +54,19 @@ type Rover struct {
 	Logs []RoverLogEntry `json:"logs"`
 }
 
+// DefaultRover returns a default rover object with default settings
+func DefaultRover() Rover {
+	return Rover{
+		Range:            4,
+		Integrity:        10,
+		MaximumIntegrity: 10,
+		Capacity:         10,
+		Charge:           10,
+		MaximumCharge:    10,
+		Name:             GenerateRoverName(),
+	}
+}
+
 // AddLogEntryf adds an entry to the rovers log
 func (r *Rover) AddLogEntryf(format string, args ...interface{}) {
 	text := fmt.Sprintf(format, args...)
@@ -61,4 +77,37 @@ func (r *Rover) AddLogEntryf(format string, args ...interface{}) {
 			Text: text,
 		},
 	)
+}
+
+var wordsFile = os.Getenv("WORDS_FILE")
+var roverWords []string
+
+// GenerateRoverName generates a new rover name
+func GenerateRoverName() string {
+
+	// Try and load the rover words file
+	if len(roverWords) == 0 {
+		// Try and load the words file
+		if file, err := os.Open(wordsFile); err != nil {
+			log.Printf("Couldn't read words file [%s], running without words: %s\n", wordsFile, err)
+		} else {
+			defer file.Close()
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				roverWords = append(roverWords, scanner.Text())
+			}
+			if scanner.Err() != nil {
+				log.Printf("Failure during word file scan: %s\n", scanner.Err())
+			}
+		}
+	}
+
+	// Assign a random name if we have words
+	if len(roverWords) > 0 {
+		// Loop until we find a unique name
+		return fmt.Sprintf("%s-%s", roverWords[rand.Intn(len(roverWords))], roverWords[rand.Intn(len(roverWords))])
+	}
+
+	// Default to a unique string
+	return uuid.New().String()
 }

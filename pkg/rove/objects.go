@@ -1,4 +1,4 @@
-package atlas
+package rove
 
 import (
 	"github.com/mdiluz/rove/proto/roveapi"
@@ -8,12 +8,16 @@ import (
 type Object struct {
 	// The type of the object
 	Type roveapi.Object `json:"type"`
+
+	// Data is an internal type used for certain types of object
+	Data []byte `json:"data"`
 }
 
 // IsBlocking checks if an object is a blocking object
 func (o *Object) IsBlocking() bool {
 	var blocking = [...]roveapi.Object{
 		roveapi.Object_RoverLive,
+		roveapi.Object_RoverDormant,
 		roveapi.Object_RockLarge,
 	}
 
