@@ -5,6 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/mdiluz/rove/pkg/maths"
+	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/ojrac/opensimplex-go"
 )
 
@@ -63,7 +64,7 @@ func NewChunkAtlas(chunkSize int) Atlas {
 }
 
 // SetTile sets an individual tile's kind
-func (a *chunkBasedAtlas) SetTile(v maths.Vector, tile Tile) {
+func (a *chunkBasedAtlas) SetTile(v maths.Vector, tile roveapi.Tile) {
 	c := a.worldSpaceToChunkWithGrow(v)
 	local := a.worldSpaceToChunkLocal(v)
 	a.setTile(c, local, byte(tile))
@@ -77,13 +78,13 @@ func (a *chunkBasedAtlas) SetObject(v maths.Vector, obj Object) {
 }
 
 // QueryPosition will return information for a specific position
-func (a *chunkBasedAtlas) QueryPosition(v maths.Vector) (byte, Object) {
+func (a *chunkBasedAtlas) QueryPosition(v maths.Vector) (roveapi.Tile, Object) {
 	c := a.worldSpaceToChunkWithGrow(v)
 	local := a.worldSpaceToChunkLocal(v)
 	a.populate(c)
 	chunk := a.Chunks[c]
 	i := a.chunkTileIndex(local)
-	return chunk.Tiles[i], chunk.Objects[i]
+	return roveapi.Tile(chunk.Tiles[i]), chunk.Objects[i]
 }
 
 // chunkTileID returns the tile index within a chunk
@@ -107,28 +108,28 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 
 			// Get the terrain noise value for this location
 			t := a.terrainNoise.Eval2(float64(origin.X+i)/terrainNoiseScale, float64(origin.Y+j)/terrainNoiseScale)
-			var tile Tile
+			var tile roveapi.Tile
 			switch {
 			case t > 0.5:
-				tile = TileGravel
+				tile = roveapi.Tile_Gravel
 			case t > 0.05:
-				tile = TileSand
+				tile = roveapi.Tile_Sand
 			default:
-				tile = TileRock
+				tile = roveapi.Tile_Rock
 			}
 			c.Tiles[j*a.ChunkSize+i] = byte(tile)
 
 			// Get the object noise value for this location
 			o := a.objectNoise.Eval2(float64(origin.X+i)/objectNoiseScale, float64(origin.Y+j)/objectNoiseScale)
-			var obj = ObjectNone
+			var obj = roveapi.Object_ObjectNone
 			switch {
 			case o > 0.6:
-				obj = ObjectRockLarge
+				obj = roveapi.Object_RockLarge
 			case o > 0.5:
-				obj = ObjectRockSmall
+				obj = roveapi.Object_RockSmall
 			}
-			if obj != ObjectNone {
-				c.Objects[j*a.ChunkSize+i] = Object{Type: ObjectType(obj)}
+			if obj != roveapi.Object_ObjectNone {
+				c.Objects[j*a.ChunkSize+i] = Object{Type: roveapi.Object(obj)}
 			}
 		}
 	}
@@ -136,9 +137,9 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 	// Set up any objects
 	for i := 0; i < len(c.Tiles); i++ {
 		if rand.Intn(16) == 0 {
-			c.Objects[i] = Object{Type: ObjectRockLarge}
+			c.Objects[i] = Object{Type: roveapi.Object_RockLarge}
 		} else if rand.Intn(32) == 0 {
-			c.Objects[i] = Object{Type: ObjectRockSmall}
+			c.Objects[i] = Object{Type: roveapi.Object_RockSmall}
 		}
 	}
 
@@ -159,7 +160,7 @@ func (a *chunkBasedAtlas) setObject(chunk int, local maths.Vector, object Object
 
 	c := a.Chunks[chunk]
 	i := a.chunkTileIndex(local)
-	if object.Type != ObjectNone {
+	if object.Type != roveapi.Object_ObjectNone {
 		c.Objects[i] = object
 	} else {
 		delete(c.Objects, i)

@@ -287,10 +287,10 @@ func InnerMain(command string, args ...string) error {
 				for i := 0; i < num; i++ {
 					t := response.Tiles[i+num*j]
 					o := response.Objects[i+num*j]
-					if o != byte(atlas.ObjectNone) {
-						fmt.Printf("%c", o)
-					} else if t != byte(atlas.TileNone) {
-						fmt.Printf("%c", t)
+					if o != roveapi.Object_ObjectNone {
+						fmt.Printf("%c", atlas.ObjectGlyph(o))
+					} else if t != roveapi.Tile_TileNone {
+						fmt.Printf("%c", atlas.TileGlyph(t))
 					} else {
 						fmt.Printf(" ")
 					}

@@ -4,35 +4,19 @@ import (
 	"log"
 
 	"github.com/mdiluz/rove/pkg/maths"
+	"github.com/mdiluz/rove/proto/roveapi"
 )
 
-// Tile describes the type of terrain
-type Tile byte
-
-const (
-	// TileNone is a keyword for nothing
-	TileNone = Tile(0)
-
-	// TileRock is solid rock ground
-	TileRock = Tile(1)
-
-	// TileGravel is loose rocks
-	TileGravel = Tile(2)
-
-	// TileSand is sand
-	TileSand = Tile(3)
-)
-
-// Glyph returns the glyph for this tile type
-func (t Tile) Glyph() Glyph {
+// TileGlyph returns the glyph for this tile type
+func TileGlyph(t roveapi.Tile) Glyph {
 	switch t {
-	case TileNone:
+	case roveapi.Tile_TileNone:
 		return GlyphNone
-	case TileRock:
+	case roveapi.Tile_Rock:
 		return GlyphGroundRock
-	case TileGravel:
+	case roveapi.Tile_Gravel:
 		return GlyphGroundGravel
-	case TileSand:
+	case roveapi.Tile_Sand:
 		return GlyphGroundSand
 	}
 
@@ -43,11 +27,11 @@ func (t Tile) Glyph() Glyph {
 // Atlas represents a 2D world atlas of tiles and objects
 type Atlas interface {
 	// SetTile sets a location on the Atlas to a type of tile
-	SetTile(v maths.Vector, tile Tile)
+	SetTile(v maths.Vector, tile roveapi.Tile)
 
 	// SetObject will set a location on the Atlas to contain an object
 	SetObject(v maths.Vector, obj Object)
 
 	// QueryPosition queries a position on the atlas
-	QueryPosition(v maths.Vector) (byte, Object)
+	QueryPosition(v maths.Vector) (roveapi.Tile, Object)
 }

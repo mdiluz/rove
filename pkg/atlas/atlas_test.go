@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/mdiluz/rove/pkg/maths"
+	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -169,15 +170,15 @@ func TestAtlas_GetSetTile(t *testing.T) {
 	a := NewChunkAtlas(10)
 	assert.NotNil(t, a)
 
-	// Set the origin tile to 1 and test it
-	a.SetTile(maths.Vector{X: 0, Y: 0}, 1)
+	// Set the origin tile and test it
+	a.SetTile(maths.Vector{X: 0, Y: 0}, roveapi.Tile_Gravel)
 	tile, _ := a.QueryPosition(maths.Vector{X: 0, Y: 0})
-	assert.Equal(t, byte(1), tile)
+	assert.Equal(t, roveapi.Tile_Gravel, tile)
 
-	// Set another tile to 1 and test it
-	a.SetTile(maths.Vector{X: 5, Y: -2}, 2)
+	// Set another tile and test it
+	a.SetTile(maths.Vector{X: 5, Y: -2}, roveapi.Tile_Rock)
 	tile, _ = a.QueryPosition(maths.Vector{X: 5, Y: -2})
-	assert.Equal(t, byte(2), tile)
+	assert.Equal(t, roveapi.Tile_Rock, tile)
 }
 
 func TestAtlas_GetSetObject(t *testing.T) {
@@ -185,14 +186,14 @@ func TestAtlas_GetSetObject(t *testing.T) {
 	assert.NotNil(t, a)
 
 	// Set the origin tile to 1 and test it
-	a.SetObject(maths.Vector{X: 0, Y: 0}, Object{Type: ObjectRockLarge})
+	a.SetObject(maths.Vector{X: 0, Y: 0}, Object{Type: roveapi.Object_RockLarge})
 	_, obj := a.QueryPosition(maths.Vector{X: 0, Y: 0})
-	assert.Equal(t, Object{Type: ObjectRockLarge}, obj)
+	assert.Equal(t, Object{Type: roveapi.Object_RockLarge}, obj)
 
 	// Set another tile to 1 and test it
-	a.SetObject(maths.Vector{X: 5, Y: -2}, Object{Type: ObjectRockSmall})
+	a.SetObject(maths.Vector{X: 5, Y: -2}, Object{Type: roveapi.Object_RockSmall})
 	_, obj = a.QueryPosition(maths.Vector{X: 5, Y: -2})
-	assert.Equal(t, Object{Type: ObjectRockSmall}, obj)
+	assert.Equal(t, Object{Type: roveapi.Object_RockSmall}, obj)
 }
 
 func TestAtlas_Grown(t *testing.T) {
@@ -202,28 +203,28 @@ func TestAtlas_Grown(t *testing.T) {
 	assert.Equal(t, 1, len(a.Chunks))
 
 	// Set a few tiles to values
-	a.SetTile(maths.Vector{X: 0, Y: 0}, 1)
-	a.SetTile(maths.Vector{X: -1, Y: -1}, 2)
-	a.SetTile(maths.Vector{X: 1, Y: -2}, 3)
+	a.SetTile(maths.Vector{X: 0, Y: 0}, roveapi.Tile_Gravel)
+	a.SetTile(maths.Vector{X: -1, Y: -1}, roveapi.Tile_Rock)
+	a.SetTile(maths.Vector{X: 1, Y: -2}, roveapi.Tile_Sand)
 
 	// Check tile values
 	tile, _ := a.QueryPosition(maths.Vector{X: 0, Y: 0})
-	assert.Equal(t, byte(1), tile)
+	assert.Equal(t, roveapi.Tile_Gravel, tile)
 
 	tile, _ = a.QueryPosition(maths.Vector{X: -1, Y: -1})
-	assert.Equal(t, byte(2), tile)
+	assert.Equal(t, roveapi.Tile_Rock, tile)
 
 	tile, _ = a.QueryPosition(maths.Vector{X: 1, Y: -2})
-	assert.Equal(t, byte(3), tile)
+	assert.Equal(t, roveapi.Tile_Sand, tile)
 
 	tile, _ = a.QueryPosition(maths.Vector{X: 0, Y: 0})
-	assert.Equal(t, byte(1), tile)
+	assert.Equal(t, roveapi.Tile_Gravel, tile)
 
 	tile, _ = a.QueryPosition(maths.Vector{X: -1, Y: -1})
-	assert.Equal(t, byte(2), tile)
+	assert.Equal(t, roveapi.Tile_Rock, tile)
 
 	tile, _ = a.QueryPosition(maths.Vector{X: 1, Y: -2})
-	assert.Equal(t, byte(3), tile)
+	assert.Equal(t, roveapi.Tile_Sand, tile)
 }
 
 func TestAtlas_GetSetCorrect(t *testing.T) {
@@ -237,12 +238,12 @@ func TestAtlas_GetSetCorrect(t *testing.T) {
 				assert.Equal(t, 1, len(a.Chunks))
 
 				pos := maths.Vector{X: x, Y: y}
-				a.SetTile(pos, TileRock)
-				a.SetObject(pos, Object{Type: ObjectRockLarge})
+				a.SetTile(pos, roveapi.Tile_Rock)
+				a.SetObject(pos, Object{Type: roveapi.Object_RockLarge})
 				tile, obj := a.QueryPosition(pos)
 
-				assert.Equal(t, TileRock, Tile(tile))
-				assert.Equal(t, Object{Type: ObjectRockLarge}, obj)
+				assert.Equal(t, roveapi.Tile_Rock, roveapi.Tile(tile))
+				assert.Equal(t, Object{Type: roveapi.Object_RockLarge}, obj)
 
 			}
 		}
@@ -259,10 +260,10 @@ func TestAtlas_WorldGen(t *testing.T) {
 	for j := num - 1; j >= 0; j-- {
 		for i := 0; i < num; i++ {
 			t, o := a.QueryPosition(maths.Vector{X: i, Y: j})
-			if o.Type != ObjectNone {
-				fmt.Printf("%c", o.Type)
-			} else if t != byte(TileNone) {
-				fmt.Printf("%c", t)
+			if o.Type != roveapi.Object_ObjectNone {
+				fmt.Printf("%c", ObjectGlyph(o.Type))
+			} else if t != roveapi.Tile_TileNone {
+				fmt.Printf("%c", TileGlyph(t))
 			} else {
 				fmt.Printf(" ")
 			}

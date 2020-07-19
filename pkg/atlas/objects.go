@@ -1,35 +1,21 @@
 package atlas
 
-import "log"
+import (
+	"log"
 
-// ObjectType represents an object type
-type ObjectType byte
-
-// Types of objects
-const (
-	// ObjectNone represents no object at all
-	ObjectNone = ObjectType(0)
-
-	// ObjectRover represents a live rover
-	ObjectRoverLive = ObjectType(1)
-
-	// ObjectSmallRock is a small stashable rock
-	ObjectRockSmall = ObjectType(2)
-
-	// ObjectLargeRock is a large blocking rock
-	ObjectRockLarge = ObjectType(3)
+	"github.com/mdiluz/rove/proto/roveapi"
 )
 
-// Glyph returns the glyph for this object type
-func (o ObjectType) Glyph() Glyph {
+// ObjectGlyph returns the glyph for this object type
+func ObjectGlyph(o roveapi.Object) Glyph {
 	switch o {
-	case ObjectNone:
+	case roveapi.Object_ObjectNone:
 		return GlyphNone
-	case ObjectRoverLive:
+	case roveapi.Object_RoverLive:
 		return GlyphRoverLive
-	case ObjectRockSmall:
+	case roveapi.Object_RockSmall:
 		return GlyphRockSmall
-	case ObjectRockLarge:
+	case roveapi.Object_RockLarge:
 		return GlyphRockLarge
 	}
 
@@ -40,14 +26,14 @@ func (o ObjectType) Glyph() Glyph {
 // Object represents an object in the world
 type Object struct {
 	// The type of the object
-	Type ObjectType `json:"type"`
+	Type roveapi.Object `json:"type"`
 }
 
 // IsBlocking checks if an object is a blocking object
 func (o *Object) IsBlocking() bool {
-	var blocking = [...]ObjectType{
-		ObjectRoverLive,
-		ObjectRockLarge,
+	var blocking = [...]roveapi.Object{
+		roveapi.Object_RoverLive,
+		roveapi.Object_RockLarge,
 	}
 
 	for _, t := range blocking {
@@ -60,8 +46,8 @@ func (o *Object) IsBlocking() bool {
 
 // IsStashable checks if an object is stashable
 func (o *Object) IsStashable() bool {
-	var stashable = [...]ObjectType{
-		ObjectRockSmall,
+	var stashable = [...]roveapi.Object{
+		roveapi.Object_RockSmall,
 	}
 
 	for _, t := range stashable {
