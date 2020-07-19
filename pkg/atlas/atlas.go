@@ -1,26 +1,9 @@
 package atlas
 
 import (
-	"log"
-
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
 )
-
-// TileGlyph returns the glyph for this tile type
-func TileGlyph(t roveapi.Tile) Glyph {
-	switch t {
-	case roveapi.Tile_Rock:
-		return GlyphGroundRock
-	case roveapi.Tile_Gravel:
-		return GlyphGroundGravel
-	case roveapi.Tile_Sand:
-		return GlyphGroundSand
-	}
-
-	log.Fatalf("Unknown tile type: %c", t)
-	return 0
-}
 
 // Atlas represents a 2D world atlas of tiles and objects
 type Atlas interface {

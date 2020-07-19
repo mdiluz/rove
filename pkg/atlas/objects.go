@@ -1,25 +1,8 @@
 package atlas
 
 import (
-	"log"
-
 	"github.com/mdiluz/rove/proto/roveapi"
 )
-
-// ObjectGlyph returns the glyph for this object type
-func ObjectGlyph(o roveapi.Object) Glyph {
-	switch o {
-	case roveapi.Object_RoverLive:
-		return GlyphRoverLive
-	case roveapi.Object_RockSmall:
-		return GlyphRockSmall
-	case roveapi.Object_RockLarge:
-		return GlyphRockLarge
-	}
-
-	log.Fatalf("Unknown object type: %c", o)
-	return 0
-}
 
 // Object represents an object in the world
 type Object struct {
