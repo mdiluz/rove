@@ -136,31 +136,31 @@ message CommandResponse {}
 
 // Types of objects
 enum Object {
-	// ObjectUnknown represents no object at all
-	ObjectUnknown = 0;
+  // ObjectUnknown represents no object at all
+  ObjectUnknown = 0;
 
-	// RoverLive represents a live rover
-	RoverLive = 1;
+  // RoverLive represents a live rover
+  RoverLive = 1;
 
-	// RockSmall is a small stashable rock
-	RockSmall = 2;
+  // RockSmall is a small stashable rock
+  RockSmall = 2;
 
-	// RockLarge is a large blocking rock
-	RockLarge = 3;
+  // RockLarge is a large blocking rock
+  RockLarge = 3;
 }
 
 enum Tile {
-	// TileUnknown is a keyword for nothing
-	TileUnknown = 0;
+  // TileUnknown is a keyword for nothing
+  TileUnknown = 0;
 
-	// Rock is solid rock ground
-	Rock = 1;
+  // Rock is solid rock ground
+  Rock = 1;
 
-	// Gravel is loose rocks
-	Gravel = 2;
+  // Gravel is loose rocks
+  Gravel = 2;
 
-	// Sand is sand
-	Sand = 3;
+  // Sand is sand
+  Sand = 3;
 }
 
 // RadarRequest is the data needed to request the radar for a rover
