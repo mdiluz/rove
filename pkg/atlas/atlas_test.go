@@ -1,7 +1,6 @@
 package atlas
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/mdiluz/rove/pkg/maths"
@@ -252,21 +251,7 @@ func TestAtlas_GetSetCorrect(t *testing.T) {
 
 func TestAtlas_WorldGen(t *testing.T) {
 	a := NewChunkAtlas(8)
+
 	// Spawn a large world
 	_, _ = a.QueryPosition(maths.Vector{X: 20, Y: 20})
-
-	// Print out the world for manual evaluation
-	num := 20
-	for j := num - 1; j >= 0; j-- {
-		for i := 0; i < num; i++ {
-			t, o := a.QueryPosition(maths.Vector{X: i, Y: j})
-			if o.Type != roveapi.Object_ObjectUnknown {
-				fmt.Printf("%c", ObjectGlyph(o.Type))
-			} else {
-				fmt.Printf("%c", TileGlyph(t))
-			}
-
-		}
-		fmt.Print("\n")
-	}
 }
