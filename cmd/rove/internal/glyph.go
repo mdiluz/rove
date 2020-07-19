@@ -22,6 +22,9 @@ const (
 	// GlyphRoverLive represents a live rover
 	GlyphRoverLive = Glyph('R')
 
+	// GlyphRoverDormant represents a dormant rover
+	GlyphRoverDormant = Glyph('r')
+
 	// GlyphRockSmall is a small stashable rock
 	GlyphRockSmall = Glyph('o')
 
@@ -51,6 +54,8 @@ func ObjectGlyph(o roveapi.Object) Glyph {
 		return GlyphRoverLive
 	case roveapi.Object_RockSmall:
 		return GlyphRockSmall
+	case roveapi.Object_RoverDormant:
+		return GlyphRoverDormant
 	case roveapi.Object_RockLarge:
 		return GlyphRockLarge
 	}
