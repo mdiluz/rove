@@ -81,7 +81,7 @@ func (g *NoiseWorldGen) GetObject(v maths.Vector) (obj Object) {
 
 		// Marshal the rover data into the object data
 		b, err := json.Marshal(r)
-		if err == nil {
+		if err != nil {
 			log.Fatalf("couldn't marshal rover, should never fail: %s", err)
 		}
 
