@@ -77,11 +77,17 @@ func (g *NoiseWorldGen) GetObject(v maths.Vector) (obj Object) {
 		// Set the rover variables
 		r.Pos = v
 
+		// For now, mark the log as corrupted
+		r.AddLogEntryf("log corrupted")
+
 		// Marshal the rover data into the object data
-		obj.Data, err := json.Marshal(r)
+		b, err := json.Marshal(r)
 		if err == nil {
 			log.Fatalf("couldn't marshal rover, should never fail: %s", err)
-		}		
+		}
+
+		// Store the bytes
+		obj.Data = b
 	}
 
 	return obj
