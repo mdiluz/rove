@@ -151,6 +151,9 @@ enum Object {
   // RoverLive represents a live rover
   RoverLive = 1;
 
+  // RoverDormant describes a dormant rover
+  RoverDormant = 4;
+
   // RockSmall is a small stashable rock
   RockSmall = 2;
 
