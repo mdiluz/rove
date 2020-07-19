@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/mdiluz/rove/cmd/rove/internal"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/version"
 	"github.com/mdiluz/rove/proto/roveapi"
@@ -287,9 +288,9 @@ func InnerMain(command string, args ...string) error {
 					t := response.Tiles[i+num*j]
 					o := response.Objects[i+num*j]
 					if o != roveapi.Object_ObjectUnknown {
-						fmt.Printf("%c", ObjectGlyph(o))
+						fmt.Printf("%c", internal.ObjectGlyph(o))
 					} else {
-						fmt.Printf("%c", TileGlyph(t))
+						fmt.Printf("%c", internal.TileGlyph(t))
 					}
 
 				}
