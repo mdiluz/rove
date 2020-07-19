@@ -30,7 +30,7 @@ func NewNoiseWorldGen(seed int64) WorldGen {
 
 const (
 	terrainNoiseScale = 6
-	objectNoiseScale  = 3
+	rockNoiseScale    = 3
 )
 
 // GetTile returns the chosen tile at a location
@@ -48,7 +48,7 @@ func (g *NoiseWorldGen) GetTile(v maths.Vector) roveapi.Tile {
 
 // GetObject returns the chosen object at a location
 func (g *NoiseWorldGen) GetObject(v maths.Vector) Object {
-	o := g.noise.Eval2(float64(v.X)/objectNoiseScale, float64(v.Y)/objectNoiseScale)
+	o := g.noise.Eval2(float64(v.X)/rockNoiseScale, float64(v.Y)/rockNoiseScale)
 	var obj = roveapi.Object_ObjectUnknown
 	switch {
 	case o > 0.6:
