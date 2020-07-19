@@ -128,7 +128,7 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 				obj = ObjectSmallRock
 			}
 			if obj != ObjectNone {
-				c.Objects[j*a.ChunkSize+i] = Object{Type: obj}
+				c.Objects[j*a.ChunkSize+i] = Object{Type: ObjectType(obj)}
 			}
 		}
 	}

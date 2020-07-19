@@ -11,16 +11,16 @@ type Tile byte
 
 const (
 	// TileNone is a keyword for nothing
-	TileNone = Tile(GlyphNone)
+	TileNone = iota
 
 	// TileRock is solid rock ground
-	TileRock = Tile(GlyphRock)
+	TileRock
 
 	// TileGravel is loose rocks
-	TileGravel = Tile(GlyphGravel)
+	TileGravel
 
 	// TileSand is sand
-	TileSand = Tile(GlyphSand)
+	TileSand
 )
 
 // Glyph returns the glyph for this tile type
