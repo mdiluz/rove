@@ -318,7 +318,7 @@ func (w *World) MoveRover(rover string, b maths.Bearing) (maths.Vector, error) {
 }
 
 // RoverStash will stash an item at the current rovers position
-func (w *World) RoverStash(rover string) (atlas.Type, error) {
+func (w *World) RoverStash(rover string) (atlas.ObjectType, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 

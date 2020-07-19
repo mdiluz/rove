@@ -1,31 +1,32 @@
 package atlas
 
-// Type represents an object type
-type Type byte
+// ObjectType represents an object type
+type ObjectType byte
 
 // Types of objects
 const (
 	// ObjectNone represents no object at all
-	ObjectNone = Type(GlyphNone)
+	ObjectNone = ObjectType(GlyphNone)
 
 	// ObjectRover represents a live rover
-	ObjectRover = Type(GlyphRover)
+	ObjectRover = ObjectType(GlyphRover)
 
 	// ObjectSmallRock is a small stashable rock
-	ObjectSmallRock = Type(GlyphSmallRock)
+	ObjectSmallRock = ObjectType(GlyphSmallRock)
 
 	// ObjectLargeRock is a large blocking rock
-	ObjectLargeRock = Type('O')
+	ObjectLargeRock = ObjectType(GlyphLargeRock)
 )
 
 // Object represents an object in the world
 type Object struct {
-	Type Type `json:"type"`
+	// The type of the object
+	Type ObjectType `json:"type"`
 }
 
 // IsBlocking checks if an object is a blocking object
 func (o *Object) IsBlocking() bool {
-	var blocking = [...]Type{
+	var blocking = [...]ObjectType{
 		ObjectRover,
 		ObjectLargeRock,
 	}
@@ -40,7 +41,7 @@ func (o *Object) IsBlocking() bool {
 
 // IsStashable checks if an object is stashable
 func (o *Object) IsStashable() bool {
-	var stashable = [...]Type{
+	var stashable = [...]ObjectType{
 		ObjectSmallRock,
 	}
 
