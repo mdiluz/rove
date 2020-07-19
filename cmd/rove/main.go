@@ -215,7 +215,7 @@ func InnerMain(command string, args ...string) error {
 				i++
 				if len(args) == i {
 					return fmt.Errorf("move command must be passed bearing")
-				} else if _, err := maths.FromString(args[i]); err != nil {
+				} else if _, err := maths.BearingFromString(args[i]); err != nil {
 					return err
 				}
 				commands = append(commands,

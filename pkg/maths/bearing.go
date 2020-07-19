@@ -55,8 +55,8 @@ func (d Bearing) ShortString() string {
 	return bearingStrings[d].Short
 }
 
-// FromString gets the Direction from a string
-func FromString(s string) (Bearing, error) {
+// BearingFromString gets the Direction from a string
+func BearingFromString(s string) (Bearing, error) {
 	for i, d := range bearingStrings {
 		if strings.EqualFold(d.Long, s) || strings.EqualFold(d.Short, s) {
 			return Bearing(i), nil
@@ -79,4 +79,16 @@ var bearingVectors = []Vector{
 // Vector converts a Direction to a Vector
 func (d Bearing) Vector() Vector {
 	return bearingVectors[d]
+}
+
+// IsCardinal returns if this is a cardinal (NESW)
+func (d Bearing) IsCardinal() bool {
+	switch d {
+	case North:
+	case East:
+	case South:
+	case West:
+		return true
+	}
+	return false
 }
