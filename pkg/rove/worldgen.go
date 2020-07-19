@@ -34,7 +34,6 @@ func NewNoiseWorldGen(seed int64) WorldGen {
 const (
 	terrainNoiseScale = 6
 	rockNoiseScale    = 3
-	dormantRoverScale = 25
 )
 
 // GetTile returns the chosen tile at a location
@@ -62,8 +61,8 @@ func (g *NoiseWorldGen) GetObject(v maths.Vector) (obj Object) {
 
 	// Very rarely spawn a dormant rover
 	if obj.Type == roveapi.Object_ObjectUnknown {
-		o = g.noise.Eval2(float64(v.X)/dormantRoverScale, float64(v.Y)/dormantRoverScale)
-		if o > 0.8 {
+		// TODO: Make this better, ideally with noise
+		if v.X%25 == 0 && v.Y%25 == 0 && v.X != 0 && v.Y != 0 {
 			obj.Type = roveapi.Object_RoverDormant
 		}
 	}
