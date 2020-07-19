@@ -123,9 +123,9 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 			var obj = ObjectNone
 			switch {
 			case o > 0.6:
-				obj = ObjectLargeRock
+				obj = ObjectRockLarge
 			case o > 0.5:
-				obj = ObjectSmallRock
+				obj = ObjectRockSmall
 			}
 			if obj != ObjectNone {
 				c.Objects[j*a.ChunkSize+i] = Object{Type: ObjectType(obj)}
@@ -136,9 +136,9 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 	// Set up any objects
 	for i := 0; i < len(c.Tiles); i++ {
 		if rand.Intn(16) == 0 {
-			c.Objects[i] = Object{Type: ObjectLargeRock}
+			c.Objects[i] = Object{Type: ObjectRockLarge}
 		} else if rand.Intn(32) == 0 {
-			c.Objects[i] = Object{Type: ObjectSmallRock}
+			c.Objects[i] = Object{Type: ObjectRockSmall}
 		}
 	}
 

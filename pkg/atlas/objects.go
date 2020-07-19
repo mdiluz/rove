@@ -11,13 +11,13 @@ const (
 	ObjectNone = iota
 
 	// ObjectRover represents a live rover
-	ObjectRover
+	ObjectRoverLive
 
 	// ObjectSmallRock is a small stashable rock
-	ObjectSmallRock
+	ObjectRockSmall
 
 	// ObjectLargeRock is a large blocking rock
-	ObjectLargeRock
+	ObjectRockLarge
 )
 
 // Glyph returns the glyph for this object type
@@ -25,12 +25,12 @@ func (o ObjectType) Glyph() Glyph {
 	switch o {
 	case ObjectNone:
 		return GlyphNone
-	case ObjectRover:
-		return GlyphRover
-	case ObjectSmallRock:
-		return GlyphSmallRock
-	case ObjectLargeRock:
-		return GlyphLargeRock
+	case ObjectRoverLive:
+		return GlyphRoverLive
+	case ObjectRockSmall:
+		return GlyphRockSmall
+	case ObjectRockLarge:
+		return GlyphRockLarge
 	}
 
 	log.Fatalf("Unknown object type: %c", o)
@@ -46,8 +46,8 @@ type Object struct {
 // IsBlocking checks if an object is a blocking object
 func (o *Object) IsBlocking() bool {
 	var blocking = [...]ObjectType{
-		ObjectRover,
-		ObjectLargeRock,
+		ObjectRoverLive,
+		ObjectRockLarge,
 	}
 
 	for _, t := range blocking {
@@ -61,7 +61,7 @@ func (o *Object) IsBlocking() bool {
 // IsStashable checks if an object is stashable
 func (o *Object) IsStashable() bool {
 	var stashable = [...]ObjectType{
-		ObjectSmallRock,
+		ObjectRockSmall,
 	}
 
 	for _, t := range stashable {

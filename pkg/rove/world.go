@@ -401,7 +401,7 @@ func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err err
 		if dist.X <= r.Range && dist.Y <= r.Range {
 			relative := r.Pos.Added(radarMin.Negated())
 			index := relative.X + relative.Y*radarSpan
-			objs[index] = byte(atlas.ObjectRover)
+			objs[index] = byte(atlas.ObjectRoverLive)
 		}
 	}
 

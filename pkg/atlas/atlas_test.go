@@ -185,14 +185,14 @@ func TestAtlas_GetSetObject(t *testing.T) {
 	assert.NotNil(t, a)
 
 	// Set the origin tile to 1 and test it
-	a.SetObject(maths.Vector{X: 0, Y: 0}, Object{Type: ObjectLargeRock})
+	a.SetObject(maths.Vector{X: 0, Y: 0}, Object{Type: ObjectRockLarge})
 	_, obj := a.QueryPosition(maths.Vector{X: 0, Y: 0})
-	assert.Equal(t, Object{Type: ObjectLargeRock}, obj)
+	assert.Equal(t, Object{Type: ObjectRockLarge}, obj)
 
 	// Set another tile to 1 and test it
-	a.SetObject(maths.Vector{X: 5, Y: -2}, Object{Type: ObjectSmallRock})
+	a.SetObject(maths.Vector{X: 5, Y: -2}, Object{Type: ObjectRockSmall})
 	_, obj = a.QueryPosition(maths.Vector{X: 5, Y: -2})
-	assert.Equal(t, Object{Type: ObjectSmallRock}, obj)
+	assert.Equal(t, Object{Type: ObjectRockSmall}, obj)
 }
 
 func TestAtlas_Grown(t *testing.T) {
@@ -238,11 +238,11 @@ func TestAtlas_GetSetCorrect(t *testing.T) {
 
 				pos := maths.Vector{X: x, Y: y}
 				a.SetTile(pos, TileRock)
-				a.SetObject(pos, Object{Type: ObjectLargeRock})
+				a.SetObject(pos, Object{Type: ObjectRockLarge})
 				tile, obj := a.QueryPosition(pos)
 
 				assert.Equal(t, TileRock, Tile(tile))
-				assert.Equal(t, Object{Type: ObjectLargeRock}, obj)
+				assert.Equal(t, Object{Type: ObjectRockLarge}, obj)
 
 			}
 		}

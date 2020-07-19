@@ -7,21 +7,21 @@ const (
 	// GlyphNone is a keyword for nothing
 	GlyphNone = Glyph(0)
 
-	// GlyphRock is solid rock ground
-	GlyphRock = Glyph('-')
+	// GlyphGroundRock is solid rock ground
+	GlyphGroundRock = Glyph('-')
 
-	// GlyphGravel is loose rocks
-	GlyphGravel = Glyph(':')
+	// GlyphGroundGravel is loose rocks
+	GlyphGroundGravel = Glyph(':')
 
-	// GlyphSand is sand
-	GlyphSand = Glyph('~')
+	// GlyphGroundSand is sand
+	GlyphGroundSand = Glyph('~')
 
-	// GlyphRover represents a live rover
-	GlyphRover = Glyph('R')
+	// GlyphRoverLive represents a live rover
+	GlyphRoverLive = Glyph('R')
 
-	// GlyphSmallRock is a small stashable rock
-	GlyphSmallRock = Glyph('o')
+	// GlyphRockSmall is a small stashable rock
+	GlyphRockSmall = Glyph('o')
 
-	// GlyphLargeRock is a large blocking rock
-	GlyphLargeRock = Glyph('O')
+	// GlyphRockLarge is a large blocking rock
+	GlyphRockLarge = Glyph('O')
 )

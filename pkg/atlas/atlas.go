@@ -29,11 +29,11 @@ func (t Tile) Glyph() Glyph {
 	case TileNone:
 		return GlyphNone
 	case TileRock:
-		return GlyphRock
+		return GlyphGroundRock
 	case TileGravel:
-		return GlyphGravel
+		return GlyphGroundGravel
 	case TileSand:
-		return GlyphSand
+		return GlyphGroundSand
 	}
 
 	log.Fatalf("Unknown tile type: %c", t)
