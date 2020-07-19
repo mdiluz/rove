@@ -8,6 +8,9 @@ import (
 type Object struct {
 	// The type of the object
 	Type roveapi.Object `json:"type"`
+
+	// Data is an internal type used for certain types of object
+	Data []byte `json:"data"`
 }
 
 // IsBlocking checks if an object is a blocking object
