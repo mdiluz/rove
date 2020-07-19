@@ -101,15 +101,24 @@ enum CommandType {
   broadcast = 5;
 }
 
+enum Bearing {
+  // BearingUnknown an unknown invalid bearing
+  BearingUnknown = 0;
+  North = 1;
+  East = 2;
+  South = 3;
+  West = 4;
+}
+
 // Command is a single command for a rover
 message Command {
   // The command type
   CommandType command = 1;
 
   oneof data {
-    // A bearing, example: NE
+    // A bearing
     // Used with MOVE
-    string bearing = 2;
+    Bearing bearing = 2;
 
     // A simple message, must be composed of printable ASCII glyphs (32-126)
     // maximum of three characters

@@ -21,7 +21,7 @@ func TestCommand_Move(t *testing.T) {
 	assert.NoError(t, err, "Failed to set position for rover")
 
 	// Try the move command
-	moveCommand := Command{Command: roveapi.CommandType_move, Bearing: "N"}
+	moveCommand := Command{Command: roveapi.CommandType_move, Bearing: roveapi.Bearing_North}
 	assert.NoError(t, world.Enqueue(a, moveCommand), "Failed to execute move command")
 
 	// Tick the world
@@ -47,7 +47,7 @@ func TestCommand_Recharge(t *testing.T) {
 	assert.NoError(t, err, "Failed to set position for rover")
 
 	// Move to use up some charge
-	moveCommand := Command{Command: roveapi.CommandType_move, Bearing: "N"}
+	moveCommand := Command{Command: roveapi.CommandType_move, Bearing: roveapi.Bearing_North}
 	assert.NoError(t, world.Enqueue(a, moveCommand), "Failed to queue move command")
 
 	// Tick the world

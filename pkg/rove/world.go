@@ -277,7 +277,7 @@ func (w *World) WarpRover(rover string, pos maths.Vector) error {
 }
 
 // MoveRover attempts to move a rover in a specific direction
-func (w *World) MoveRover(rover string, b maths.Bearing) (maths.Vector, error) {
+func (w *World) MoveRover(rover string, b roveapi.Bearing) (maths.Vector, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -293,7 +293,7 @@ func (w *World) MoveRover(rover string, b maths.Bearing) (maths.Vector, error) {
 	i.Charge--
 
 	// Try the new move position
-	newPos := i.Pos.Added(b.Vector())
+	newPos := i.Pos.Added(maths.BearingToVector(b))
 
 	// Get the tile and verify it's empty
 	_, obj := w.Atlas.QueryPosition(newPos)
@@ -426,10 +426,8 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 	for _, c := range commands {
 		switch c.Command {
 		case roveapi.CommandType_move:
-			if b, err := maths.BearingFromString(c.Bearing); err != nil {
-				return fmt.Errorf("unknown bearing: %s", c.Bearing)
-			} else if !b.IsCardinal() {
-				return fmt.Errorf("bearing must be cardinal")
+			if c.Bearing == roveapi.Bearing_BearingUnknown {
+				return fmt.Errorf("bearing must be valid")
 			}
 		case roveapi.CommandType_broadcast:
 			if len(c.Message) > 3 {
@@ -507,9 +505,7 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 
 	switch c.Command {
 	case roveapi.CommandType_move:
-		if dir, err := maths.BearingFromString(c.Bearing); err != nil {
-			return err
-		} else if _, err := w.MoveRover(rover, dir); err != nil {
+		if _, err := w.MoveRover(rover, c.Bearing); err != nil {
 			return err
 		}
 
