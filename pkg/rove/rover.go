@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
 )
 
@@ -31,7 +30,7 @@ type Rover struct {
 	Range int `json:"range"`
 
 	// Inventory represents any items the rover is carrying
-	Inventory []atlas.Object `json:"inventory"`
+	Inventory []Object `json:"inventory"`
 
 	// Capacity is the maximum number of inventory items
 	Capacity int `json:"capacity"`

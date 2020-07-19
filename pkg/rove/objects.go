@@ -1,4 +1,4 @@
-package atlas
+package rove
 
 import (
 	"github.com/mdiluz/rove/proto/roveapi"

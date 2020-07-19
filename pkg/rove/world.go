@@ -8,7 +8,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
 )
@@ -25,7 +24,7 @@ type World struct {
 	Rovers map[string]Rover `json:"rovers"`
 
 	// Atlas represends the world map of chunks and tiles
-	Atlas atlas.Atlas `json:"atlas"`
+	Atlas Atlas `json:"atlas"`
 
 	// Commands is the set of currently executing command streams per rover
 	CommandQueue map[string]CommandStream `json:"commands"`
@@ -64,7 +63,7 @@ func NewWorld(chunkSize int) *World {
 		Rovers:          make(map[string]Rover),
 		CommandQueue:    make(map[string]CommandStream),
 		CommandIncoming: make(map[string]CommandStream),
-		Atlas:           atlas.NewChunkAtlas(chunkSize),
+		Atlas:           NewChunkAtlas(chunkSize),
 		words:           lines,
 		TicksPerDay:     24,
 		CurrentTicks:    0,
@@ -231,7 +230,7 @@ func (w *World) SetRoverPosition(rover string, pos maths.Vector) error {
 }
 
 // RoverInventory returns the inventory of a requested rover
-func (w *World) RoverInventory(rover string) ([]atlas.Object, error) {
+func (w *World) RoverInventory(rover string) ([]Object, error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
@@ -337,7 +336,7 @@ func (w *World) RoverStash(rover string) (roveapi.Object, error) {
 	r.AddLogEntryf("stashed %c", obj.Type)
 	r.Inventory = append(r.Inventory, obj)
 	w.Rovers[rover] = r
-	w.Atlas.SetObject(r.Pos, atlas.Object{Type: roveapi.Object_ObjectUnknown})
+	w.Atlas.SetObject(r.Pos, Object{Type: roveapi.Object_ObjectUnknown})
 	return obj.Type, nil
 }
 

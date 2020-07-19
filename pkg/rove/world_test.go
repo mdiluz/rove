@@ -3,7 +3,6 @@ package rove
 import (
 	"testing"
 
-	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/stretchr/testify/assert"
@@ -90,7 +89,7 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.Contains(t, rover.Logs[len(rover.Logs)-1].Text, "moved", "Rover logs should contain the move")
 
 	// Place a tile in front of the rover
-	world.Atlas.SetObject(maths.Vector{X: 0, Y: 2}, atlas.Object{Type: roveapi.Object_RockLarge})
+	world.Atlas.SetObject(maths.Vector{X: 0, Y: 2}, Object{Type: roveapi.Object_RockLarge})
 	newPos, err = world.MoveRover(a, b)
 	assert.NoError(t, err, "Failed to move rover")
 	assert.Equal(t, pos, newPos, "Failed to correctly not move position for rover into wall")
@@ -142,7 +141,7 @@ func TestWorld_RoverStash(t *testing.T) {
 		Y: 0.0,
 	}
 
-	world.Atlas.SetObject(pos, atlas.Object{Type: roveapi.Object_ObjectUnknown})
+	world.Atlas.SetObject(pos, Object{Type: roveapi.Object_ObjectUnknown})
 	err = world.WarpRover(a, pos)
 	assert.NoError(t, err, "Failed to set position for rover")
 
@@ -151,7 +150,7 @@ func TestWorld_RoverStash(t *testing.T) {
 
 	for i := 0; i < rover.Capacity; i++ {
 		// Place an object
-		world.Atlas.SetObject(pos, atlas.Object{Type: roveapi.Object_RockSmall})
+		world.Atlas.SetObject(pos, Object{Type: roveapi.Object_RockSmall})
 
 		// Pick it up
 		o, err := world.RoverStash(a)
@@ -166,7 +165,7 @@ func TestWorld_RoverStash(t *testing.T) {
 		inv, err := world.RoverInventory(a)
 		assert.NoError(t, err, "Failed to get inventory")
 		assert.Equal(t, i+1, len(inv))
-		assert.Equal(t, atlas.Object{Type: roveapi.Object_RockSmall}, inv[i])
+		assert.Equal(t, Object{Type: roveapi.Object_RockSmall}, inv[i])
 
 		// Check that this did reduce the charge
 		info, err := world.GetRover(a)
@@ -183,7 +182,7 @@ func TestWorld_RoverStash(t *testing.T) {
 	}
 
 	// Place an object
-	world.Atlas.SetObject(pos, atlas.Object{Type: roveapi.Object_RockSmall})
+	world.Atlas.SetObject(pos, Object{Type: roveapi.Object_RockSmall})
 
 	// Try to pick it up
 	o, err := world.RoverStash(a)
@@ -221,7 +220,7 @@ func TestWorld_RoverDamage(t *testing.T) {
 	info, err := world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 
-	world.Atlas.SetObject(maths.Vector{X: 0.0, Y: 1.0}, atlas.Object{Type: roveapi.Object_RockLarge})
+	world.Atlas.SetObject(maths.Vector{X: 0.0, Y: 1.0}, Object{Type: roveapi.Object_RockLarge})
 
 	vec, err := world.MoveRover(a, roveapi.Bearing_North)
 	assert.NoError(t, err, "Failed to move rover")
@@ -243,7 +242,7 @@ func TestWorld_RoverRepair(t *testing.T) {
 		Y: 0.0,
 	}
 
-	world.Atlas.SetObject(pos, atlas.Object{Type: roveapi.Object_ObjectUnknown})
+	world.Atlas.SetObject(pos, Object{Type: roveapi.Object_ObjectUnknown})
 
 	err = world.WarpRover(a, pos)
 	assert.NoError(t, err, "Failed to set position for rover")
@@ -252,12 +251,12 @@ func TestWorld_RoverRepair(t *testing.T) {
 	assert.NoError(t, err, "couldn't get rover info")
 
 	// Pick up something to repair with
-	world.Atlas.SetObject(pos, atlas.Object{Type: roveapi.Object_RockSmall})
+	world.Atlas.SetObject(pos, Object{Type: roveapi.Object_RockSmall})
 	o, err := world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
 	assert.Equal(t, roveapi.Object_RockSmall, o, "Failed to get correct object")
 
-	world.Atlas.SetObject(maths.Vector{X: 0.0, Y: 1.0}, atlas.Object{Type: roveapi.Object_RockLarge})
+	world.Atlas.SetObject(maths.Vector{X: 0.0, Y: 1.0}, Object{Type: roveapi.Object_RockLarge})
 
 	// Try and bump into the rock
 	vec, err := world.MoveRover(a, roveapi.Bearing_North)
@@ -277,7 +276,7 @@ func TestWorld_RoverRepair(t *testing.T) {
 	assert.Contains(t, newinfo.Logs[len(newinfo.Logs)-1].Text, "repair", "Rover logs should contain the repair")
 
 	// Check again that it can't repair past the max
-	world.Atlas.SetObject(pos, atlas.Object{Type: roveapi.Object_RockSmall})
+	world.Atlas.SetObject(pos, Object{Type: roveapi.Object_RockSmall})
 	o, err = world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
 	assert.Equal(t, roveapi.Object_RockSmall, o, "Failed to get correct object")
@@ -308,7 +307,7 @@ func TestWorld_Charge(t *testing.T) {
 
 		// Ensure the path ahead is empty
 		world.Atlas.SetTile(initialPos.Added(maths.BearingToVector(roveapi.Bearing_North)), roveapi.Tile_Rock)
-		world.Atlas.SetObject(initialPos.Added(maths.BearingToVector(roveapi.Bearing_North)), atlas.Object{Type: roveapi.Object_ObjectUnknown})
+		world.Atlas.SetObject(initialPos.Added(maths.BearingToVector(roveapi.Bearing_North)), Object{Type: roveapi.Object_ObjectUnknown})
 
 		// Try and move north (along unblocked path)
 		newPos, err := world.MoveRover(a, roveapi.Bearing_North)
@@ -390,7 +389,7 @@ func TestWorld_Broadcast(t *testing.T) {
 	assert.Contains(t, rb.Logs[len(rb.Logs)-1].Text, "ABC", "Rover A should have logged it's broadcast")
 
 	// Warp B outside of the range of A
-	world.Atlas.SetObject(maths.Vector{X: ra.Range, Y: 0}, atlas.Object{Type: roveapi.Object_ObjectUnknown})
+	world.Atlas.SetObject(maths.Vector{X: ra.Range, Y: 0}, Object{Type: roveapi.Object_ObjectUnknown})
 	assert.NoError(t, world.WarpRover(b, maths.Vector{X: ra.Range, Y: 0}))
 
 	// Broadcast from a again
@@ -407,7 +406,7 @@ func TestWorld_Broadcast(t *testing.T) {
 	assert.Contains(t, rb.Logs[len(rb.Logs)-1].Text, "XYZ", "Rover A should have logged it's broadcast")
 
 	// Warp B outside of the range of A
-	world.Atlas.SetObject(maths.Vector{X: ra.Range + 1, Y: 0}, atlas.Object{Type: roveapi.Object_ObjectUnknown})
+	world.Atlas.SetObject(maths.Vector{X: ra.Range + 1, Y: 0}, Object{Type: roveapi.Object_ObjectUnknown})
 	assert.NoError(t, world.WarpRover(b, maths.Vector{X: ra.Range + 1, Y: 0}))
 
 	// Broadcast from a again
