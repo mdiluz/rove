@@ -427,7 +427,7 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 		switch c.Command {
 		case roveapi.CommandType_move:
 			if c.Bearing == roveapi.Bearing_BearingUnknown {
-				return fmt.Errorf("bearing must be cardinal")
+				return fmt.Errorf("bearing must be valid")
 			}
 		case roveapi.CommandType_broadcast:
 			if len(c.Message) > 3 {
