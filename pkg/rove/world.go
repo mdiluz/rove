@@ -1,11 +1,9 @@
 package rove
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"math/rand"
-	"os"
 	"sync"
 
 	"github.com/mdiluz/rove/pkg/maths"
@@ -35,36 +33,15 @@ type World struct {
 	worldMutex sync.RWMutex
 	// Mutex to lock around command operations
 	cmdMutex sync.RWMutex
-	// Set of possible words to use for names
-	words []string
 }
-
-var wordsFile = os.Getenv("WORDS_FILE")
 
 // NewWorld creates a new world object
 func NewWorld(chunkSize int) *World {
-
-	// Try and load the words file
-	var lines []string
-	if file, err := os.Open(wordsFile); err != nil {
-		log.Printf("Couldn't read words file [%s], running without words: %s\n", wordsFile, err)
-	} else {
-		defer file.Close()
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			lines = append(lines, scanner.Text())
-		}
-		if scanner.Err() != nil {
-			log.Printf("Failure during word file scan: %s\n", scanner.Err())
-		}
-	}
-
 	return &World{
 		Rovers:          make(map[string]Rover),
 		CommandQueue:    make(map[string]CommandStream),
 		CommandIncoming: make(map[string]CommandStream),
 		Atlas:           NewChunkAtlas(chunkSize),
-		words:           lines,
 		TicksPerDay:     24,
 		CurrentTicks:    0,
 	}
@@ -77,18 +54,6 @@ func (w *World) SpawnRover() (string, error) {
 
 	// Initialise the rover
 	rover := DefaultRover()
-
-	// Assign a random name if we have words
-	if len(w.words) > 0 {
-		for {
-			// Loop until we find a unique name
-			name := fmt.Sprintf("%s-%s", w.words[rand.Intn(len(w.words))], w.words[rand.Intn(len(w.words))])
-			if _, ok := w.Rovers[name]; !ok {
-				rover.Name = name
-				break
-			}
-		}
-	}
 
 	// Spawn in a random place near the origin
 	rover.Pos = maths.Vector{
