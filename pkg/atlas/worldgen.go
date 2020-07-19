@@ -17,18 +17,14 @@ type WorldGen interface {
 
 // NoiseWorldGen returns a noise based world generator
 type NoiseWorldGen struct {
-	// terrainNoise describes the noise function for the terrain
-	terrainNoise opensimplex.Noise
-
-	// terrainNoise describes the noise function for the terrain
-	objectNoise opensimplex.Noise
+	// noise describes the noise function
+	noise opensimplex.Noise
 }
 
 // NewNoiseWorldGen creates a new noise based world generator
 func NewNoiseWorldGen(seed int64) WorldGen {
 	return &NoiseWorldGen{
-		terrainNoise: opensimplex.New(seed),
-		objectNoise:  opensimplex.New(seed),
+		noise: opensimplex.New(seed),
 	}
 }
 
@@ -39,7 +35,7 @@ const (
 
 // GetTile returns the chosen tile at a location
 func (g *NoiseWorldGen) GetTile(v maths.Vector) roveapi.Tile {
-	t := g.terrainNoise.Eval2(float64(v.X)/terrainNoiseScale, float64(v.Y)/terrainNoiseScale)
+	t := g.noise.Eval2(float64(v.X)/terrainNoiseScale, float64(v.Y)/terrainNoiseScale)
 	switch {
 	case t > 0.5:
 		return roveapi.Tile_Gravel
@@ -52,7 +48,7 @@ func (g *NoiseWorldGen) GetTile(v maths.Vector) roveapi.Tile {
 
 // GetObject returns the chosen object at a location
 func (g *NoiseWorldGen) GetObject(v maths.Vector) Object {
-	o := g.objectNoise.Eval2(float64(v.X)/objectNoiseScale, float64(v.Y)/objectNoiseScale)
+	o := g.noise.Eval2(float64(v.X)/objectNoiseScale, float64(v.Y)/objectNoiseScale)
 	var obj = roveapi.Object_ObjectUnknown
 	switch {
 	case o > 0.6:
