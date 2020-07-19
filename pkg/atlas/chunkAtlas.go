@@ -6,7 +6,6 @@ import (
 
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
-	"github.com/ojrac/opensimplex-go"
 )
 
 // chunk represents a fixed square grid of tiles
@@ -34,29 +33,23 @@ type chunkBasedAtlas struct {
 	// ChunkSize is the x/y dimensions of each square chunk
 	ChunkSize int `json:"chunksize"`
 
-	// terrainNoise describes the noise function for the terrain
-	terrainNoise opensimplex.Noise
-
-	// terrainNoise describes the noise function for the terrain
-	objectNoise opensimplex.Noise
+	// worldGen is the internal world generator
+	worldGen WorldGen
 }
 
 const (
-	noiseSeed         = 1024
-	terrainNoiseScale = 6
-	objectNoiseScale  = 3
+	noiseSeed = 1024
 )
 
 // NewChunkAtlas creates a new empty atlas
 func NewChunkAtlas(chunkSize int) Atlas {
 	// Start up with one chunk
 	a := chunkBasedAtlas{
-		ChunkSize:    chunkSize,
-		Chunks:       make([]chunk, 1),
-		LowerBound:   maths.Vector{X: 0, Y: 0},
-		UpperBound:   maths.Vector{X: chunkSize, Y: chunkSize},
-		terrainNoise: opensimplex.New(noiseSeed),
-		objectNoise:  opensimplex.New(noiseSeed),
+		ChunkSize:  chunkSize,
+		Chunks:     make([]chunk, 1),
+		LowerBound: maths.Vector{X: 0, Y: 0},
+		UpperBound: maths.Vector{X: chunkSize, Y: chunkSize},
+		worldGen:   NewNoiseWorldGen(noiseSeed),
 	}
 	// Initialise the first chunk
 	a.populate(0)
@@ -105,31 +98,15 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 	origin := a.chunkOriginInWorldSpace(chunk)
 	for i := 0; i < a.ChunkSize; i++ {
 		for j := 0; j < a.ChunkSize; j++ {
+			loc := maths.Vector{X: origin.X + i, Y: origin.Y + j}
 
-			// Get the terrain noise value for this location
-			t := a.terrainNoise.Eval2(float64(origin.X+i)/terrainNoiseScale, float64(origin.Y+j)/terrainNoiseScale)
-			var tile roveapi.Tile
-			switch {
-			case t > 0.5:
-				tile = roveapi.Tile_Gravel
-			case t > 0.05:
-				tile = roveapi.Tile_Sand
-			default:
-				tile = roveapi.Tile_Rock
-			}
-			c.Tiles[j*a.ChunkSize+i] = byte(tile)
+			// Set the tile
+			c.Tiles[j*a.ChunkSize+i] = byte(a.worldGen.GetTile(loc))
 
-			// Get the object noise value for this location
-			o := a.objectNoise.Eval2(float64(origin.X+i)/objectNoiseScale, float64(origin.Y+j)/objectNoiseScale)
-			var obj = roveapi.Object_ObjectUnknown
-			switch {
-			case o > 0.6:
-				obj = roveapi.Object_RockLarge
-			case o > 0.5:
-				obj = roveapi.Object_RockSmall
-			}
-			if obj != roveapi.Object_ObjectUnknown {
-				c.Objects[j*a.ChunkSize+i] = Object{Type: roveapi.Object(obj)}
+			// Set the object
+			obj := a.worldGen.GetObject(loc)
+			if obj.Type != roveapi.Object_ObjectUnknown {
+				c.Objects[j*a.ChunkSize+i] = obj
 			}
 		}
 	}
@@ -236,12 +213,11 @@ func (a *chunkBasedAtlas) worldSpaceToChunkWithGrow(v maths.Vector) int {
 
 	// Create the new empty atlas
 	newAtlas := chunkBasedAtlas{
-		ChunkSize:    a.ChunkSize,
-		LowerBound:   lower,
-		UpperBound:   upper,
-		Chunks:       make([]chunk, size.X*size.Y),
-		terrainNoise: a.terrainNoise,
-		objectNoise:  a.objectNoise,
+		ChunkSize:  a.ChunkSize,
+		LowerBound: lower,
+		UpperBound: upper,
+		Chunks:     make([]chunk, size.X*size.Y),
+		worldGen:   a.worldGen,
 	}
 
 	// Log that we're resizing
