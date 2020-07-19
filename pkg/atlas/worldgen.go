@@ -48,23 +48,22 @@ func (g *NoiseWorldGen) GetTile(v maths.Vector) roveapi.Tile {
 }
 
 // GetObject returns the chosen object at a location
-func (g *NoiseWorldGen) GetObject(v maths.Vector) Object {
+func (g *NoiseWorldGen) GetObject(v maths.Vector) (obj Object) {
 	o := g.noise.Eval2(float64(v.X)/rockNoiseScale, float64(v.Y)/rockNoiseScale)
-	var obj = roveapi.Object_ObjectUnknown
 	switch {
 	case o > 0.6:
-		obj = roveapi.Object_RockLarge
+		obj.Type = roveapi.Object_RockLarge
 	case o > 0.5:
-		obj = roveapi.Object_RockSmall
+		obj.Type = roveapi.Object_RockSmall
 	}
 
 	// Very rarely spawn a dormant rover
-	if obj == roveapi.Object_ObjectUnknown {
+	if obj.Type == roveapi.Object_ObjectUnknown {
 		o = g.noise.Eval2(float64(v.X)/dormantRoverScale, float64(v.Y)/dormantRoverScale)
 		if o > 0.8 {
-			obj = roveapi.Object_RoverDormant
+			obj.Type = roveapi.Object_RoverDormant
 		}
 	}
 
-	return Object{Type: roveapi.Object(obj)}
+	return obj
 }
