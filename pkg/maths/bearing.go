@@ -85,8 +85,11 @@ func (d Bearing) Vector() Vector {
 func (d Bearing) IsCardinal() bool {
 	switch d {
 	case North:
+		fallthrough
 	case East:
+		fallthrough
 	case South:
+		fallthrough
 	case West:
 		return true
 	}
