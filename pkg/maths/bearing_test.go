@@ -13,19 +13,19 @@ func TestDirection(t *testing.T) {
 	assert.Equal(t, "N", dir.ShortString())
 	assert.Equal(t, Vector{X: 0, Y: 1}, dir.Vector())
 
-	dir, err := FromString("N")
+	dir, err := BearingFromString("N")
 	assert.NoError(t, err)
 	assert.Equal(t, North, dir)
 
-	dir, err = FromString("n")
+	dir, err = BearingFromString("n")
 	assert.NoError(t, err)
 	assert.Equal(t, North, dir)
 
-	dir, err = FromString("north")
+	dir, err = BearingFromString("north")
 	assert.NoError(t, err)
 	assert.Equal(t, North, dir)
 
-	dir, err = FromString("NorthWest")
+	dir, err = BearingFromString("NorthWest")
 	assert.NoError(t, err)
 	assert.Equal(t, NorthWest, dir)
 }
