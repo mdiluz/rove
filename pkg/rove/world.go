@@ -318,40 +318,40 @@ func (w *World) MoveRover(rover string, b maths.Bearing) (maths.Vector, error) {
 }
 
 // RoverStash will stash an item at the current rovers position
-func (w *World) RoverStash(rover string) (atlas.Type, error) {
+func (w *World) RoverStash(rover string) (roveapi.Object, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
 	r, ok := w.Rovers[rover]
 	if !ok {
-		return atlas.ObjectNone, fmt.Errorf("no rover matching id")
+		return roveapi.Object_ObjectUnknown, fmt.Errorf("no rover matching id")
 	}
 
 	// Can't pick up when full
 	if len(r.Inventory) >= r.Capacity {
-		return atlas.ObjectNone, nil
+		return roveapi.Object_ObjectUnknown, nil
 	}
 
 	// Ensure the rover has energy
 	if r.Charge <= 0 {
-		return atlas.ObjectNone, nil
+		return roveapi.Object_ObjectUnknown, nil
 	}
 	r.Charge--
 
 	_, obj := w.Atlas.QueryPosition(r.Pos)
 	if !obj.IsStashable() {
-		return atlas.ObjectNone, nil
+		return roveapi.Object_ObjectUnknown, nil
 	}
 
 	r.AddLogEntryf("stashed %c", obj.Type)
 	r.Inventory = append(r.Inventory, obj)
 	w.Rovers[rover] = r
-	w.Atlas.SetObject(r.Pos, atlas.Object{Type: atlas.ObjectNone})
+	w.Atlas.SetObject(r.Pos, atlas.Object{Type: roveapi.Object_ObjectUnknown})
 	return obj.Type, nil
 }
 
 // RadarFromRover can be used to query what a rover can currently see
-func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err error) {
+func (w *World) RadarFromRover(rover string) (radar []roveapi.Tile, objs []roveapi.Object, err error) {
 	w.worldMutex.RLock()
 	defer w.worldMutex.RUnlock()
 
@@ -376,8 +376,8 @@ func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err err
 	}
 
 	// Gather up all tiles within the range
-	radar = make([]byte, radarSpan*radarSpan)
-	objs = make([]byte, radarSpan*radarSpan)
+	radar = make([]roveapi.Tile, radarSpan*radarSpan)
+	objs = make([]roveapi.Object, radarSpan*radarSpan)
 	for j := radarMin.Y; j <= radarMax.Y; j++ {
 		for i := radarMin.X; i <= radarMax.X; i++ {
 			q := maths.Vector{X: i, Y: j}
@@ -388,7 +388,7 @@ func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err err
 			relative := q.Added(radarMin.Negated())
 			index := relative.X + relative.Y*radarSpan
 			radar[index] = tile
-			objs[index] = byte(obj.Type)
+			objs[index] = obj.Type
 		}
 	}
 
@@ -401,7 +401,7 @@ func (w *World) RadarFromRover(rover string) (radar []byte, objs []byte, err err
 		if dist.X <= r.Range && dist.Y <= r.Range {
 			relative := r.Pos.Added(radarMin.Negated())
 			index := relative.X + relative.Y*radarSpan
-			objs[index] = byte(atlas.ObjectRover)
+			objs[index] = roveapi.Object_RoverLive
 		}
 	}
 

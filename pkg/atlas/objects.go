@@ -1,33 +1,20 @@
 package atlas
 
-// Type represents an object type
-type Type byte
-
-// Types of objects
-const (
-	// ObjectNone represents no object at all
-	ObjectNone = Type(0)
-
-	// ObjectRover represents a live rover
-	ObjectRover = Type('R')
-
-	// ObjectSmallRock is a small stashable rock
-	ObjectSmallRock = Type('o')
-
-	// ObjectLargeRock is a large blocking rock
-	ObjectLargeRock = Type('O')
+import (
+	"github.com/mdiluz/rove/proto/roveapi"
 )
 
 // Object represents an object in the world
 type Object struct {
-	Type Type `json:"type"`
+	// The type of the object
+	Type roveapi.Object `json:"type"`
 }
 
 // IsBlocking checks if an object is a blocking object
 func (o *Object) IsBlocking() bool {
-	var blocking = [...]Type{
-		ObjectRover,
-		ObjectLargeRock,
+	var blocking = [...]roveapi.Object{
+		roveapi.Object_RoverLive,
+		roveapi.Object_RockLarge,
 	}
 
 	for _, t := range blocking {
@@ -40,8 +27,8 @@ func (o *Object) IsBlocking() bool {
 
 // IsStashable checks if an object is stashable
 func (o *Object) IsStashable() bool {
-	var stashable = [...]Type{
-		ObjectSmallRock,
+	var stashable = [...]roveapi.Object{
+		roveapi.Object_RockSmall,
 	}
 
 	for _, t := range stashable {

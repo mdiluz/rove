@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/mdiluz/rove/pkg/atlas"
+	"github.com/mdiluz/rove/cmd/rove/internal"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/pkg/version"
 	"github.com/mdiluz/rove/proto/roveapi"
@@ -287,12 +287,10 @@ func InnerMain(command string, args ...string) error {
 				for i := 0; i < num; i++ {
 					t := response.Tiles[i+num*j]
 					o := response.Objects[i+num*j]
-					if o != byte(atlas.ObjectNone) {
-						fmt.Printf("%c", o)
-					} else if t != byte(atlas.TileNone) {
-						fmt.Printf("%c", t)
+					if o != roveapi.Object_ObjectUnknown {
+						fmt.Printf("%c", internal.ObjectGlyph(o))
 					} else {
-						fmt.Printf(" ")
+						fmt.Printf("%c", internal.TileGlyph(t))
 					}
 
 				}
