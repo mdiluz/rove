@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
 )
@@ -49,6 +50,19 @@ type Rover struct {
 
 	// Logs Stores log of information
 	Logs []RoverLogEntry `json:"logs"`
+}
+
+// DefaultRover returns a default rover object with default settings
+func DefaultRover() Rover {
+	return Rover{
+		Range:            4,
+		Integrity:        10,
+		MaximumIntegrity: 10,
+		Capacity:         10,
+		Charge:           10,
+		MaximumCharge:    10,
+		Name:             uuid.New().String(),
+	}
 }
 
 // AddLogEntryf adds an entry to the rovers log

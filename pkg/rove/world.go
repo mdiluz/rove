@@ -8,7 +8,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/atlas"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
@@ -78,15 +77,7 @@ func (w *World) SpawnRover() (string, error) {
 	defer w.worldMutex.Unlock()
 
 	// Initialise the rover
-	rover := Rover{
-		Range:            4,
-		Integrity:        10,
-		MaximumIntegrity: 10,
-		Capacity:         10,
-		Charge:           10,
-		MaximumCharge:    10,
-		Name:             uuid.New().String(),
-	}
+	rover := DefaultRover()
 
 	// Assign a random name if we have words
 	if len(w.words) > 0 {
