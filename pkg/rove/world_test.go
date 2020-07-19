@@ -109,7 +109,9 @@ func TestWorld_RadarFromRover(t *testing.T) {
 
 	// Warp the rovers into position
 	bpos := maths.Vector{X: -3, Y: -3}
+	world.Atlas.SetObject(bpos, Object{Type: roveapi.Object_ObjectUnknown})
 	assert.NoError(t, world.WarpRover(b, bpos), "Failed to warp rover")
+	world.Atlas.SetObject(maths.Vector{X: 0, Y: 0}, Object{Type: roveapi.Object_ObjectUnknown})
 	assert.NoError(t, world.WarpRover(a, maths.Vector{X: 0, Y: 0}), "Failed to warp rover")
 
 	radar, objs, err := world.RadarFromRover(a)
@@ -371,6 +373,8 @@ func TestWorld_Broadcast(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Warp rovers near to eachother
+	world.Atlas.SetObject(maths.Vector{X: 0, Y: 0}, Object{Type: roveapi.Object_ObjectUnknown})
+	world.Atlas.SetObject(maths.Vector{X: 1, Y: 0}, Object{Type: roveapi.Object_ObjectUnknown})
 	assert.NoError(t, world.WarpRover(a, maths.Vector{X: 0, Y: 0}))
 	assert.NoError(t, world.WarpRover(b, maths.Vector{X: 1, Y: 0}))
 
