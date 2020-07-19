@@ -9,16 +9,16 @@ type Tile byte
 
 const (
 	// TileNone is a keyword for nothing
-	TileNone = Tile(0)
+	TileNone = Tile(GlyphNone)
 
 	// TileRock is solid rock ground
-	TileRock = Tile('-')
+	TileRock = Tile(GlyphRock)
 
 	// TileGravel is loose rocks
-	TileGravel = Tile(':')
+	TileGravel = Tile(GlyphGravel)
 
 	// TileSand is sand
-	TileSand = Tile('~')
+	TileSand = Tile(GlyphSand)
 )
 
 // Atlas represents a 2D world atlas of tiles and objects

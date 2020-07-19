@@ -6,13 +6,13 @@ type Type byte
 // Types of objects
 const (
 	// ObjectNone represents no object at all
-	ObjectNone = Type(0)
+	ObjectNone = Type(GlyphNone)
 
 	// ObjectRover represents a live rover
-	ObjectRover = Type('R')
+	ObjectRover = Type(GlyphRover)
 
 	// ObjectSmallRock is a small stashable rock
-	ObjectSmallRock = Type('o')
+	ObjectSmallRock = Type(GlyphSmallRock)
 
 	// ObjectLargeRock is a large blocking rock
 	ObjectLargeRock = Type('O')
