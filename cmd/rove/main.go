@@ -127,12 +127,20 @@ func BearingFromString(s string) roveapi.Bearing {
 	switch s {
 	case "N":
 		return roveapi.Bearing_North
+	case "NE":
+		return roveapi.Bearing_NorthEast
 	case "E":
 		return roveapi.Bearing_East
+	case "SE":
+		return roveapi.Bearing_SouthEast
 	case "S":
 		return roveapi.Bearing_South
+	case "SW":
+		return roveapi.Bearing_SouthWest
 	case "W":
 		return roveapi.Bearing_West
+	case "NW":
+		return roveapi.Bearing_NorthWest
 	}
 	return roveapi.Bearing_BearingUnknown
 }
@@ -224,6 +232,21 @@ func InnerMain(command string, args ...string) error {
 		var commands []*roveapi.Command
 		for i := 0; i < len(args); i++ {
 			switch args[i] {
+			case "turn":
+				i++
+				if len(args) == i {
+					return fmt.Errorf("turn command must be passed a compass bearing")
+				}
+				b := BearingFromString(args[i])
+				if b == roveapi.Bearing_BearingUnknown {
+					return fmt.Errorf("turn command must be given a valid bearing %s", args[i])
+				}
+				commands = append(commands,
+					&roveapi.Command{
+						Command: roveapi.CommandType_broadcast,
+						Data:    &roveapi.Command_Broadcast{Broadcast: []byte(args[i])},
+					},
+				)
 			case "broadcast":
 				i++
 				if len(args) == i {
@@ -234,7 +257,7 @@ func InnerMain(command string, args ...string) error {
 				commands = append(commands,
 					&roveapi.Command{
 						Command: roveapi.CommandType_broadcast,
-						Data:    &roveapi.Command_Message{Message: []byte(args[i])},
+						Data:    &roveapi.Command_Broadcast{Broadcast: []byte(args[i])},
 					},
 				)
 			default:

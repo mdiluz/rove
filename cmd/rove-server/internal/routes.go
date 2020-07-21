@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mdiluz/rove/pkg/rove"
 	"github.com/mdiluz/rove/pkg/version"
 	"github.com/mdiluz/rove/proto/roveapi"
 )
@@ -76,31 +75,13 @@ func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (respon
 			inv = append(inv, byte(i.Type))
 		}
 
-		i, q := s.world.RoverCommands(resp)
+		in, qu := s.world.RoverCommands(resp)
 		var incoming, queued []*roveapi.Command
-		for _, i := range i {
-			c := &roveapi.Command{
-				Command: i.Command,
-			}
-			switch i.Command {
-			case roveapi.CommandType_broadcast:
-				c.Data = &roveapi.Command_Message{
-					Message: i.Message,
-				}
-			}
-			incoming = append(incoming, c)
+		for i := range in {
+			incoming = append(incoming, &in[i])
 		}
-		for _, q := range q {
-			c := &roveapi.Command{
-				Command: q.Command,
-			}
-			switch q.Command {
-			case roveapi.CommandType_broadcast:
-				c.Data = &roveapi.Command_Message{
-					Message: q.Message,
-				}
-			}
-			queued = append(queued, c)
+		for i := range qu {
+			queued = append(queued, &qu[i])
 		}
 		var logs []*roveapi.Log
 		for _, log := range rover.Logs {
@@ -116,6 +97,7 @@ func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (respon
 				X: int32(rover.Pos.X),
 				Y: int32(rover.Pos.Y),
 			},
+			Bearing:          rover.Bearing,
 			Range:            int32(rover.Range),
 			Inventory:        inv,
 			Capacity:         int32(rover.Capacity),
@@ -125,6 +107,7 @@ func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (respon
 			MaximumCharge:    int32(rover.MaximumCharge),
 			IncomingCommands: incoming,
 			QueuedCommands:   queued,
+			SailPosition:     rover.SailPosition,
 			Logs:             logs,
 		}
 	}
@@ -179,19 +162,7 @@ func (s *Server) Command(ctx context.Context, req *roveapi.CommandRequest) (*rov
 		return nil, err
 	}
 
-	var cmds []rove.Command
-	for _, c := range req.Commands {
-		n := rove.Command{
-			Command: c.Command,
-		}
-		switch c.Command {
-		case roveapi.CommandType_broadcast:
-			n.Message = c.GetMessage()
-		}
-		cmds = append(cmds, n)
-	}
-
-	if err := s.world.Enqueue(resp, cmds...); err != nil {
+	if err := s.world.Enqueue(resp, req.Commands...); err != nil {
 		return nil, err
 	}
 

@@ -269,7 +269,7 @@ func TestWorld_RoverRepair(t *testing.T) {
 	assert.NoError(t, err, "couldn't get rover info")
 	assert.Equal(t, originalInfo.Integrity-1, newinfo.Integrity, "rover should have lost integrity")
 
-	err = world.ExecuteCommand(&Command{Command: roveapi.CommandType_repair}, a)
+	err = world.ExecuteCommand(&roveapi.Command{Command: roveapi.CommandType_repair}, a)
 	assert.NoError(t, err, "Failed to repair rover")
 
 	newinfo, err = world.GetRover(a)
@@ -283,7 +283,7 @@ func TestWorld_RoverRepair(t *testing.T) {
 	assert.NoError(t, err, "Failed to stash")
 	assert.Equal(t, roveapi.Object_RockSmall, o, "Failed to get correct object")
 
-	err = world.ExecuteCommand(&Command{Command: roveapi.CommandType_repair}, a)
+	err = world.ExecuteCommand(&roveapi.Command{Command: roveapi.CommandType_repair}, a)
 	assert.NoError(t, err, "Failed to repair rover")
 
 	newinfo, err = world.GetRover(a)

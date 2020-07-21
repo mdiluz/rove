@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/maths"
+	"github.com/mdiluz/rove/proto/roveapi"
 )
 
 // RoverLogEntry describes a single log entry for the rover
@@ -28,6 +29,9 @@ type Rover struct {
 
 	// Pos represents where this rover is in the world
 	Pos maths.Vector `json:"pos"`
+
+	// Bearing is the current direction the rover is facing
+	Bearing roveapi.Bearing `json:"bearing"`
 
 	// Range represents the distance the unit's radar can see
 	Range int `json:"range"`
@@ -48,7 +52,10 @@ type Rover struct {
 	Charge int `json:"charge"`
 
 	// MaximumCharge is the maximum charge able to be stored
-	MaximumCharge int `json:"maximum-Charge"`
+	MaximumCharge int `json:"maximum-charge"`
+
+	// SailPosition is the current position of the sails
+	SailPosition roveapi.SailPosition `json:"sail-position"`
 
 	// Logs Stores log of information
 	Logs []RoverLogEntry `json:"logs"`
@@ -63,6 +70,8 @@ func DefaultRover() Rover {
 		Capacity:         10,
 		Charge:           10,
 		MaximumCharge:    10,
+		Bearing:          roveapi.Bearing_North,
+		SailPosition:     roveapi.SailPosition_SolarCharging,
 		Name:             GenerateRoverName(),
 	}
 }

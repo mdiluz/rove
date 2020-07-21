@@ -10,6 +10,9 @@ import (
 	"github.com/mdiluz/rove/proto/roveapi"
 )
 
+// CommandStream is a list of commands to execute in order
+type CommandStream []roveapi.Command
+
 // World describes a self contained universe and everything in it
 type World struct {
 	// TicksPerDay is the amount of ticks in a single day
@@ -305,6 +308,45 @@ func (w *World) RoverStash(rover string) (roveapi.Object, error) {
 	return obj.Type, nil
 }
 
+// RoverToggle will toggle the sail position
+func (w *World) RoverToggle(rover string) (roveapi.SailPosition, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	r, ok := w.Rovers[rover]
+	if !ok {
+		return roveapi.SailPosition_UnknownSailPosition, fmt.Errorf("no rover matching id")
+	}
+
+	// Swap the sail position
+	switch r.SailPosition {
+	case roveapi.SailPosition_CatchingWind:
+		r.SailPosition = roveapi.SailPosition_SolarCharging
+	case roveapi.SailPosition_SolarCharging:
+		r.SailPosition = roveapi.SailPosition_CatchingWind
+	}
+
+	w.Rovers[rover] = r
+	return r.SailPosition, nil
+}
+
+// RoverTurn will turn the rover
+func (w *World) RoverTurn(rover string, bearing roveapi.Bearing) (roveapi.Bearing, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	r, ok := w.Rovers[rover]
+	if !ok {
+		return roveapi.Bearing_BearingUnknown, fmt.Errorf("no rover matching id")
+	}
+
+	// Set the new bearing
+	r.Bearing = bearing
+
+	w.Rovers[rover] = r
+	return r.Bearing, nil
+}
+
 // RadarFromRover can be used to query what a rover can currently see
 func (w *World) RadarFromRover(rover string) (radar []roveapi.Tile, objs []roveapi.Object, err error) {
 	w.worldMutex.RLock()
@@ -364,7 +406,7 @@ func (w *World) RadarFromRover(rover string) (radar []roveapi.Tile, objs []rovea
 }
 
 // RoverCommands returns current commands for the given rover
-func (w *World) RoverCommands(rover string) (incoming []Command, queued []Command) {
+func (w *World) RoverCommands(rover string) (incoming []roveapi.Command, queued []roveapi.Command) {
 	if c, ok := w.CommandIncoming[rover]; ok {
 		incoming = c
 	}
@@ -375,19 +417,23 @@ func (w *World) RoverCommands(rover string) (incoming []Command, queued []Comman
 }
 
 // Enqueue will queue the commands given
-func (w *World) Enqueue(rover string, commands ...Command) error {
+func (w *World) Enqueue(rover string, commands ...*roveapi.Command) error {
 
 	// First validate the commands
 	for _, c := range commands {
 		switch c.Command {
 		case roveapi.CommandType_broadcast:
-			if len(c.Message) > 3 {
-				return fmt.Errorf("too many characters in message (limit 3): %d", len(c.Message))
+			if len(c.GetBroadcast()) > 3 {
+				return fmt.Errorf("too many characters in message (limit 3): %d", len(c.GetBroadcast()))
 			}
-			for _, b := range c.Message {
+			for _, b := range c.GetBroadcast() {
 				if b < 37 || b > 126 {
 					return fmt.Errorf("invalid message character: %c", b)
 				}
+			}
+		case roveapi.CommandType_turn:
+			if c.GetTurn() == roveapi.Bearing_BearingUnknown {
+				return fmt.Errorf("turn command given unknown bearing")
 			}
 		case roveapi.CommandType_toggle:
 		case roveapi.CommandType_stash:
@@ -403,7 +449,17 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 	defer w.cmdMutex.Unlock()
 
 	// Override the incoming command set
-	w.CommandIncoming[rover] = commands
+	var cmds []roveapi.Command
+	for _, c := range commands {
+		// Copy the command and data but none of the locks or internals
+		cmds = append(cmds,
+			roveapi.Command{
+				Command: c.Command,
+				Data:    c.Data,
+			})
+	}
+
+	w.CommandIncoming[rover] = cmds
 
 	return nil
 }
@@ -427,15 +483,15 @@ func (w *World) ExecuteCommandQueues() {
 	// Iterate through all the current commands
 	for rover, cmds := range w.CommandQueue {
 		if len(cmds) != 0 {
-			// Extract the first command in the queue
-			c := cmds[0]
-			w.CommandQueue[rover] = cmds[1:]
 
 			// Execute the command
-			if err := w.ExecuteCommand(&c, rover); err != nil {
+			if err := w.ExecuteCommand(&cmds[0], rover); err != nil {
 				log.Println(err)
 				// TODO: Report this error somehow
 			}
+
+			// Extract the first command in the queue
+			w.CommandQueue[rover] = cmds[1:]
 
 		} else {
 			// Clean out the empty entry
@@ -451,13 +507,14 @@ func (w *World) ExecuteCommandQueues() {
 }
 
 // ExecuteCommand will execute a single command
-func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
-	log.Printf("Executing command: %+v for %s\n", *c, rover)
+func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (err error) {
+	log.Printf("Executing command: %+v for %s\n", c.Command, rover)
 
 	switch c.Command {
 	case roveapi.CommandType_toggle:
-		// TODO: Toggle the sails
-
+		if _, err := w.RoverToggle(rover); err != nil {
+			return err
+		}
 	case roveapi.CommandType_stash:
 		if _, err := w.RoverStash(rover); err != nil {
 			return err
@@ -477,7 +534,12 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 		}
 
 	case roveapi.CommandType_broadcast:
-		if err := w.RoverBroadcast(rover, c.Message); err != nil {
+		if err := w.RoverBroadcast(rover, c.GetBroadcast()); err != nil {
+			return err
+		}
+
+	case roveapi.CommandType_turn:
+		if _, err := w.RoverTurn(rover, c.GetTurn()); err != nil {
 			return err
 		}
 

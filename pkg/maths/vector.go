@@ -89,12 +89,20 @@ func BearingToVector(b roveapi.Bearing) Vector {
 	switch b {
 	case roveapi.Bearing_North:
 		return Vector{Y: 1}
+	case roveapi.Bearing_NorthEast:
+		return Vector{X: 1, Y: 1}
 	case roveapi.Bearing_East:
 		return Vector{X: 1}
+	case roveapi.Bearing_SouthEast:
+		return Vector{X: 1, Y: -1}
 	case roveapi.Bearing_South:
 		return Vector{Y: -1}
+	case roveapi.Bearing_SouthWest:
+		return Vector{X: -1, Y: -1}
 	case roveapi.Bearing_West:
 		return Vector{X: -1}
+	case roveapi.Bearing_NorthWest:
+		return Vector{X: -1, Y: 1}
 	}
 
 	return Vector{}

@@ -91,12 +91,14 @@ enum CommandType {
   none = 0;
   // Toggles the sails, either catching the wind, or charging from the sun
   toggle = 1;
+  // Turns the rover in the specified bearing, requires data
+  turn = 2;
   // Stashes item at current location in rover inventory
-  stash = 2;
+  stash = 3;
   // Repairs the rover using an inventory object
-  repair = 3;
-  // Broadcasts a message to nearby rovers
-  broadcast = 4;
+  repair = 4;
+  // Broadcasts a message to nearby rovers, requires data
+  broadcast = 5;
 }
 
 // Bearing represents a compass direction
@@ -121,8 +123,10 @@ message Command {
   oneof data {
     // A simple message, must be composed of printable ASCII glyphs (32-126)
     // maximum of three characters
-    // Used with BROADCAST
-    bytes message = 2;
+    bytes broadcast = 2;
+
+    // The bearing for the rover to turn to
+    Bearing turn = 3;
   }
 }
 
@@ -218,6 +222,17 @@ message Vector {
   int32 y = 2;
 }
 
+// SailPosition represents the position of the sola sail
+enum SailPosition {
+  UnknownSailPosition = 0;
+
+  // CatchingWind means the sail is catching the wind and moving the rover
+  CatchingWind = 1;
+
+  // SolarCharging means the sail is facing the sun and charging
+  SolarCharging = 2;
+}
+
 // StatusResponse is the response given to a status request
 message StatusResponse {
   // The name of the rover
@@ -226,33 +241,39 @@ message StatusResponse {
   // Position of the rover in world coordinates
   Vector position = 2;
 
+  // The current direction of the rover
+  Bearing bearing = 3;
+
   // The range of this rover's radar and broadcasting
-  int32 range = 3;
+  int32 range = 4;
 
   // The items in the rover inventory
-  bytes inventory = 4;
+  bytes inventory = 5;
 
   // The capacity of the inventory
-  int32 capacity = 5;
+  int32 capacity = 6;
 
   // The current health of the rover
-  int32 integrity = 6;
+  int32 integrity = 7;
 
   // The maximum health of the rover
-  int32 maximumIntegrity = 7;
+  int32 maximumIntegrity = 8;
 
   // The energy stored in the rover
-  int32 charge = 8;
+  int32 charge = 9;
 
   // The max energy the rover can store
-  int32 maximumCharge = 9;
+  int32 maximumCharge = 10;
+
+  // The current position of the sails
+  SailPosition sailPosition = 11;
 
   // The set of currently incoming commands for this tick
-  repeated Command incomingCommands = 10;
+  repeated Command incomingCommands = 12;
 
   // The set of currently queued commands
-  repeated Command queuedCommands = 11;
+  repeated Command queuedCommands = 13;
 
   // The most recent logs
-  repeated Log logs = 12;
+  repeated Log logs = 14;
 }
