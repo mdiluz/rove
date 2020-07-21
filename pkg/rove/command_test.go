@@ -38,7 +38,7 @@ func TestCommand_Turn(t *testing.T) {
 	a, err := w.SpawnRover()
 	assert.NoError(t, err)
 
-	w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_turn, Data: &roveapi.Command_Turn{Turn: roveapi.Bearing_NorthWest}})
+	w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_turn, Turn: roveapi.Bearing_NorthWest})
 	w.EnqueueAllIncoming()
 	w.ExecuteCommandQueues()
 

@@ -11,7 +11,7 @@ import (
 )
 
 // CommandStream is a list of commands to execute in order
-type CommandStream []roveapi.Command
+type CommandStream []*roveapi.Command
 
 // World describes a self contained universe and everything in it
 type World struct {
@@ -406,7 +406,7 @@ func (w *World) RadarFromRover(rover string) (radar []roveapi.Tile, objs []rovea
 }
 
 // RoverCommands returns current commands for the given rover
-func (w *World) RoverCommands(rover string) (incoming []roveapi.Command, queued []roveapi.Command) {
+func (w *World) RoverCommands(rover string) (incoming CommandStream, queued CommandStream) {
 	if c, ok := w.CommandIncoming[rover]; ok {
 		incoming = c
 	}
@@ -448,18 +448,7 @@ func (w *World) Enqueue(rover string, commands ...*roveapi.Command) error {
 	w.cmdMutex.Lock()
 	defer w.cmdMutex.Unlock()
 
-	// Override the incoming command set
-	var cmds []roveapi.Command
-	for _, c := range commands {
-		// Copy the command and data but none of the locks or internals
-		cmds = append(cmds,
-			roveapi.Command{
-				Command: c.Command,
-				Data:    c.Data,
-			})
-	}
-
-	w.CommandIncoming[rover] = cmds
+	w.CommandIncoming[rover] = commands
 
 	return nil
 }
@@ -485,7 +474,7 @@ func (w *World) ExecuteCommandQueues() {
 		if len(cmds) != 0 {
 
 			// Execute the command
-			if err := w.ExecuteCommand(&cmds[0], rover); err != nil {
+			if err := w.ExecuteCommand(cmds[0], rover); err != nil {
 				log.Println(err)
 				// TODO: Report this error somehow
 			}

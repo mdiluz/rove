@@ -120,14 +120,12 @@ message Command {
   // The command type
   CommandType command = 1;
 
-  oneof data {
-    // A simple message, must be composed of printable ASCII glyphs (32-126)
-    // maximum of three characters
-    bytes broadcast = 2;
+  // A simple message, must be composed of printable ASCII glyphs (32-126)
+  // maximum of three characters
+  bytes broadcast = 2;
 
-    // The bearing for the rover to turn to
-    Bearing turn = 3;
-  }
+  // The bearing for the rover to turn to
+  Bearing turn = 3;
 }
 
 // CommandRequest describes a set of commands to be requested for the rover
