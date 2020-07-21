@@ -83,10 +83,6 @@ func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (respon
 				Command: i.Command,
 			}
 			switch i.Command {
-			case roveapi.CommandType_move:
-				c.Data = &roveapi.Command_Bearing{
-					Bearing: i.Bearing,
-				}
 			case roveapi.CommandType_broadcast:
 				c.Data = &roveapi.Command_Message{
 					Message: i.Message,
@@ -99,10 +95,6 @@ func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (respon
 				Command: q.Command,
 			}
 			switch q.Command {
-			case roveapi.CommandType_move:
-				c.Data = &roveapi.Command_Bearing{
-					Bearing: q.Bearing,
-				}
 			case roveapi.CommandType_broadcast:
 				c.Data = &roveapi.Command_Message{
 					Message: q.Message,
@@ -193,8 +185,6 @@ func (s *Server) Command(ctx context.Context, req *roveapi.CommandRequest) (*rov
 			Command: c.Command,
 		}
 		switch c.Command {
-		case roveapi.CommandType_move:
-			n.Bearing = c.GetBearing()
 		case roveapi.CommandType_broadcast:
 			n.Message = c.GetMessage()
 		}

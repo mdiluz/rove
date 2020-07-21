@@ -380,10 +380,6 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 	// First validate the commands
 	for _, c := range commands {
 		switch c.Command {
-		case roveapi.CommandType_move:
-			if c.Bearing == roveapi.Bearing_BearingUnknown {
-				return fmt.Errorf("bearing must be valid")
-			}
 		case roveapi.CommandType_broadcast:
 			if len(c.Message) > 3 {
 				return fmt.Errorf("too many characters in message (limit 3): %d", len(c.Message))
@@ -393,9 +389,9 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 					return fmt.Errorf("invalid message character: %c", b)
 				}
 			}
+		case roveapi.CommandType_toggle:
 		case roveapi.CommandType_stash:
 		case roveapi.CommandType_repair:
-		case roveapi.CommandType_recharge:
 			// Nothing to verify
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
@@ -459,10 +455,8 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 	log.Printf("Executing command: %+v for %s\n", *c, rover)
 
 	switch c.Command {
-	case roveapi.CommandType_move:
-		if _, err := w.MoveRover(rover, c.Bearing); err != nil {
-			return err
-		}
+	case roveapi.CommandType_toggle:
+		// TODO: Toggle the sails
 
 	case roveapi.CommandType_stash:
 		if _, err := w.RoverStash(rover); err != nil {
@@ -481,15 +475,12 @@ func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
 			r.AddLogEntryf("repaired self to %d", r.Integrity)
 			w.Rovers[rover] = r
 		}
-	case roveapi.CommandType_recharge:
-		_, err := w.RoverRecharge(rover)
-		if err != nil {
-			return err
-		}
+
 	case roveapi.CommandType_broadcast:
 		if err := w.RoverBroadcast(rover, c.Message); err != nil {
 			return err
 		}
+
 	default:
 		return fmt.Errorf("unknown command: %s", c.Command)
 	}

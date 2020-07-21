@@ -89,16 +89,14 @@ message RegisterResponse {
 // CommandType defines the type of a command to give to the rover
 enum CommandType {
   none = 0;
-  // Move the rover in a direction, requires bearing
-  move = 1;
+  // Toggles the sails, either catching the wind, or charging from the sun
+  toggle = 1;
   // Stashes item at current location in rover inventory
   stash = 2;
   // Repairs the rover using an inventory object
   repair = 3;
-  // Waits a tick to add more charge to the rover
-  recharge = 4;
   // Broadcasts a message to nearby rovers
-  broadcast = 5;
+  broadcast = 4;
 }
 
 enum Bearing {
@@ -116,14 +114,10 @@ message Command {
   CommandType command = 1;
 
   oneof data {
-    // A bearing
-    // Used with MOVE
-    Bearing bearing = 2;
-
     // A simple message, must be composed of printable ASCII glyphs (32-126)
     // maximum of three characters
     // Used with BROADCAST
-    bytes message = 3;
+    bytes message = 2;
   }
 }
 

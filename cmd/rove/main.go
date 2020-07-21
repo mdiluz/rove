@@ -33,10 +33,9 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\thelp                       outputs this usage information")
 	fmt.Fprintln(os.Stderr, "\tversion                    outputs version info")
 	fmt.Fprintln(os.Stderr, "\nRover commands:")
-	fmt.Fprintln(os.Stderr, "\tmove BEARING               moves the rover in the chosen direction")
+	fmt.Fprintln(os.Stderr, "\ttoggle                     toggles the sails, either catching the wind, or charging from the sun")
 	fmt.Fprintln(os.Stderr, "\tstash                      stores the object at the rover location in the inventory")
 	fmt.Fprintln(os.Stderr, "\trepair                     uses an inventory object to repair the rover")
-	fmt.Fprintln(os.Stderr, "\trecharge                   wait a tick to recharge the rover")
 	fmt.Fprintln(os.Stderr, "\tbroadcast MSG              broadcast a simple ASCII triplet to nearby rovers")
 	fmt.Fprintln(os.Stderr, "\nEnvironment")
 	fmt.Fprintln(os.Stderr, "\tROVE_USER_DATA             path to user data, defaults to "+defaultDataPath)
@@ -225,21 +224,6 @@ func InnerMain(command string, args ...string) error {
 		var commands []*roveapi.Command
 		for i := 0; i < len(args); i++ {
 			switch args[i] {
-			case "move":
-				i++
-				if len(args) == i {
-					return fmt.Errorf("move command must be passed bearing")
-				}
-				var b roveapi.Bearing
-				if b = BearingFromString(args[i]); b == roveapi.Bearing_BearingUnknown {
-					return fmt.Errorf("unrecognised bearing: %s", args[i])
-				}
-				commands = append(commands,
-					&roveapi.Command{
-						Command: roveapi.CommandType_move,
-						Data:    &roveapi.Command_Bearing{Bearing: b},
-					},
-				)
 			case "broadcast":
 				i++
 				if len(args) == i {

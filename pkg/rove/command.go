@@ -6,9 +6,6 @@ import "github.com/mdiluz/rove/proto/roveapi"
 type Command struct {
 	Command roveapi.CommandType `json:"command"`
 
-	// Used in the move command
-	Bearing roveapi.Bearing `json:"bearing,omitempty"`
-
 	// Used in the broadcast command
 	Message []byte `json:"message,omitempty"`
 }
