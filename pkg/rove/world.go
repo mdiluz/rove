@@ -22,7 +22,7 @@ type World struct {
 	CurrentTicks int `json:"current-ticks"`
 
 	// Rovers is a id->data map of all the rovers in the game
-	Rovers map[string]Rover `json:"rovers"`
+	Rovers map[string]*Rover `json:"rovers"`
 
 	// Atlas represends the world map of chunks and tiles
 	Atlas Atlas `json:"atlas"`
@@ -41,7 +41,7 @@ type World struct {
 // NewWorld creates a new world object
 func NewWorld(chunkSize int) *World {
 	return &World{
-		Rovers:          make(map[string]Rover),
+		Rovers:          make(map[string]*Rover),
 		CommandQueue:    make(map[string]CommandStream),
 		CommandIncoming: make(map[string]CommandStream),
 		Atlas:           NewChunkAtlas(chunkSize),
@@ -94,7 +94,7 @@ func (w *World) GetRover(rover string) (Rover, error) {
 	if !ok {
 		return Rover{}, fmt.Errorf("Failed to find rover with name: %s", rover)
 	}
-	return i, nil
+	return *i, nil
 }
 
 // RoverRecharge charges up a rover
@@ -117,7 +117,6 @@ func (w *World) RoverRecharge(rover string) (int, error) {
 		i.Charge++
 		i.AddLogEntryf("recharged to %d", i.Charge)
 	}
-	w.Rovers[rover] = i
 
 	return i.Charge, nil
 }
@@ -152,7 +151,6 @@ func (w *World) RoverBroadcast(rover string, message []byte) (err error) {
 	}
 
 	i.AddLogEntryf("broadcasted %s", string(message))
-	w.Rovers[rover] = i
 	return
 }
 
@@ -193,7 +191,6 @@ func (w *World) SetRoverPosition(rover string, pos maths.Vector) error {
 	}
 
 	i.Pos = pos
-	w.Rovers[rover] = i
 	return nil
 }
 
@@ -230,7 +227,6 @@ func (w *World) WarpRover(rover string, pos maths.Vector) error {
 	}
 
 	i.Pos = pos
-	w.Rovers[rover] = i
 	return nil
 }
 
@@ -259,7 +255,6 @@ func (w *World) MoveRover(rover string, b roveapi.Bearing) (maths.Vector, error)
 		i.AddLogEntryf("moved %s to %+v", b.String(), newPos)
 		// Perform the move
 		i.Pos = newPos
-		w.Rovers[rover] = i
 	} else {
 		// If it is a blocking tile, reduce the rover integrity
 		i.AddLogEntryf("tried to move %s to %+v", b.String(), newPos)
@@ -267,8 +262,6 @@ func (w *World) MoveRover(rover string, b roveapi.Bearing) (maths.Vector, error)
 		i.AddLogEntryf("had a collision, new integrity %d", i.Integrity)
 		if i.Integrity == 0 {
 			// TODO: The rover needs to be left dormant with the player
-		} else {
-			w.Rovers[rover] = i
 		}
 	}
 
@@ -303,7 +296,6 @@ func (w *World) RoverStash(rover string) (roveapi.Object, error) {
 
 	r.AddLogEntryf("stashed %c", obj.Type)
 	r.Inventory = append(r.Inventory, obj)
-	w.Rovers[rover] = r
 	w.Atlas.SetObject(r.Pos, Object{Type: roveapi.Object_ObjectUnknown})
 	return obj.Type, nil
 }
@@ -343,7 +335,6 @@ func (w *World) RoverTurn(rover string, bearing roveapi.Bearing) (roveapi.Bearin
 	// Set the new bearing
 	r.Bearing = bearing
 
-	w.Rovers[rover] = r
 	return r.Bearing, nil
 }
 
