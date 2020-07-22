@@ -60,5 +60,5 @@ func TestCommand_Broadcast(t *testing.T) {
 }
 
 func TestCommand_Invalid(t *testing.T) {
-	// TODO: Test the invalid command
+	// TODO: Test an invalid command
 }
