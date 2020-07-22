@@ -464,8 +464,8 @@ func (w *World) EnqueueAllIncoming() {
 	w.CommandIncoming = make(map[string]CommandStream)
 }
 
-// ExecuteCommandQueues will execute any commands in the current command queue
-func (w *World) ExecuteCommandQueues() {
+// Tick will execute any commands in the current command queue and tick the world
+func (w *World) Tick() {
 	w.cmdMutex.Lock()
 	defer w.cmdMutex.Unlock()
 

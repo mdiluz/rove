@@ -343,7 +343,7 @@ func TestWorld_Daytime(t *testing.T) {
 	// Loop for half the day
 	for i := 0; i < world.TicksPerDay/2; i++ {
 		assert.True(t, world.Daytime())
-		world.ExecuteCommandQueues()
+		world.Tick()
 	}
 
 	// Remove rover charge again
@@ -359,7 +359,7 @@ func TestWorld_Daytime(t *testing.T) {
 	// Loop for half the day
 	for i := 0; i < world.TicksPerDay/2; i++ {
 		assert.False(t, world.Daytime())
-		world.ExecuteCommandQueues()
+		world.Tick()
 	}
 }
 
