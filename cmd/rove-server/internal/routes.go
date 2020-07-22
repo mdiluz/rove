@@ -75,7 +75,7 @@ func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (respon
 			inv = append(inv, byte(i.Type))
 		}
 
-		incoming, queued := s.world.RoverCommands(resp)
+		queued := s.world.RoverCommands(resp)
 		var logs []*roveapi.Log
 		for _, log := range rover.Logs {
 			logs = append(logs, &roveapi.Log{
@@ -98,7 +98,6 @@ func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (respon
 			MaximumIntegrity: int32(rover.MaximumIntegrity),
 			Charge:           int32(rover.Charge),
 			MaximumCharge:    int32(rover.MaximumCharge),
-			IncomingCommands: incoming,
 			QueuedCommands:   queued,
 			SailPosition:     rover.SailPosition,
 			Logs:             logs,

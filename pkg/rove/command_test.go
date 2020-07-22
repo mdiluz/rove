@@ -18,7 +18,6 @@ func TestCommand_Toggle(t *testing.T) {
 
 	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_toggle})
 	assert.NoError(t, err)
-	w.EnqueueAllIncoming()
 	w.Tick()
 
 	r, err = w.GetRover(a)
@@ -27,7 +26,6 @@ func TestCommand_Toggle(t *testing.T) {
 
 	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_toggle})
 	assert.NoError(t, err)
-	w.EnqueueAllIncoming()
 	w.Tick()
 
 	r, err = w.GetRover(a)
@@ -42,7 +40,6 @@ func TestCommand_Turn(t *testing.T) {
 
 	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_turn, Turn: roveapi.Bearing_NorthWest})
 	assert.NoError(t, err)
-	w.EnqueueAllIncoming()
 	w.Tick()
 
 	r, err := w.GetRover(a)

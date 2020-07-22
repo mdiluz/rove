@@ -266,15 +266,12 @@ message StatusResponse {
   // The current position of the sails
   SailPosition sailPosition = 11;
 
-  // The set of currently incoming commands for this tick
-  repeated Command incomingCommands = 12;
-
   // The set of currently queued commands
-  repeated Command queuedCommands = 13;
+  repeated Command queuedCommands = 12;
 
   // The most recent logs
-  repeated Log logs = 14;
+  repeated Log logs = 13;
 
   // The current wind direction
-  Bearing wind = 15;
+  Bearing wind = 14;
 }
