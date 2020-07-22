@@ -11,27 +11,27 @@ import (
 // chunk represents a fixed square grid of tiles
 type chunk struct {
 	// Tiles represents the tiles within the chunk
-	Tiles []byte `json:"tiles"`
+	Tiles []byte
 
 	// Objects represents the objects within the chunk
 	// only one possible object per tile for now
-	Objects map[int]Object `json:"objects"`
+	Objects map[int]Object
 }
 
 // chunkBasedAtlas represents a grid of Chunks
 type chunkBasedAtlas struct {
 	// Chunks represents all chunks in the world
 	// This is intentionally not a 2D array so it can be expanded in all directions
-	Chunks []chunk `json:"chunks"`
+	Chunks []chunk
 
 	// LowerBound is the origin of the bottom left corner of the current chunks in world space (current chunks cover >= this value)
-	LowerBound maths.Vector `json:"lowerBound"`
+	LowerBound maths.Vector
 
 	// UpperBound is the top left corner of the current chunks (curent chunks cover < this value)
-	UpperBound maths.Vector `json:"upperBound"`
+	UpperBound maths.Vector
 
 	// ChunkSize is the x/y dimensions of each square chunk
-	ChunkSize int `json:"chunksize"`
+	ChunkSize int
 
 	// worldGen is the internal world generator
 	worldGen WorldGen

@@ -50,12 +50,12 @@ func Test_InnerMain(t *testing.T) {
 	assert.Error(t, InnerMain("command"))
 
 	// Give it commands
-	assert.NoError(t, InnerMain("command", "move", "N"))
+	assert.NoError(t, InnerMain("command", "toggle"))
 	assert.NoError(t, InnerMain("command", "stash"))
 	assert.NoError(t, InnerMain("command", "repair"))
 	assert.NoError(t, InnerMain("command", "broadcast", "abc"))
 
 	// Give it malformed commands
-	assert.Error(t, InnerMain("command", "move", "stash"))
+	assert.Error(t, InnerMain("command", "unknown"))
 	assert.Error(t, InnerMain("command", "broadcast"))
 }

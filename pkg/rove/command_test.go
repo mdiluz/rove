@@ -3,68 +3,65 @@ package rove
 import (
 	"testing"
 
-	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCommand_Move(t *testing.T) {
-	world := NewWorld(8)
-	a, err := world.SpawnRover()
+func TestCommand_Toggle(t *testing.T) {
+	w := NewWorld(8)
+	a, err := w.SpawnRover()
 	assert.NoError(t, err)
-	pos := maths.Vector{
-		X: 1.0,
-		Y: 2.0,
-	}
 
-	err = world.WarpRover(a, pos)
-	assert.NoError(t, err, "Failed to set position for rover")
+	r, err := w.GetRover(a)
+	assert.NoError(t, err)
+	assert.Equal(t, roveapi.SailPosition_SolarCharging, r.SailPosition)
 
-	// Try the move command
-	moveCommand := Command{Command: roveapi.CommandType_move, Bearing: roveapi.Bearing_North}
-	assert.NoError(t, world.Enqueue(a, moveCommand), "Failed to execute move command")
+	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_toggle})
+	assert.NoError(t, err)
+	w.EnqueueAllIncoming()
+	w.Tick()
 
-	// Tick the world
-	world.EnqueueAllIncoming()
-	world.ExecuteCommandQueues()
+	r, err = w.GetRover(a)
+	assert.NoError(t, err)
+	assert.Equal(t, roveapi.SailPosition_CatchingWind, r.SailPosition)
 
-	newPos, err := world.RoverPosition(a)
-	assert.NoError(t, err, "Failed to set position for rover")
-	pos.Add(maths.Vector{X: 0.0, Y: 1})
-	assert.Equal(t, pos, newPos, "Failed to correctly set position for rover")
+	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_toggle})
+	assert.NoError(t, err)
+	w.EnqueueAllIncoming()
+	w.Tick()
+
+	r, err = w.GetRover(a)
+	assert.NoError(t, err)
+	assert.Equal(t, roveapi.SailPosition_SolarCharging, r.SailPosition)
 }
 
-func TestCommand_Recharge(t *testing.T) {
-	world := NewWorld(8)
-	a, err := world.SpawnRover()
+func TestCommand_Turn(t *testing.T) {
+	w := NewWorld(8)
+	a, err := w.SpawnRover()
 	assert.NoError(t, err)
-	pos := maths.Vector{
-		X: 1.0,
-		Y: 2.0,
-	}
 
-	err = world.WarpRover(a, pos)
-	assert.NoError(t, err, "Failed to set position for rover")
+	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_turn, Turn: roveapi.Bearing_NorthWest})
+	assert.NoError(t, err)
+	w.EnqueueAllIncoming()
+	w.Tick()
 
-	// Move to use up some charge
-	moveCommand := Command{Command: roveapi.CommandType_move, Bearing: roveapi.Bearing_North}
-	assert.NoError(t, world.Enqueue(a, moveCommand), "Failed to queue move command")
+	r, err := w.GetRover(a)
+	assert.NoError(t, err)
+	assert.Equal(t, roveapi.Bearing_NorthWest, r.Bearing)
+}
 
-	// Tick the world
-	world.EnqueueAllIncoming()
-	world.ExecuteCommandQueues()
+func TestCommand_Stash(t *testing.T) {
+	// TODO: Test the stash command
+}
 
-	rover, _ := world.GetRover(a)
-	assert.Equal(t, rover.MaximumCharge-1, rover.Charge)
+func TestCommand_Repair(t *testing.T) {
+	// TODO: Test the repair command
+}
 
-	chargeCommand := Command{Command: roveapi.CommandType_recharge}
-	assert.NoError(t, world.Enqueue(a, chargeCommand), "Failed to queue recharge command")
+func TestCommand_Broadcast(t *testing.T) {
+	// TODO: Test the stash command
+}
 
-	// Tick the world
-	world.EnqueueAllIncoming()
-	world.ExecuteCommandQueues()
-
-	rover, _ = world.GetRover(a)
-	assert.Equal(t, rover.MaximumCharge, rover.Charge)
-
+func TestCommand_Invalid(t *testing.T) {
+	// TODO: Test an invalid command
 }

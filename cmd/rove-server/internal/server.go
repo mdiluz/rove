@@ -131,8 +131,8 @@ func (s *Server) Run() {
 
 			log.Println("Executing server tick")
 
-			// Run the command queues
-			s.world.ExecuteCommandQueues()
+			// Tick the world
+			s.world.Tick()
 
 			// Save out the new world state
 			if err := s.SaveWorld(); err != nil {

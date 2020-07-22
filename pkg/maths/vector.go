@@ -8,8 +8,8 @@ import (
 
 // Vector desribes a 3D vector
 type Vector struct {
-	X int `json:"x"`
-	Y int `json:"y"`
+	X int
+	Y int
 }
 
 // Add adds one vector to another
@@ -89,13 +89,31 @@ func BearingToVector(b roveapi.Bearing) Vector {
 	switch b {
 	case roveapi.Bearing_North:
 		return Vector{Y: 1}
+	case roveapi.Bearing_NorthEast:
+		return Vector{X: 1, Y: 1}
 	case roveapi.Bearing_East:
 		return Vector{X: 1}
+	case roveapi.Bearing_SouthEast:
+		return Vector{X: 1, Y: -1}
 	case roveapi.Bearing_South:
 		return Vector{Y: -1}
+	case roveapi.Bearing_SouthWest:
+		return Vector{X: -1, Y: -1}
 	case roveapi.Bearing_West:
 		return Vector{X: -1}
+	case roveapi.Bearing_NorthWest:
+		return Vector{X: -1, Y: 1}
 	}
 
 	return Vector{}
+}
+
+// Dot returns the dot product of two vectors
+func Dot(a Vector, b Vector) int {
+	return a.X*b.X + a.Y*b.Y
+}
+
+// AngleCos returns the cosine of the angle between two vectors
+func AngleCos(a Vector, b Vector) float64 {
+	return float64(Dot(a, b)) / a.Length() * b.Length()
 }

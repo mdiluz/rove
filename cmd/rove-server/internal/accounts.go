@@ -21,8 +21,8 @@ type Accountant interface {
 // Account represents a registered user
 type Account struct {
 	// Name simply describes the account and must be unique
-	Name string `json:"name"`
+	Name string
 
 	// Data represents internal account data
-	Data map[string]string `json:"data"`
+	Data map[string]string
 }

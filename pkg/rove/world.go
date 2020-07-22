@@ -10,24 +10,35 @@ import (
 	"github.com/mdiluz/rove/proto/roveapi"
 )
 
+const (
+	TicksPerNormalMove = 4
+)
+
+// CommandStream is a list of commands to execute in order
+type CommandStream []*roveapi.Command
+
 // World describes a self contained universe and everything in it
 type World struct {
+
 	// TicksPerDay is the amount of ticks in a single day
-	TicksPerDay int `json:"ticks-per-day"`
+	TicksPerDay int
 
 	// Current number of ticks from the start
-	CurrentTicks int `json:"current-ticks"`
+	CurrentTicks int
 
 	// Rovers is a id->data map of all the rovers in the game
-	Rovers map[string]Rover `json:"rovers"`
+	Rovers map[string]*Rover
 
 	// Atlas represends the world map of chunks and tiles
-	Atlas Atlas `json:"atlas"`
+	Atlas Atlas
+
+	// Wind is the current wind direction
+	Wind roveapi.Bearing
 
 	// Commands is the set of currently executing command streams per rover
-	CommandQueue map[string]CommandStream `json:"commands"`
+	CommandQueue map[string]CommandStream
 	// Incoming represents the set of commands to add to the queue at the end of the current tick
-	CommandIncoming map[string]CommandStream `json:"incoming"`
+	CommandIncoming map[string]CommandStream
 
 	// Mutex to lock around all world operations
 	worldMutex sync.RWMutex
@@ -38,7 +49,7 @@ type World struct {
 // NewWorld creates a new world object
 func NewWorld(chunkSize int) *World {
 	return &World{
-		Rovers:          make(map[string]Rover),
+		Rovers:          make(map[string]*Rover),
 		CommandQueue:    make(map[string]CommandStream),
 		CommandIncoming: make(map[string]CommandStream),
 		Atlas:           NewChunkAtlas(chunkSize),
@@ -91,7 +102,7 @@ func (w *World) GetRover(rover string) (Rover, error) {
 	if !ok {
 		return Rover{}, fmt.Errorf("Failed to find rover with name: %s", rover)
 	}
-	return i, nil
+	return *i, nil
 }
 
 // RoverRecharge charges up a rover
@@ -114,7 +125,6 @@ func (w *World) RoverRecharge(rover string) (int, error) {
 		i.Charge++
 		i.AddLogEntryf("recharged to %d", i.Charge)
 	}
-	w.Rovers[rover] = i
 
 	return i.Charge, nil
 }
@@ -149,7 +159,6 @@ func (w *World) RoverBroadcast(rover string, message []byte) (err error) {
 	}
 
 	i.AddLogEntryf("broadcasted %s", string(message))
-	w.Rovers[rover] = i
 	return
 }
 
@@ -190,7 +199,6 @@ func (w *World) SetRoverPosition(rover string, pos maths.Vector) error {
 	}
 
 	i.Pos = pos
-	w.Rovers[rover] = i
 	return nil
 }
 
@@ -227,12 +235,11 @@ func (w *World) WarpRover(rover string, pos maths.Vector) error {
 	}
 
 	i.Pos = pos
-	w.Rovers[rover] = i
 	return nil
 }
 
-// MoveRover attempts to move a rover in a specific direction
-func (w *World) MoveRover(rover string, b roveapi.Bearing) (maths.Vector, error) {
+// TryMoveRover attempts to move a rover in a specific direction
+func (w *World) TryMoveRover(rover string, b roveapi.Bearing) (maths.Vector, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -240,12 +247,6 @@ func (w *World) MoveRover(rover string, b roveapi.Bearing) (maths.Vector, error)
 	if !ok {
 		return maths.Vector{}, fmt.Errorf("no rover matching id")
 	}
-
-	// Ensure the rover has energy
-	if i.Charge <= 0 {
-		return i.Pos, nil
-	}
-	i.Charge--
 
 	// Try the new move position
 	newPos := i.Pos.Added(maths.BearingToVector(b))
@@ -256,17 +257,14 @@ func (w *World) MoveRover(rover string, b roveapi.Bearing) (maths.Vector, error)
 		i.AddLogEntryf("moved %s to %+v", b.String(), newPos)
 		// Perform the move
 		i.Pos = newPos
-		w.Rovers[rover] = i
 	} else {
 		// If it is a blocking tile, reduce the rover integrity
 		i.AddLogEntryf("tried to move %s to %+v", b.String(), newPos)
 		i.Integrity = i.Integrity - 1
 		i.AddLogEntryf("had a collision, new integrity %d", i.Integrity)
-		if i.Integrity == 0 {
-			// TODO: The rover needs to be left dormant with the player
-		} else {
-			w.Rovers[rover] = i
-		}
+		// TODO: The rover needs to be left dormant with the player
+		//if i.Integrity == 0 {
+		//}
 	}
 
 	return i.Pos, nil
@@ -300,9 +298,70 @@ func (w *World) RoverStash(rover string) (roveapi.Object, error) {
 
 	r.AddLogEntryf("stashed %c", obj.Type)
 	r.Inventory = append(r.Inventory, obj)
-	w.Rovers[rover] = r
 	w.Atlas.SetObject(r.Pos, Object{Type: roveapi.Object_ObjectUnknown})
 	return obj.Type, nil
+}
+
+// RoverToggle will toggle the sail position
+func (w *World) RoverToggle(rover string) (roveapi.SailPosition, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	r, ok := w.Rovers[rover]
+	if !ok {
+		return roveapi.SailPosition_UnknownSailPosition, fmt.Errorf("no rover matching id")
+	}
+
+	// Swap the sail position
+	switch r.SailPosition {
+	case roveapi.SailPosition_CatchingWind:
+		r.SailPosition = roveapi.SailPosition_SolarCharging
+	case roveapi.SailPosition_SolarCharging:
+		r.SailPosition = roveapi.SailPosition_CatchingWind
+	}
+
+	// Reset the movement ticks
+	r.MoveTicks = 0
+
+	return r.SailPosition, nil
+}
+
+// RoverTurn will turn the rover
+func (w *World) RoverTurn(rover string, bearing roveapi.Bearing) (roveapi.Bearing, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	r, ok := w.Rovers[rover]
+	if !ok {
+		return roveapi.Bearing_BearingUnknown, fmt.Errorf("no rover matching id")
+	}
+
+	// Set the new bearing
+	r.Bearing = bearing
+	// Reset the movement ticks
+	r.MoveTicks = 0
+
+	return r.Bearing, nil
+}
+
+// RoverRepair will turn the rover
+func (w *World) RoverRepair(rover string) (int, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	r, ok := w.Rovers[rover]
+	if !ok {
+		return 0, fmt.Errorf("no rover matching id")
+	}
+
+	// Consume an inventory item to repair if possible
+	if len(r.Inventory) > 0 && r.Integrity < r.MaximumIntegrity {
+		r.Inventory = r.Inventory[:len(r.Inventory)-1]
+		r.Integrity = r.Integrity + 1
+		r.AddLogEntryf("repaired self to %d", r.Integrity)
+	}
+
+	return r.Integrity, nil
 }
 
 // RadarFromRover can be used to query what a rover can currently see
@@ -364,7 +423,7 @@ func (w *World) RadarFromRover(rover string) (radar []roveapi.Tile, objs []rovea
 }
 
 // RoverCommands returns current commands for the given rover
-func (w *World) RoverCommands(rover string) (incoming []Command, queued []Command) {
+func (w *World) RoverCommands(rover string) (incoming CommandStream, queued CommandStream) {
 	if c, ok := w.CommandIncoming[rover]; ok {
 		incoming = c
 	}
@@ -375,27 +434,27 @@ func (w *World) RoverCommands(rover string) (incoming []Command, queued []Comman
 }
 
 // Enqueue will queue the commands given
-func (w *World) Enqueue(rover string, commands ...Command) error {
+func (w *World) Enqueue(rover string, commands ...*roveapi.Command) error {
 
 	// First validate the commands
 	for _, c := range commands {
 		switch c.Command {
-		case roveapi.CommandType_move:
-			if c.Bearing == roveapi.Bearing_BearingUnknown {
-				return fmt.Errorf("bearing must be valid")
-			}
 		case roveapi.CommandType_broadcast:
-			if len(c.Message) > 3 {
-				return fmt.Errorf("too many characters in message (limit 3): %d", len(c.Message))
+			if len(c.GetBroadcast()) > 3 {
+				return fmt.Errorf("too many characters in message (limit 3): %d", len(c.GetBroadcast()))
 			}
-			for _, b := range c.Message {
+			for _, b := range c.GetBroadcast() {
 				if b < 37 || b > 126 {
 					return fmt.Errorf("invalid message character: %c", b)
 				}
 			}
+		case roveapi.CommandType_turn:
+			if c.GetTurn() == roveapi.Bearing_BearingUnknown {
+				return fmt.Errorf("turn command given unknown bearing")
+			}
+		case roveapi.CommandType_toggle:
 		case roveapi.CommandType_stash:
 		case roveapi.CommandType_repair:
-		case roveapi.CommandType_recharge:
 			// Nothing to verify
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
@@ -406,7 +465,6 @@ func (w *World) Enqueue(rover string, commands ...Command) error {
 	w.cmdMutex.Lock()
 	defer w.cmdMutex.Unlock()
 
-	// Override the incoming command set
 	w.CommandIncoming[rover] = commands
 
 	return nil
@@ -423,23 +481,23 @@ func (w *World) EnqueueAllIncoming() {
 	w.CommandIncoming = make(map[string]CommandStream)
 }
 
-// ExecuteCommandQueues will execute any commands in the current command queue
-func (w *World) ExecuteCommandQueues() {
+// Tick will execute any commands in the current command queue and tick the world
+func (w *World) Tick() {
 	w.cmdMutex.Lock()
 	defer w.cmdMutex.Unlock()
 
 	// Iterate through all the current commands
 	for rover, cmds := range w.CommandQueue {
 		if len(cmds) != 0 {
-			// Extract the first command in the queue
-			c := cmds[0]
-			w.CommandQueue[rover] = cmds[1:]
 
 			// Execute the command
-			if err := w.ExecuteCommand(&c, rover); err != nil {
+			if err := w.ExecuteCommand(cmds[0], rover); err != nil {
 				log.Println(err)
 				// TODO: Report this error somehow
 			}
+
+			// Extract the first command in the queue
+			w.CommandQueue[rover] = cmds[1:]
 
 		} else {
 			// Clean out the empty entry
@@ -450,46 +508,97 @@ func (w *World) ExecuteCommandQueues() {
 	// Add any incoming commands from this tick and clear that queue
 	w.EnqueueAllIncoming()
 
+	// Change the wind every day
+	if (w.CurrentTicks % w.TicksPerDay) == 0 {
+		w.Wind = roveapi.Bearing((rand.Int() % 8) + 1) // Random cardinal bearing
+	}
+
+	// Move all the rovers based on current wind and sails
+	for n, r := range w.Rovers {
+		// Skip if we're not catching the wind
+		if r.SailPosition != roveapi.SailPosition_CatchingWind {
+			continue
+		}
+
+		// Increment the current move ticks
+		r.MoveTicks++
+
+		// Get the difference between the two bearings
+		// Normalise, we don't care about clockwise/anticlockwise
+		diff := maths.Abs(int(w.Wind - r.Bearing))
+		if diff > 4 {
+			diff = 8 - diff
+		}
+
+		// Calculate the travel "ticks"
+		var ticksToMove int
+		switch diff {
+		case 0:
+			// Going with the wind, travel at base speed of once every 4 ticks
+			ticksToMove = TicksPerNormalMove
+		case 1:
+			// At a slight angle, we can go a little faster
+			ticksToMove = TicksPerNormalMove / 2
+		case 2:
+			// Perpendicular to wind, max speed
+			ticksToMove = 1
+		case 3:
+			// Heading at 45 degrees into the wind, back to min speed
+			ticksToMove = TicksPerNormalMove
+		case 4:
+			// Heading durectly into the wind, no movement at all
+		default:
+			log.Fatalf("bearing difference of %d should be impossible", diff)
+		}
+
+		// If we've incremented over the current move ticks on the rover, we can try and make the move
+		if ticksToMove != 0 && r.MoveTicks >= ticksToMove {
+			_, err := w.TryMoveRover(n, r.Bearing)
+			if err != nil {
+				log.Println(err)
+				// TODO: Report this error somehow
+			}
+
+			// Reset the move ticks
+			r.MoveTicks = 0
+		}
+
+		log.Print(ticksToMove)
+	}
+
 	// Increment the current tick count
 	w.CurrentTicks++
 }
 
 // ExecuteCommand will execute a single command
-func (w *World) ExecuteCommand(c *Command, rover string) (err error) {
-	log.Printf("Executing command: %+v for %s\n", *c, rover)
+func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (err error) {
+	log.Printf("Executing command: %+v for %s\n", c.Command, rover)
 
 	switch c.Command {
-	case roveapi.CommandType_move:
-		if _, err := w.MoveRover(rover, c.Bearing); err != nil {
+	case roveapi.CommandType_toggle:
+		if _, err := w.RoverToggle(rover); err != nil {
 			return err
 		}
-
 	case roveapi.CommandType_stash:
 		if _, err := w.RoverStash(rover); err != nil {
 			return err
 		}
 
 	case roveapi.CommandType_repair:
-		r, err := w.GetRover(rover)
-		if err != nil {
+		if _, err := w.RoverRepair(rover); err != nil {
 			return err
 		}
-		// Consume an inventory item to repair if possible
-		if len(r.Inventory) > 0 && r.Integrity < r.MaximumIntegrity {
-			r.Inventory = r.Inventory[:len(r.Inventory)-1]
-			r.Integrity = r.Integrity + 1
-			r.AddLogEntryf("repaired self to %d", r.Integrity)
-			w.Rovers[rover] = r
-		}
-	case roveapi.CommandType_recharge:
-		_, err := w.RoverRecharge(rover)
-		if err != nil {
-			return err
-		}
+
 	case roveapi.CommandType_broadcast:
-		if err := w.RoverBroadcast(rover, c.Message); err != nil {
+		if err := w.RoverBroadcast(rover, c.GetBroadcast()); err != nil {
 			return err
 		}
+
+	case roveapi.CommandType_turn:
+		if _, err := w.RoverTurn(rover, c.GetTurn()); err != nil {
+			return err
+		}
+
 	default:
 		return fmt.Errorf("unknown command: %s", c.Command)
 	}

@@ -9,7 +9,7 @@ import (
 
 // SimpleAccountant manages a set of accounts
 type SimpleAccountant struct {
-	Accounts map[string]Account `json:"accounts"`
+	Accounts map[string]Account
 }
 
 // NewSimpleAccountant creates a new accountant

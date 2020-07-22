@@ -7,10 +7,10 @@ import (
 // Object represents an object in the world
 type Object struct {
 	// The type of the object
-	Type roveapi.Object `json:"type"`
+	Type roveapi.Object
 
 	// Data is an internal type used for certain types of object
-	Data []byte `json:"data"`
+	Data []byte
 }
 
 // IsBlocking checks if an object is a blocking object

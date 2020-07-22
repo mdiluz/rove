@@ -33,10 +33,9 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\thelp                       outputs this usage information")
 	fmt.Fprintln(os.Stderr, "\tversion                    outputs version info")
 	fmt.Fprintln(os.Stderr, "\nRover commands:")
-	fmt.Fprintln(os.Stderr, "\tmove BEARING               moves the rover in the chosen direction")
+	fmt.Fprintln(os.Stderr, "\ttoggle                     toggles the sails, either catching the wind, or charging from the sun")
 	fmt.Fprintln(os.Stderr, "\tstash                      stores the object at the rover location in the inventory")
 	fmt.Fprintln(os.Stderr, "\trepair                     uses an inventory object to repair the rover")
-	fmt.Fprintln(os.Stderr, "\trecharge                   wait a tick to recharge the rover")
 	fmt.Fprintln(os.Stderr, "\tbroadcast MSG              broadcast a simple ASCII triplet to nearby rovers")
 	fmt.Fprintln(os.Stderr, "\nEnvironment")
 	fmt.Fprintln(os.Stderr, "\tROVE_USER_DATA             path to user data, defaults to "+defaultDataPath)
@@ -46,14 +45,14 @@ const gRPCport = 9090
 
 // Account stores data for an account
 type Account struct {
-	Name   string `json:"name"`
-	Secret string `json:"secret"`
+	Name   string
+	Secret string
 }
 
 // Config is used to store internal data
 type Config struct {
-	Host    string  `json:"host,omitempty"`
-	Account Account `json:"account,omitempty"`
+	Host    string
+	Account Account
 }
 
 // ConfigPath returns the configuration path
@@ -128,12 +127,20 @@ func BearingFromString(s string) roveapi.Bearing {
 	switch s {
 	case "N":
 		return roveapi.Bearing_North
+	case "NE":
+		return roveapi.Bearing_NorthEast
 	case "E":
 		return roveapi.Bearing_East
+	case "SE":
+		return roveapi.Bearing_SouthEast
 	case "S":
 		return roveapi.Bearing_South
+	case "SW":
+		return roveapi.Bearing_SouthWest
 	case "W":
 		return roveapi.Bearing_West
+	case "NW":
+		return roveapi.Bearing_NorthWest
 	}
 	return roveapi.Bearing_BearingUnknown
 }
@@ -225,19 +232,19 @@ func InnerMain(command string, args ...string) error {
 		var commands []*roveapi.Command
 		for i := 0; i < len(args); i++ {
 			switch args[i] {
-			case "move":
+			case "turn":
 				i++
 				if len(args) == i {
-					return fmt.Errorf("move command must be passed bearing")
+					return fmt.Errorf("turn command must be passed a compass bearing")
 				}
-				var b roveapi.Bearing
-				if b = BearingFromString(args[i]); b == roveapi.Bearing_BearingUnknown {
-					return fmt.Errorf("unrecognised bearing: %s", args[i])
+				b := BearingFromString(args[i])
+				if b == roveapi.Bearing_BearingUnknown {
+					return fmt.Errorf("turn command must be given a valid bearing %s", args[i])
 				}
 				commands = append(commands,
 					&roveapi.Command{
-						Command: roveapi.CommandType_move,
-						Data:    &roveapi.Command_Bearing{Bearing: b},
+						Command:   roveapi.CommandType_broadcast,
+						Broadcast: []byte(args[i]),
 					},
 				)
 			case "broadcast":
@@ -249,8 +256,8 @@ func InnerMain(command string, args ...string) error {
 				}
 				commands = append(commands,
 					&roveapi.Command{
-						Command: roveapi.CommandType_broadcast,
-						Data:    &roveapi.Command_Message{Message: []byte(args[i])},
+						Command:   roveapi.CommandType_broadcast,
+						Broadcast: []byte(args[i]),
 					},
 				)
 			default:

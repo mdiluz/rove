@@ -10,59 +10,71 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mdiluz/rove/pkg/maths"
+	"github.com/mdiluz/rove/proto/roveapi"
 )
 
 // RoverLogEntry describes a single log entry for the rover
 type RoverLogEntry struct {
 	// Time is the timestamp of the entry
-	Time time.Time `json:"time"`
+	Time time.Time
 
 	// Text contains the information in this log entry
-	Text string `json:"text"`
+	Text string
 }
 
 // Rover describes a single rover in the world
 type Rover struct {
 	// Unique name of this rover
-	Name string `json:"name"`
+	Name string
 
 	// Pos represents where this rover is in the world
-	Pos maths.Vector `json:"pos"`
+	Pos maths.Vector
+
+	// Bearing is the current direction the rover is facing
+	Bearing roveapi.Bearing
 
 	// Range represents the distance the unit's radar can see
-	Range int `json:"range"`
+	Range int
 
 	// Inventory represents any items the rover is carrying
-	Inventory []Object `json:"inventory"`
+	Inventory []Object
 
 	// Capacity is the maximum number of inventory items
-	Capacity int `json:"capacity"`
+	Capacity int
 
 	// Integrity represents current rover health
-	Integrity int `json:"integrity"`
+	Integrity int
 
 	// MaximumIntegrity is the full integrity of the rover
-	MaximumIntegrity int `json:"maximum-integrity"`
+	MaximumIntegrity int
 
 	// Charge is the amount of energy the rover has
-	Charge int `json:"charge"`
+	Charge int
 
 	// MaximumCharge is the maximum charge able to be stored
-	MaximumCharge int `json:"maximum-Charge"`
+	MaximumCharge int
+
+	// SailPosition is the current position of the sails
+	SailPosition roveapi.SailPosition
+
+	// Current number of ticks in this move, used for sailing speeds
+	MoveTicks int
 
 	// Logs Stores log of information
-	Logs []RoverLogEntry `json:"logs"`
+	Logs []RoverLogEntry
 }
 
 // DefaultRover returns a default rover object with default settings
-func DefaultRover() Rover {
-	return Rover{
+func DefaultRover() *Rover {
+	return &Rover{
 		Range:            4,
 		Integrity:        10,
 		MaximumIntegrity: 10,
 		Capacity:         10,
 		Charge:           10,
 		MaximumCharge:    10,
+		Bearing:          roveapi.Bearing_North,
+		SailPosition:     roveapi.SailPosition_SolarCharging,
 		Name:             GenerateRoverName(),
 	}
 }

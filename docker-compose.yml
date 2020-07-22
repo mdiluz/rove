@@ -15,7 +15,7 @@ services:
       - PORT=9090
       - DATA_PATH=/mnt/rove-server
       - WORDS_FILE=data/words_alpha.txt
-      - TICK_RATE=5
+      - TICK_RATE=3
     volumes:
       - persistent-data:/mnt/rove-server:rw
     command: [ "./rove-server"]
