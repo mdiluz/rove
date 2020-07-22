@@ -37,8 +37,6 @@ type World struct {
 
 	// Commands is the set of currently executing command streams per rover
 	CommandQueue map[string]CommandStream
-	// Incoming represents the set of commands to add to the queue at the end of the current tick
-	CommandIncoming map[string]CommandStream
 
 	// Mutex to lock around all world operations
 	worldMutex sync.RWMutex
@@ -49,12 +47,11 @@ type World struct {
 // NewWorld creates a new world object
 func NewWorld(chunkSize int) *World {
 	return &World{
-		Rovers:          make(map[string]*Rover),
-		CommandQueue:    make(map[string]CommandStream),
-		CommandIncoming: make(map[string]CommandStream),
-		Atlas:           NewChunkAtlas(chunkSize),
-		TicksPerDay:     24,
-		CurrentTicks:    0,
+		Rovers:       make(map[string]*Rover),
+		CommandQueue: make(map[string]CommandStream),
+		Atlas:        NewChunkAtlas(chunkSize),
+		TicksPerDay:  24,
+		CurrentTicks: 0,
 	}
 }
 
@@ -423,10 +420,7 @@ func (w *World) RadarFromRover(rover string) (radar []roveapi.Tile, objs []rovea
 }
 
 // RoverCommands returns current commands for the given rover
-func (w *World) RoverCommands(rover string) (incoming CommandStream, queued CommandStream) {
-	if c, ok := w.CommandIncoming[rover]; ok {
-		incoming = c
-	}
+func (w *World) RoverCommands(rover string) (queued CommandStream) {
 	if c, ok := w.CommandQueue[rover]; ok {
 		queued = c
 	}
@@ -465,20 +459,9 @@ func (w *World) Enqueue(rover string, commands ...*roveapi.Command) error {
 	w.cmdMutex.Lock()
 	defer w.cmdMutex.Unlock()
 
-	w.CommandIncoming[rover] = commands
+	w.CommandQueue[rover] = commands
 
 	return nil
-}
-
-// EnqueueAllIncoming will enqueue the incoming commands
-func (w *World) EnqueueAllIncoming() {
-	// Add any incoming commands from this tick and clear that queue
-	for id, incoming := range w.CommandIncoming {
-		commands := w.CommandQueue[id]
-		commands = append(commands, incoming...)
-		w.CommandQueue[id] = commands
-	}
-	w.CommandIncoming = make(map[string]CommandStream)
 }
 
 // Tick will execute any commands in the current command queue and tick the world
@@ -504,9 +487,6 @@ func (w *World) Tick() {
 			delete(w.CommandQueue, rover)
 		}
 	}
-
-	// Add any incoming commands from this tick and clear that queue
-	w.EnqueueAllIncoming()
 
 	// Change the wind every day
 	if (w.CurrentTicks % w.TicksPerDay) == 0 {
