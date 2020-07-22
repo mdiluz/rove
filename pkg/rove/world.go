@@ -338,6 +338,26 @@ func (w *World) RoverTurn(rover string, bearing roveapi.Bearing) (roveapi.Bearin
 	return r.Bearing, nil
 }
 
+// RoverRepair will turn the rover
+func (w *World) RoverRepair(rover string) (int, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	r, ok := w.Rovers[rover]
+	if !ok {
+		return 0, fmt.Errorf("no rover matching id")
+	}
+
+	// Consume an inventory item to repair if possible
+	if len(r.Inventory) > 0 && r.Integrity < r.MaximumIntegrity {
+		r.Inventory = r.Inventory[:len(r.Inventory)-1]
+		r.Integrity = r.Integrity + 1
+		r.AddLogEntryf("repaired self to %d", r.Integrity)
+	}
+
+	return r.Integrity, nil
+}
+
 // RadarFromRover can be used to query what a rover can currently see
 func (w *World) RadarFromRover(rover string) (radar []roveapi.Tile, objs []roveapi.Object, err error) {
 	w.worldMutex.RLock()
@@ -501,16 +521,8 @@ func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (err error) {
 		}
 
 	case roveapi.CommandType_repair:
-		r, err := w.GetRover(rover)
-		if err != nil {
+		if _, err := w.RoverRepair(rover); err != nil {
 			return err
-		}
-		// Consume an inventory item to repair if possible
-		if len(r.Inventory) > 0 && r.Integrity < r.MaximumIntegrity {
-			r.Inventory = r.Inventory[:len(r.Inventory)-1]
-			r.Integrity = r.Integrity + 1
-			r.AddLogEntryf("repaired self to %d", r.Integrity)
-			w.Rovers[rover] = r
 		}
 
 	case roveapi.CommandType_broadcast:
