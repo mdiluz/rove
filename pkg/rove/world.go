@@ -542,8 +542,6 @@ func (w *World) Tick() {
 			// Reset the move ticks
 			r.MoveTicks = 0
 		}
-
-		log.Print(ticksToMove)
 	}
 
 	// Increment the current tick count
