@@ -85,23 +85,29 @@ func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (respon
 		}
 
 		response = &roveapi.StatusResponse{
-			Name: rover.Name,
-			Position: &roveapi.Vector{
-				X: int32(rover.Pos.X),
-				Y: int32(rover.Pos.Y),
+			Readings: &roveapi.RoverReadings{
+				Position: &roveapi.Vector{
+					X: int32(rover.Pos.X),
+					Y: int32(rover.Pos.Y),
+				},
+				Logs: logs,
+				Wind: s.world.Wind,
 			},
-			Bearing:          rover.Bearing,
-			Range:            int32(rover.Range),
-			Inventory:        inv,
-			Capacity:         int32(rover.Capacity),
-			Integrity:        int32(rover.Integrity),
-			MaximumIntegrity: int32(rover.MaximumIntegrity),
-			Charge:           int32(rover.Charge),
-			MaximumCharge:    int32(rover.MaximumCharge),
-			QueuedCommands:   queued,
-			SailPosition:     rover.SailPosition,
-			Logs:             logs,
-			Wind:             s.world.Wind,
+			Spec: &roveapi.RoverSpecifications{
+				Name:             rover.Name,
+				Range:            int32(rover.Range),
+				Capacity:         int32(rover.Capacity),
+				MaximumIntegrity: int32(rover.MaximumIntegrity),
+				MaximumCharge:    int32(rover.MaximumCharge),
+			},
+			Status: &roveapi.RoverStatus{
+				Bearing:        rover.Bearing,
+				Inventory:      inv,
+				Integrity:      int32(rover.Integrity),
+				Charge:         int32(rover.Charge),
+				QueuedCommands: queued,
+				SailPosition:   rover.SailPosition,
+			},
 		}
 	}
 	return response, nil

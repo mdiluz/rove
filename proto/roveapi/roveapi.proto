@@ -231,47 +231,65 @@ enum SailPosition {
   SolarCharging = 2;
 }
 
-// StatusResponse is the response given to a status request
-message StatusResponse {
+message RoverSpecifications {
+
   // The name of the rover
   string name = 1;
 
-  // Position of the rover in world coordinates
-  Vector position = 2;
-
-  // The current direction of the rover
-  Bearing bearing = 3;
-
   // The range of this rover's radar and broadcasting
-  int32 range = 4;
-
-  // The items in the rover inventory
-  bytes inventory = 5;
+  int32 range = 2;
 
   // The capacity of the inventory
-  int32 capacity = 6;
-
-  // The current health of the rover
-  int32 integrity = 7;
+  int32 capacity = 3;
 
   // The maximum health of the rover
-  int32 maximumIntegrity = 8;
-
-  // The energy stored in the rover
-  int32 charge = 9;
+  int32 maximumIntegrity = 4;
 
   // The max energy the rover can store
-  int32 maximumCharge = 10;
+  int32 maximumCharge = 5;
+}
+
+message RoverStatus {
+
+  // The current direction of the rover
+  Bearing bearing = 1;
 
   // The current position of the sails
-  SailPosition sailPosition = 11;
+  SailPosition sailPosition = 2;
+
+  // The items in the rover inventory
+  bytes inventory = 3;
+
+  // The current health of the rover
+  int32 integrity = 4;
+
+  // The energy stored in the rover
+  int32 charge = 5;
 
   // The set of currently queued commands
-  repeated Command queuedCommands = 12;
+  repeated Command queuedCommands = 6;
+}
 
-  // The most recent logs
-  repeated Log logs = 13;
+message RoverReadings {
+  // Position of the rover in world coordinates
+  Vector position = 1;
 
   // The current wind direction
-  Bearing wind = 14;
+  Bearing wind = 2;
+
+  // The most recent logs
+  repeated Log logs = 3;
+}
+
+// StatusResponse is the response given to a status request
+message StatusResponse {
+
+  // The static rover information
+  RoverSpecifications spec = 1;
+
+  // Current rover status
+  RoverStatus status = 2;
+
+  // Current rover readings
+  RoverReadings readings = 3;
 }
