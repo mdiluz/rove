@@ -102,6 +102,7 @@ func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (respon
 			QueuedCommands:   queued,
 			SailPosition:     rover.SailPosition,
 			Logs:             logs,
+			Wind:             s.world.Wind,
 		}
 	}
 	return response, nil

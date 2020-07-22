@@ -274,4 +274,7 @@ message StatusResponse {
 
   // The most recent logs
   repeated Log logs = 14;
+
+  // The current wind direction
+  Bearing wind = 15;
 }

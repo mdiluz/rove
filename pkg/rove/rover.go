@@ -57,6 +57,9 @@ type Rover struct {
 	// SailPosition is the current position of the sails
 	SailPosition roveapi.SailPosition
 
+	// Current number of ticks in this move, used for sailing speeds
+	MoveTicks int
+
 	// Logs Stores log of information
 	Logs []RoverLogEntry
 }

@@ -10,11 +10,16 @@ import (
 	"github.com/mdiluz/rove/proto/roveapi"
 )
 
+const (
+	TicksPerNormalMove = 4
+)
+
 // CommandStream is a list of commands to execute in order
 type CommandStream []*roveapi.Command
 
 // World describes a self contained universe and everything in it
 type World struct {
+
 	// TicksPerDay is the amount of ticks in a single day
 	TicksPerDay int
 
@@ -26,6 +31,9 @@ type World struct {
 
 	// Atlas represends the world map of chunks and tiles
 	Atlas Atlas
+
+	// Wind is the current wind direction
+	Wind roveapi.Bearing
 
 	// Commands is the set of currently executing command streams per rover
 	CommandQueue map[string]CommandStream
@@ -230,8 +238,8 @@ func (w *World) WarpRover(rover string, pos maths.Vector) error {
 	return nil
 }
 
-// MoveRover attempts to move a rover in a specific direction
-func (w *World) MoveRover(rover string, b roveapi.Bearing) (maths.Vector, error) {
+// TryMoveRover attempts to move a rover in a specific direction
+func (w *World) TryMoveRover(rover string, b roveapi.Bearing) (maths.Vector, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
@@ -239,12 +247,6 @@ func (w *World) MoveRover(rover string, b roveapi.Bearing) (maths.Vector, error)
 	if !ok {
 		return maths.Vector{}, fmt.Errorf("no rover matching id")
 	}
-
-	// Ensure the rover has energy
-	if i.Charge <= 0 {
-		return i.Pos, nil
-	}
-	i.Charge--
 
 	// Try the new move position
 	newPos := i.Pos.Added(maths.BearingToVector(b))
@@ -318,7 +320,9 @@ func (w *World) RoverToggle(rover string) (roveapi.SailPosition, error) {
 		r.SailPosition = roveapi.SailPosition_CatchingWind
 	}
 
-	w.Rovers[rover] = r
+	// Reset the movement ticks
+	r.MoveTicks = 0
+
 	return r.SailPosition, nil
 }
 
@@ -334,6 +338,8 @@ func (w *World) RoverTurn(rover string, bearing roveapi.Bearing) (roveapi.Bearin
 
 	// Set the new bearing
 	r.Bearing = bearing
+	// Reset the movement ticks
+	r.MoveTicks = 0
 
 	return r.Bearing, nil
 }
@@ -501,6 +507,64 @@ func (w *World) Tick() {
 
 	// Add any incoming commands from this tick and clear that queue
 	w.EnqueueAllIncoming()
+
+	// Change the wind every day
+	if (w.CurrentTicks % w.TicksPerDay) == 0 {
+		w.Wind = roveapi.Bearing((rand.Int() % 8) + 1) // Random cardinal bearing
+	}
+
+	// Move all the rovers based on current wind and sails
+	for n, r := range w.Rovers {
+		// Skip if we're not catching the wind
+		if r.SailPosition != roveapi.SailPosition_CatchingWind {
+			continue
+		}
+
+		// Increment the current move ticks
+		r.MoveTicks++
+
+		// Get the difference between the two bearings
+		// Normalise, we don't care about clockwise/anticlockwise
+		diff := maths.Abs(int(w.Wind - r.Bearing))
+		if diff > 4 {
+			diff = 8 - diff
+		}
+
+		// Calculate the travel "ticks"
+		var ticksToMove int
+		switch diff {
+		case 0:
+			// Going with the wind, travel at base speed of once every 4 ticks
+			ticksToMove = TicksPerNormalMove
+		case 1:
+			// At a slight angle, we can go a little faster
+			ticksToMove = TicksPerNormalMove / 2
+		case 2:
+			// Perpendicular to wind, max speed
+			ticksToMove = 1
+		case 3:
+			// Heading at 45 degrees into the wind, back to min speed
+			ticksToMove = TicksPerNormalMove
+		case 4:
+			// Heading durectly into the wind, no movement at all
+		default:
+			log.Fatalf("bearing difference of %d should be impossible", diff)
+		}
+
+		// If we've incremented over the current move ticks on the rover, we can try and make the move
+		if r.MoveTicks >= ticksToMove {
+			_, err := w.TryMoveRover(n, r.Bearing)
+			if err != nil {
+				log.Println(err)
+				// TODO: Report this error somehow
+			}
+
+			// Reset the move ticks
+			r.MoveTicks = 0
+		}
+
+		log.Print(ticksToMove)
+	}
 
 	// Increment the current tick count
 	w.CurrentTicks++

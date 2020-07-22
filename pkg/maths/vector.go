@@ -107,3 +107,13 @@ func BearingToVector(b roveapi.Bearing) Vector {
 
 	return Vector{}
 }
+
+// Dot returns the dot product of two vectors
+func Dot(a Vector, b Vector) int {
+	return a.X*b.X + a.Y*b.Y
+}
+
+// AngleCos returns the cosine of the angle between two vectors
+func AngleCos(a Vector, b Vector) float64 {
+	return float64(Dot(a, b)) / a.Length() * b.Length()
+}

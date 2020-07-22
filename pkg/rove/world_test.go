@@ -78,25 +78,20 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 	assert.Equal(t, pos, newPos, "Failed to correctly set position for rover")
 
 	b := roveapi.Bearing_North
-	newPos, err = world.MoveRover(a, b)
+	newPos, err = world.TryMoveRover(a, b)
 	assert.NoError(t, err, "Failed to set position for rover")
 	pos.Add(maths.Vector{X: 0, Y: 1})
 	assert.Equal(t, pos, newPos, "Failed to correctly move position for rover")
 
 	rover, err := world.GetRover(a)
 	assert.NoError(t, err, "Failed to get rover information")
-	assert.Equal(t, rover.MaximumCharge-1, rover.Charge, "Rover should have lost charge for moving")
 	assert.Contains(t, rover.Logs[len(rover.Logs)-1].Text, "moved", "Rover logs should contain the move")
 
 	// Place a tile in front of the rover
 	world.Atlas.SetObject(maths.Vector{X: 0, Y: 2}, Object{Type: roveapi.Object_RockLarge})
-	newPos, err = world.MoveRover(a, b)
+	newPos, err = world.TryMoveRover(a, b)
 	assert.NoError(t, err, "Failed to move rover")
 	assert.Equal(t, pos, newPos, "Failed to correctly not move position for rover into wall")
-
-	rover, err = world.GetRover(a)
-	assert.NoError(t, err, "Failed to get rover information")
-	assert.Equal(t, rover.MaximumCharge-2, rover.Charge, "Rover should have lost charge for move attempt")
 }
 
 func TestWorld_RadarFromRover(t *testing.T) {
@@ -224,7 +219,7 @@ func TestWorld_RoverDamage(t *testing.T) {
 
 	world.Atlas.SetObject(maths.Vector{X: 0.0, Y: 1.0}, Object{Type: roveapi.Object_RockLarge})
 
-	vec, err := world.MoveRover(a, roveapi.Bearing_North)
+	vec, err := world.TryMoveRover(a, roveapi.Bearing_North)
 	assert.NoError(t, err, "Failed to move rover")
 	assert.Equal(t, pos, vec, "Rover managed to move into large rock")
 
@@ -261,7 +256,7 @@ func TestWorld_RoverRepair(t *testing.T) {
 	world.Atlas.SetObject(maths.Vector{X: 0.0, Y: 1.0}, Object{Type: roveapi.Object_RockLarge})
 
 	// Try and bump into the rock
-	vec, err := world.MoveRover(a, roveapi.Bearing_North)
+	vec, err := world.TryMoveRover(a, roveapi.Bearing_North)
 	assert.NoError(t, err, "Failed to move rover")
 	assert.Equal(t, pos, vec, "Rover managed to move into large rock")
 
@@ -289,39 +284,6 @@ func TestWorld_RoverRepair(t *testing.T) {
 	newinfo, err = world.GetRover(a)
 	assert.NoError(t, err, "couldn't get rover info")
 	assert.Equal(t, originalInfo.Integrity, newinfo.Integrity, "rover should have kept the same integrity")
-}
-
-func TestWorld_Charge(t *testing.T) {
-	world := NewWorld(4)
-	a, err := world.SpawnRover()
-	assert.NoError(t, err)
-
-	// Get the rover information
-	rover, err := world.GetRover(a)
-	assert.NoError(t, err, "Failed to get rover information")
-	assert.Equal(t, rover.MaximumCharge, rover.Charge, "Rover should start with maximum charge")
-
-	// Use up all the charge
-	for i := 0; i < rover.MaximumCharge; i++ {
-		// Get the initial position
-		initialPos, err := world.RoverPosition(a)
-		assert.NoError(t, err, "Failed to get position for rover")
-
-		// Ensure the path ahead is empty
-		world.Atlas.SetTile(initialPos.Added(maths.BearingToVector(roveapi.Bearing_North)), roveapi.Tile_Rock)
-		world.Atlas.SetObject(initialPos.Added(maths.BearingToVector(roveapi.Bearing_North)), Object{Type: roveapi.Object_ObjectUnknown})
-
-		// Try and move north (along unblocked path)
-		newPos, err := world.MoveRover(a, roveapi.Bearing_North)
-		assert.NoError(t, err, "Failed to set position for rover")
-		assert.Equal(t, initialPos.Added(maths.BearingToVector(roveapi.Bearing_North)), newPos, "Failed to correctly move position for rover")
-
-		// Ensure rover lost charge
-		rover, err := world.GetRover(a)
-		assert.NoError(t, err, "Failed to get rover information")
-		assert.Equal(t, rover.MaximumCharge-(i+1), rover.Charge, "Rover should have lost charge")
-	}
-
 }
 
 func TestWorld_Daytime(t *testing.T) {
