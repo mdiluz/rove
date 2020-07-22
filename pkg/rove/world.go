@@ -262,9 +262,9 @@ func (w *World) TryMoveRover(rover string, b roveapi.Bearing) (maths.Vector, err
 		i.AddLogEntryf("tried to move %s to %+v", b.String(), newPos)
 		i.Integrity = i.Integrity - 1
 		i.AddLogEntryf("had a collision, new integrity %d", i.Integrity)
-		if i.Integrity == 0 {
-			// TODO: The rover needs to be left dormant with the player
-		}
+		// TODO: The rover needs to be left dormant with the player
+		//if i.Integrity == 0 {
+		//}
 	}
 
 	return i.Pos, nil
