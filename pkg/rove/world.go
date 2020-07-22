@@ -552,7 +552,7 @@ func (w *World) Tick() {
 		}
 
 		// If we've incremented over the current move ticks on the rover, we can try and make the move
-		if r.MoveTicks >= ticksToMove {
+		if ticksToMove != 0 && r.MoveTicks >= ticksToMove {
 			_, err := w.TryMoveRover(n, r.Bearing)
 			if err != nil {
 				log.Println(err)

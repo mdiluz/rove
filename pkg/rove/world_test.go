@@ -388,3 +388,81 @@ func TestWorld_Broadcast(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Contains(t, rb.Logs[len(rb.Logs)-1].Text, "HJK", "Rover A should have logged it's broadcast")
 }
+
+func TestWorld_Sailing(t *testing.T) {
+	world := NewWorld(8)
+	world.Tick()                       // One initial tick to set the wind direction the first time
+	world.Wind = roveapi.Bearing_North // Set the wind direction to north
+
+	name, err := world.SpawnRover()
+	assert.NoError(t, err)
+
+	// Warp the rover to 0,0 after clearing it
+	world.Atlas.SetObject(maths.Vector{X: 0, Y: 0}, Object{Type: roveapi.Object_ObjectUnknown})
+	assert.NoError(t, world.WarpRover(name, maths.Vector{X: 0, Y: 0}))
+
+	s, err := world.RoverToggle(name)
+	assert.NoError(t, err)
+	assert.Equal(t, roveapi.SailPosition_CatchingWind, s)
+
+	b, err := world.RoverTurn(name, roveapi.Bearing_North)
+	assert.NoError(t, err)
+	assert.Equal(t, roveapi.Bearing_North, b)
+
+	// Clear the space to the north
+	world.Atlas.SetObject(maths.Vector{X: 0, Y: 1}, Object{Type: roveapi.Object_ObjectUnknown})
+
+	// Tick the world and check we've moved not moved
+	world.Tick()
+	info, err := world.GetRover(name)
+	assert.NoError(t, err)
+	assert.Equal(t, maths.Vector{Y: 0}, info.Pos)
+
+	// Loop a few more times
+	for i := 0; i < TicksPerNormalMove-2; i++ {
+		world.Tick()
+		info, err := world.GetRover(name)
+		assert.NoError(t, err)
+		assert.Equal(t, maths.Vector{Y: 0}, info.Pos)
+	}
+
+	// Now check we've moved (after the TicksPerNormalMove number of ticks)
+	world.Tick()
+	info, err = world.GetRover(name)
+	assert.NoError(t, err)
+	assert.Equal(t, maths.Vector{Y: 1}, info.Pos)
+
+	// Reset the world ticks back to stop any wind changes etc.
+	world.CurrentTicks = 1
+
+	// Face the rover south, into the wind
+	b, err = world.RoverTurn(name, roveapi.Bearing_South)
+	assert.NoError(t, err)
+	assert.Equal(t, roveapi.Bearing_South, b)
+
+	// Tick a bunch, we should never move
+	for i := 0; i < TicksPerNormalMove*2; i++ {
+		world.Tick()
+		info, err := world.GetRover(name)
+		assert.NoError(t, err)
+		assert.Equal(t, maths.Vector{Y: 1}, info.Pos)
+	}
+
+	// Reset the world ticks back to stop any wind changes etc.
+	world.CurrentTicks = 1
+	world.Wind = roveapi.Bearing_SouthEast // Set up a south easternly wind
+
+	// Turn the rover perpendicular
+	b, err = world.RoverTurn(name, roveapi.Bearing_NorthEast)
+	assert.NoError(t, err)
+	assert.Equal(t, roveapi.Bearing_NorthEast, b)
+
+	// Clear a space
+	world.Atlas.SetObject(maths.Vector{X: 1, Y: 2}, Object{Type: roveapi.Object_ObjectUnknown})
+
+	// Now check we've moved immediately
+	world.Tick()
+	info, err = world.GetRover(name)
+	assert.NoError(t, err)
+	assert.Equal(t, maths.Vector{X: 1, Y: 2}, info.Pos)
+}
