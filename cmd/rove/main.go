@@ -45,14 +45,14 @@ const gRPCport = 9090
 
 // Account stores data for an account
 type Account struct {
-	Name   string `json:"name"`
-	Secret string `json:"secret"`
+	Name   string
+	Secret string
 }
 
 // Config is used to store internal data
 type Config struct {
-	Host    string  `json:"host,omitempty"`
-	Account Account `json:"account,omitempty"`
+	Host    string
+	Account Account
 }
 
 // ConfigPath returns the configuration path

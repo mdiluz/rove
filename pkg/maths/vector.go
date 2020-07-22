@@ -8,8 +8,8 @@ import (
 
 // Vector desribes a 3D vector
 type Vector struct {
-	X int `json:"x"`
-	Y int `json:"y"`
+	X int
+	Y int
 }
 
 // Add adds one vector to another

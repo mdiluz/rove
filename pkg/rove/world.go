@@ -16,21 +16,21 @@ type CommandStream []*roveapi.Command
 // World describes a self contained universe and everything in it
 type World struct {
 	// TicksPerDay is the amount of ticks in a single day
-	TicksPerDay int `json:"ticks-per-day"`
+	TicksPerDay int
 
 	// Current number of ticks from the start
-	CurrentTicks int `json:"current-ticks"`
+	CurrentTicks int
 
 	// Rovers is a id->data map of all the rovers in the game
-	Rovers map[string]*Rover `json:"rovers"`
+	Rovers map[string]*Rover
 
 	// Atlas represends the world map of chunks and tiles
-	Atlas Atlas `json:"atlas"`
+	Atlas Atlas
 
 	// Commands is the set of currently executing command streams per rover
-	CommandQueue map[string]CommandStream `json:"commands"`
+	CommandQueue map[string]CommandStream
 	// Incoming represents the set of commands to add to the queue at the end of the current tick
-	CommandIncoming map[string]CommandStream `json:"incoming"`
+	CommandIncoming map[string]CommandStream
 
 	// Mutex to lock around all world operations
 	worldMutex sync.RWMutex
