@@ -91,14 +91,16 @@ enum CommandType {
   none = 0;
   // Toggles the sails, either catching the wind, or charging from the sun
   toggle = 1;
-  // Turns the rover in the specified bearing, requires data
+  // Turns the rover in the specified bearing (requires bearing)
   turn = 2;
   // Stashes item at current location in rover inventory
   stash = 3;
   // Repairs the rover using an inventory object
   repair = 4;
-  // Broadcasts a message to nearby rovers, requires data
+  // Broadcasts a message to nearby rovers (requires data)
   broadcast = 5;
+  // Salvages a neighboring dormant rover for parts (requres bearing and salvage)
+  salvage = 6;
 }
 
 // Bearing represents a compass direction
@@ -115,17 +117,27 @@ enum Bearing {
   NorthWest = 8;
 }
 
+enum SalvageType {
+  SalvageUnknown = 0;
+
+  // Salvage a nearby rover for parts
+  SalvageParts = 1;
+}
+
 // Command is a single command for a rover
 message Command {
   // The command type
   CommandType command = 1;
 
-  // A simple message, must be composed of printable ASCII glyphs (32-126)
-  // maximum of three characters
-  bytes broadcast = 2;
+  // broadcast - a simple message, must be composed of up to 3 printable ASCII glyphs (32-126)
+  bytes data = 2;
 
-  // The bearing for the rover to turn to
-  Bearing turn = 3;
+  // move - the bearing for the rover to turn to
+  // salvage - the direction of the rover
+  Bearing bearing = 3;
+
+  // salvage - the type of salvage to execute
+  SalvageType salvage = 4;
 }
 
 // CommandRequest describes a set of commands to be requested for the rover

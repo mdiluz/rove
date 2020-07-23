@@ -435,16 +435,16 @@ func (w *World) Enqueue(rover string, commands ...*roveapi.Command) error {
 	for _, c := range commands {
 		switch c.Command {
 		case roveapi.CommandType_broadcast:
-			if len(c.GetBroadcast()) > 3 {
-				return fmt.Errorf("too many characters in message (limit 3): %d", len(c.GetBroadcast()))
+			if len(c.GetData()) > 3 {
+				return fmt.Errorf("too many characters in message (limit 3): %d", len(c.GetData()))
 			}
-			for _, b := range c.GetBroadcast() {
+			for _, b := range c.GetData() {
 				if b < 37 || b > 126 {
 					return fmt.Errorf("invalid message character: %c", b)
 				}
 			}
 		case roveapi.CommandType_turn:
-			if c.GetTurn() == roveapi.Bearing_BearingUnknown {
+			if c.GetBearing() == roveapi.Bearing_BearingUnknown {
 				return fmt.Errorf("turn command given unknown bearing")
 			}
 		case roveapi.CommandType_toggle:
@@ -569,12 +569,12 @@ func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (err error) {
 		}
 
 	case roveapi.CommandType_broadcast:
-		if err := w.RoverBroadcast(rover, c.GetBroadcast()); err != nil {
+		if err := w.RoverBroadcast(rover, c.GetData()); err != nil {
 			return err
 		}
 
 	case roveapi.CommandType_turn:
-		if _, err := w.RoverTurn(rover, c.GetTurn()); err != nil {
+		if _, err := w.RoverTurn(rover, c.GetBearing()); err != nil {
 			return err
 		}
 

@@ -243,8 +243,8 @@ func InnerMain(command string, args ...string) error {
 				}
 				commands = append(commands,
 					&roveapi.Command{
-						Command:   roveapi.CommandType_broadcast,
-						Broadcast: []byte(args[i]),
+						Command: roveapi.CommandType_turn,
+						Bearing: b,
 					},
 				)
 			case "broadcast":
@@ -256,8 +256,8 @@ func InnerMain(command string, args ...string) error {
 				}
 				commands = append(commands,
 					&roveapi.Command{
-						Command:   roveapi.CommandType_broadcast,
-						Broadcast: []byte(args[i]),
+						Command: roveapi.CommandType_broadcast,
+						Data:    []byte(args[i]),
 					},
 				)
 			default:

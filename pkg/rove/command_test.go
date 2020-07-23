@@ -39,7 +39,7 @@ func TestCommand_Turn(t *testing.T) {
 	a, err := w.SpawnRover()
 	assert.NoError(t, err)
 
-	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_turn, Turn: roveapi.Bearing_NorthWest})
+	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_turn, Bearing: roveapi.Bearing_NorthWest})
 	assert.NoError(t, err)
 	w.Tick()
 
@@ -122,7 +122,7 @@ func TestCommand_Broadcast(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Enqueue the broadcast and tick
-	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_broadcast, Broadcast: []byte("ABC")})
+	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_broadcast, Data: []byte("ABC")})
 	assert.NoError(t, err)
 	w.Tick()
 
