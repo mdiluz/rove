@@ -13,6 +13,10 @@ import (
 	"github.com/mdiluz/rove/proto/roveapi"
 )
 
+const (
+	maxLogEntries = 16
+)
+
 // RoverLogEntry describes a single log entry for the rover
 type RoverLogEntry struct {
 	// Time is the timestamp of the entry
@@ -89,6 +93,11 @@ func (r *Rover) AddLogEntryf(format string, args ...interface{}) {
 			Text: text,
 		},
 	)
+
+	// Limit the number of logs
+	if len(r.Logs) > maxLogEntries {
+		r.Logs = r.Logs[len(r.Logs)-maxLogEntries:]
+	}
 }
 
 var wordsFile = os.Getenv("WORDS_FILE")

@@ -419,7 +419,7 @@ func TestWorld_Sailing(t *testing.T) {
 	assert.Equal(t, maths.Vector{Y: 0}, info.Pos)
 
 	// Loop a few more times
-	for i := 0; i < TicksPerNormalMove-2; i++ {
+	for i := 0; i < ticksPerNormalMove-2; i++ {
 		world.Tick()
 		info, err := world.GetRover(name)
 		assert.NoError(t, err)
@@ -441,7 +441,7 @@ func TestWorld_Sailing(t *testing.T) {
 	assert.Equal(t, roveapi.Bearing_South, b)
 
 	// Tick a bunch, we should never move
-	for i := 0; i < TicksPerNormalMove*2; i++ {
+	for i := 0; i < ticksPerNormalMove*2; i++ {
 		world.Tick()
 		info, err := world.GetRover(name)
 		assert.NoError(t, err)
