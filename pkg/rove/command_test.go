@@ -132,5 +132,10 @@ func TestCommand_Broadcast(t *testing.T) {
 }
 
 func TestCommand_Invalid(t *testing.T) {
-	// TODO: Test an invalid command
+	w := NewWorld(8)
+	name, err := w.SpawnRover()
+	assert.NoError(t, err)
+
+	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_none})
+	assert.Error(t, err)
 }
