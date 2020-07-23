@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	TicksPerNormalMove = 4
+	// ticksPerNormalMove defines the number of ticks it should take for a "normal" speed move
+	ticksPerNormalMove = 4
 )
 
 // CommandStream is a list of commands to execute in order
@@ -515,16 +516,16 @@ func (w *World) Tick() {
 		switch diff {
 		case 0:
 			// Going with the wind, travel at base speed of once every 4 ticks
-			ticksToMove = TicksPerNormalMove
+			ticksToMove = ticksPerNormalMove
 		case 1:
 			// At a slight angle, we can go a little faster
-			ticksToMove = TicksPerNormalMove / 2
+			ticksToMove = ticksPerNormalMove / 2
 		case 2:
 			// Perpendicular to wind, max speed
 			ticksToMove = 1
 		case 3:
 			// Heading at 45 degrees into the wind, back to min speed
-			ticksToMove = TicksPerNormalMove
+			ticksToMove = ticksPerNormalMove
 		case 4:
 			// Heading durectly into the wind, no movement at all
 		default:
