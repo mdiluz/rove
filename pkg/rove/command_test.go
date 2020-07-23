@@ -117,7 +117,18 @@ func TestCommand_Repair(t *testing.T) {
 }
 
 func TestCommand_Broadcast(t *testing.T) {
-	// TODO: Test the stash command
+	w := NewWorld(8)
+	name, err := w.SpawnRover()
+	assert.NoError(t, err)
+
+	// Enqueue the broadcast and tick
+	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_broadcast, Broadcast: []byte("ABC")})
+	assert.NoError(t, err)
+	w.Tick()
+
+	info, err := w.GetRover(name)
+	assert.NoError(t, err)
+	assert.Contains(t, info.Logs[len(info.Logs)-1].Text, "ABC")
 }
 
 func TestCommand_Invalid(t *testing.T) {
