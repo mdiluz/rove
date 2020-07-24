@@ -126,7 +126,6 @@ message Command {
   bytes data = 2;
 
   // move - the bearing for the rover to turn to
-  // salvage - the direction of the rover
   Bearing bearing = 3;
 }
 
