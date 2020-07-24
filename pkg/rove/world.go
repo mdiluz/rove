@@ -280,11 +280,13 @@ func (w *World) RoverStash(rover string) (roveapi.Object, error) {
 
 	// Can't pick up when full
 	if len(r.Inventory) >= r.Capacity {
+		r.AddLogEntryf("tried to stash object but inventory was full")
 		return roveapi.Object_ObjectUnknown, nil
 	}
 
 	// Ensure the rover has energy
 	if r.Charge <= 0 {
+		r.AddLogEntryf("tried to stash object but had no charge")
 		return roveapi.Object_ObjectUnknown, nil
 	}
 	r.Charge--
