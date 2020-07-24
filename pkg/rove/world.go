@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"sync"
 
+	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
 )
@@ -40,6 +41,9 @@ type World struct {
 	// Commands is the set of currently executing command streams per rover
 	CommandQueue map[string]CommandStream
 
+	// Accountant
+	Accountant accounts.Accountant
+
 	// Mutex to lock around all world operations
 	worldMutex sync.RWMutex
 	// Mutex to lock around command operations
@@ -54,6 +58,7 @@ func NewWorld(chunkSize int) *World {
 		Atlas:        NewChunkAtlas(chunkSize),
 		TicksPerDay:  24,
 		CurrentTicks: 0,
+		Accountant:   accounts.NewSimpleAccountant(),
 	}
 }
 

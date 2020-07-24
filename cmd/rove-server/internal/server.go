@@ -27,9 +27,6 @@ type Server struct {
 	// Internal state
 	world *rove.World
 
-	// Accountant
-	accountant Accountant
-
 	// gRPC server
 	netListener net.Listener
 	grpcServ    *grpc.Server
@@ -80,7 +77,6 @@ func NewServer(opts ...ServerOption) *Server {
 		persistence: EphemeralData,
 		schedule:    cron.New(),
 		world:       rove.NewWorld(32),
-		accountant:  NewSimpleAccountant(),
 	}
 
 	// Apply all options
@@ -188,7 +184,7 @@ func (s *Server) SaveWorld() error {
 	if s.persistence == PersistentData {
 		s.world.RLock()
 		defer s.world.RUnlock()
-		if err := persistence.SaveAll("world", s.world, "accounts", s.accountant); err != nil {
+		if err := persistence.SaveAll("world", s.world); err != nil {
 			return fmt.Errorf("failed to save out persistent data: %s", err)
 		}
 	}
@@ -200,7 +196,7 @@ func (s *Server) LoadWorld() error {
 	if s.persistence == PersistentData {
 		s.world.Lock()
 		defer s.world.Unlock()
-		if err := persistence.LoadAll("world", &s.world, "accounts", &s.accountant); err != nil {
+		if err := persistence.LoadAll("world", &s.world); err != nil {
 			return err
 		}
 	}
@@ -214,7 +210,7 @@ func (s *Server) SpawnRoverForAccount(account string) (string, error) {
 		return "", err
 	}
 
-	err = s.accountant.AssignData(account, "rover", inst)
+	err = s.world.Accountant.AssignData(account, "rover", inst)
 	if err != nil {
 		log.Printf("Failed to assign rover to account, %s", err)
 

@@ -34,7 +34,7 @@ func (s *Server) Register(ctx context.Context, req *roveapi.RegisterRequest) (*r
 		return nil, fmt.Errorf("empty account name")
 	}
 
-	if acc, err := s.accountant.RegisterAccount(req.Name); err != nil {
+	if acc, err := s.world.Accountant.RegisterAccount(req.Name); err != nil {
 		return nil, err
 
 	} else if _, err := s.SpawnRoverForAccount(req.Name); err != nil {
@@ -57,13 +57,13 @@ func (s *Server) Register(ctx context.Context, req *roveapi.RegisterRequest) (*r
 func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (response *roveapi.StatusResponse, err error) {
 	log.Printf("Handling status request: %s\n", req.Account.Name)
 
-	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
+	if valid, err := s.world.Accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
 		return nil, err
 
 	} else if !valid {
 		return nil, fmt.Errorf("Secret incorrect for account %s", req.Account.Name)
 
-	} else if resp, err := s.accountant.GetValue(req.Account.Name, "rover"); err != nil {
+	} else if resp, err := s.world.Accountant.GetValue(req.Account.Name, "rover"); err != nil {
 		return nil, err
 
 	} else if rover, err := s.world.GetRover(resp); err != nil {
@@ -117,7 +117,7 @@ func (s *Server) Status(ctx context.Context, req *roveapi.StatusRequest) (respon
 func (s *Server) Radar(ctx context.Context, req *roveapi.RadarRequest) (*roveapi.RadarResponse, error) {
 	log.Printf("Handling radar request: %s\n", req.Account.Name)
 
-	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
+	if valid, err := s.world.Accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
 		return nil, err
 
 	} else if !valid {
@@ -126,7 +126,7 @@ func (s *Server) Radar(ctx context.Context, req *roveapi.RadarRequest) (*roveapi
 
 	response := &roveapi.RadarResponse{}
 
-	resp, err := s.accountant.GetValue(req.Account.Name, "rover")
+	resp, err := s.world.Accountant.GetValue(req.Account.Name, "rover")
 	if err != nil {
 		return nil, err
 
@@ -149,14 +149,14 @@ func (s *Server) Radar(ctx context.Context, req *roveapi.RadarRequest) (*roveapi
 func (s *Server) Command(ctx context.Context, req *roveapi.CommandRequest) (*roveapi.CommandResponse, error) {
 	log.Printf("Handling command request: %s and %+v\n", req.Account.Name, req.Commands)
 
-	if valid, err := s.accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
+	if valid, err := s.world.Accountant.VerifySecret(req.Account.Name, req.Account.Secret); err != nil {
 		return nil, err
 
 	} else if !valid {
 		return nil, fmt.Errorf("Secret incorrect for account %s", req.Account.Name)
 	}
 
-	resp, err := s.accountant.GetValue(req.Account.Name, "rover")
+	resp, err := s.world.Accountant.GetValue(req.Account.Name, "rover")
 	if err != nil {
 		return nil, err
 	}
