@@ -210,17 +210,5 @@ func (s *Server) SpawnRoverForAccount(account string) (string, error) {
 		return "", err
 	}
 
-	err = s.world.Accountant.AssignData(account, "rover", inst)
-	if err != nil {
-		log.Printf("Failed to assign rover to account, %s", err)
-
-		// Try and clear up the rover
-		if err := s.world.DestroyRover(inst); err != nil {
-			log.Printf("Failed to destroy rover after failed rover assign: %s", err)
-		}
-
-		return "", err
-	}
-
 	return inst, nil
 }

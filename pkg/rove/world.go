@@ -97,7 +97,7 @@ func (w *World) SpawnRover(account string) (string, error) {
 	// Append the rover to the list
 	w.Rovers[rover.Name] = rover
 
-	return rover.Name, nil
+	return rover.Name, w.Accountant.AssignData(account, "rover", rover.Name)
 }
 
 // GetRover gets a specific rover by name
