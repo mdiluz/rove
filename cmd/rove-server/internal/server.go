@@ -205,7 +205,7 @@ func (s *Server) LoadWorld() error {
 
 // SpawnRoverForAccount spawns the rover rover for an account
 func (s *Server) SpawnRoverForAccount(account string) (string, error) {
-	inst, err := s.world.SpawnRover()
+	inst, err := s.world.SpawnRover(account)
 	if err != nil {
 		return "", err
 	}

@@ -63,12 +63,15 @@ func NewWorld(chunkSize int) *World {
 }
 
 // SpawnRover adds an rover to the game
-func (w *World) SpawnRover() (string, error) {
+func (w *World) SpawnRover(account string) (string, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
 	// Initialise the rover
 	rover := DefaultRover()
+
+	// Assign the owner
+	rover.Owner = account
 
 	// Spawn in a random place near the origin
 	rover.Pos = maths.Vector{
@@ -375,6 +378,9 @@ func (w *World) RoverTransfer(rover string) (string, error) {
 	oldRover.AddLogEntryf("transferring to dormant rover %s", newRover.Name)
 	newRover.AddLogEntryf("transferred from rover %s", oldRover.Name)
 
+	// Clear the old owner
+	oldRover.Owner = ""
+
 	// Marshal old rover
 	oldRoverData, err := json.Marshal(oldRover)
 	if err != nil {
@@ -384,7 +390,9 @@ func (w *World) RoverTransfer(rover string) (string, error) {
 	// Add this new rover to tracking
 	w.Rovers[newRover.Name] = &newRover
 
-	// TODO: Swap account rover to the dormant one
+	// Swap account rover to the dormant one
+	newRover.Owner = oldRover.Owner
+	w.Accountant.AssignData(oldRover.Owner, "rover", newRover.Name)
 
 	// Place the old rover into the world
 	w.Atlas.SetObject(oldRover.Pos, Object{Type: roveapi.Object_RoverDormant, Data: oldRoverData})

@@ -18,9 +18,9 @@ func TestNewWorld(t *testing.T) {
 
 func TestWorld_CreateRover(t *testing.T) {
 	world := NewWorld(8)
-	a, err := world.SpawnRover()
+	a, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
-	b, err := world.SpawnRover()
+	b, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	// Basic duplicate check
@@ -33,7 +33,7 @@ func TestWorld_CreateRover(t *testing.T) {
 
 func TestWorld_GetRover(t *testing.T) {
 	world := NewWorld(4)
-	a, err := world.SpawnRover()
+	a, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	rover, err := world.GetRover(a)
@@ -44,9 +44,9 @@ func TestWorld_GetRover(t *testing.T) {
 
 func TestWorld_DestroyRover(t *testing.T) {
 	world := NewWorld(1)
-	a, err := world.SpawnRover()
+	a, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
-	b, err := world.SpawnRover()
+	b, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	err = world.DestroyRover(a)
@@ -62,7 +62,7 @@ func TestWorld_DestroyRover(t *testing.T) {
 
 func TestWorld_GetSetMovePosition(t *testing.T) {
 	world := NewWorld(4)
-	a, err := world.SpawnRover()
+	a, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	pos := maths.Vector{
@@ -97,9 +97,9 @@ func TestWorld_GetSetMovePosition(t *testing.T) {
 func TestWorld_RadarFromRover(t *testing.T) {
 	// Create world that should have visible walls on the radar
 	world := NewWorld(2)
-	a, err := world.SpawnRover()
+	a, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
-	b, err := world.SpawnRover()
+	b, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	// Warp the rovers into position
@@ -130,7 +130,7 @@ func TestWorld_RadarFromRover(t *testing.T) {
 
 func TestWorld_RoverDamage(t *testing.T) {
 	world := NewWorld(2)
-	a, err := world.SpawnRover()
+	a, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	pos := maths.Vector{
@@ -160,7 +160,7 @@ func TestWorld_RoverDamage(t *testing.T) {
 func TestWorld_Daytime(t *testing.T) {
 	world := NewWorld(1)
 
-	a, err := world.SpawnRover()
+	a, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	// Remove rover charge
@@ -199,10 +199,10 @@ func TestWorld_Daytime(t *testing.T) {
 func TestWorld_Broadcast(t *testing.T) {
 	world := NewWorld(8)
 
-	a, err := world.SpawnRover()
+	a, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
 
-	b, err := world.SpawnRover()
+	b, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	// Warp rovers near to eachother
@@ -265,7 +265,7 @@ func TestWorld_Sailing(t *testing.T) {
 	world.Tick()                       // One initial tick to set the wind direction the first time
 	world.Wind = roveapi.Bearing_North // Set the wind direction to north
 
-	name, err := world.SpawnRover()
+	name, err := world.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	// Warp the rover to 0,0 after clearing it

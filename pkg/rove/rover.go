@@ -66,6 +66,9 @@ type Rover struct {
 
 	// Logs Stores log of information
 	Logs []RoverLogEntry
+
+	// The account that owns this rover
+	Owner string
 }
 
 // DefaultRover returns a default rover object with default settings

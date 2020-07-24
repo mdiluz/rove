@@ -10,7 +10,7 @@ import (
 
 func TestCommand_Toggle(t *testing.T) {
 	w := NewWorld(8)
-	a, err := w.SpawnRover()
+	a, err := w.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	r, err := w.GetRover(a)
@@ -36,7 +36,7 @@ func TestCommand_Toggle(t *testing.T) {
 
 func TestCommand_Turn(t *testing.T) {
 	w := NewWorld(8)
-	a, err := w.SpawnRover()
+	a, err := w.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_turn, Bearing: roveapi.Bearing_NorthWest})
@@ -50,7 +50,7 @@ func TestCommand_Turn(t *testing.T) {
 
 func TestCommand_Stash(t *testing.T) {
 	w := NewWorld(8)
-	name, err := w.SpawnRover()
+	name, err := w.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	info, err := w.GetRover(name)
@@ -78,7 +78,7 @@ func TestCommand_Stash(t *testing.T) {
 
 func TestCommand_Repair(t *testing.T) {
 	w := NewWorld(8)
-	name, err := w.SpawnRover()
+	name, err := w.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	info, err := w.GetRover(name)
@@ -118,7 +118,7 @@ func TestCommand_Repair(t *testing.T) {
 
 func TestCommand_Broadcast(t *testing.T) {
 	w := NewWorld(8)
-	name, err := w.SpawnRover()
+	name, err := w.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	// Enqueue the broadcast and tick
@@ -133,7 +133,7 @@ func TestCommand_Broadcast(t *testing.T) {
 
 func TestCommand_Salvage(t *testing.T) {
 	w := NewWorld(8)
-	name, err := w.SpawnRover()
+	name, err := w.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	info, err := w.GetRover(name)
@@ -161,7 +161,7 @@ func TestCommand_Salvage(t *testing.T) {
 
 func TestCommand_Invalid(t *testing.T) {
 	w := NewWorld(8)
-	name, err := w.SpawnRover()
+	name, err := w.SpawnRover("tmp")
 	assert.NoError(t, err)
 
 	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_none})
