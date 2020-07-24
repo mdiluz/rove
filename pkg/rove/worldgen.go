@@ -3,6 +3,7 @@ package rove
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
@@ -75,6 +76,12 @@ func (g *NoiseWorldGen) GetObject(v maths.Vector) (obj Object) {
 
 		// Set the rover variables
 		r.Pos = v
+
+		// Upgrade this rover randomly
+		r.MaximumCharge += rand.Int() % 3
+		r.MaximumIntegrity += rand.Int() % 3
+		r.Capacity += rand.Int() % 3
+		r.Range += rand.Int() % 3
 
 		// For now, mark the log as corrupted
 		r.AddLogEntryf("log corrupted")
