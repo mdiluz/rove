@@ -59,6 +59,7 @@ func NewWorld(chunkSize int) *World {
 		TicksPerDay:  24,
 		CurrentTicks: 0,
 		Accountant:   accounts.NewSimpleAccountant(),
+		Wind:         roveapi.Bearing_North,
 	}
 }
 
@@ -617,11 +618,6 @@ func (w *World) Tick() {
 		}
 	}
 
-	// Change the wind every day
-	if (w.CurrentTicks % w.TicksPerDay) == 0 {
-		w.Wind = roveapi.Bearing((rand.Int() % 8) + 1) // Random cardinal bearing
-	}
-
 	// Move all the rovers based on current wind and sails
 	for n, r := range w.Rovers {
 		// Skip if we're not catching the wind
@@ -675,6 +671,11 @@ func (w *World) Tick() {
 
 	// Increment the current tick count
 	w.CurrentTicks++
+
+	// Change the wind every day
+	if (w.CurrentTicks % w.TicksPerDay) == 0 {
+		w.Wind = roveapi.Bearing((rand.Int() % 8) + 1) // Random cardinal bearing
+	}
 }
 
 // ExecuteCommand will execute a single command
