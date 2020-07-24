@@ -138,6 +138,7 @@ func TestWorld_RoverDamage(t *testing.T) {
 		Y: 0.0,
 	}
 
+	world.Atlas.SetObject(pos, Object{Type: roveapi.Object_ObjectUnknown})
 	err = world.WarpRover(a, pos)
 	assert.NoError(t, err, "Failed to set position for rover")
 
