@@ -1,11 +1,13 @@
 package rove
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
 	"sync"
 
+	"github.com/mdiluz/rove/pkg/accounts"
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
 )
@@ -39,6 +41,9 @@ type World struct {
 	// Commands is the set of currently executing command streams per rover
 	CommandQueue map[string]CommandStream
 
+	// Accountant
+	Accountant accounts.Accountant
+
 	// Mutex to lock around all world operations
 	worldMutex sync.RWMutex
 	// Mutex to lock around command operations
@@ -53,16 +58,20 @@ func NewWorld(chunkSize int) *World {
 		Atlas:        NewChunkAtlas(chunkSize),
 		TicksPerDay:  24,
 		CurrentTicks: 0,
+		Accountant:   accounts.NewSimpleAccountant(),
 	}
 }
 
 // SpawnRover adds an rover to the game
-func (w *World) SpawnRover() (string, error) {
+func (w *World) SpawnRover(account string) (string, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
 
 	// Initialise the rover
 	rover := DefaultRover()
+
+	// Assign the owner
+	rover.Owner = account
 
 	// Spawn in a random place near the origin
 	rover.Pos = maths.Vector{
@@ -88,7 +97,13 @@ func (w *World) SpawnRover() (string, error) {
 	// Append the rover to the list
 	w.Rovers[rover.Name] = rover
 
-	return rover.Name, nil
+	var err error
+	// Only assign if we've been given an account
+	if len(account) > 0 {
+		err = w.Accountant.AssignData(account, "rover", rover.Name)
+	}
+
+	return rover.Name, err
 }
 
 // GetRover gets a specific rover by name
@@ -280,11 +295,13 @@ func (w *World) RoverStash(rover string) (roveapi.Object, error) {
 
 	// Can't pick up when full
 	if len(r.Inventory) >= r.Capacity {
+		r.AddLogEntryf("tried to stash object but inventory was full")
 		return roveapi.Object_ObjectUnknown, nil
 	}
 
 	// Ensure the rover has energy
 	if r.Charge <= 0 {
+		r.AddLogEntryf("tried to stash object but had no charge")
 		return roveapi.Object_ObjectUnknown, nil
 	}
 	r.Charge--
@@ -298,6 +315,99 @@ func (w *World) RoverStash(rover string) (roveapi.Object, error) {
 	r.Inventory = append(r.Inventory, obj)
 	w.Atlas.SetObject(r.Pos, Object{Type: roveapi.Object_ObjectUnknown})
 	return obj.Type, nil
+}
+
+// RoverSalvage will salvage a rover for parts
+func (w *World) RoverSalvage(rover string) (roveapi.Object, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	r, ok := w.Rovers[rover]
+	if !ok {
+		return roveapi.Object_ObjectUnknown, fmt.Errorf("no rover matching id")
+	}
+
+	// Can't pick up when full
+	if len(r.Inventory) >= r.Capacity {
+		r.AddLogEntryf("tried to salvage dormant rover but inventory was full")
+		return roveapi.Object_ObjectUnknown, nil
+	}
+
+	// Ensure the rover has energy
+	if r.Charge <= 0 {
+		r.AddLogEntryf("tried to salvage dormant rover but had no charge")
+		return roveapi.Object_ObjectUnknown, nil
+	}
+	r.Charge--
+
+	_, obj := w.Atlas.QueryPosition(r.Pos)
+	if obj.Type != roveapi.Object_RoverDormant {
+		r.AddLogEntryf("tried to salvage dormant rover but found no rover to salvage")
+		return roveapi.Object_ObjectUnknown, nil
+	}
+
+	r.AddLogEntryf("salvaged dormant rover")
+	for i := 0; i < 5; i++ {
+		if len(r.Inventory) == r.Capacity {
+			break
+		}
+		r.Inventory = append(r.Inventory, Object{Type: roveapi.Object_RoverParts})
+	}
+	w.Atlas.SetObject(r.Pos, Object{Type: roveapi.Object_ObjectUnknown})
+	return obj.Type, nil
+}
+
+// RoverTransfer will transfer rover control to dormant rover
+func (w *World) RoverTransfer(rover string) (string, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	oldRover, ok := w.Rovers[rover]
+	if !ok {
+		return "", fmt.Errorf("no rover matching id")
+	}
+
+	_, obj := w.Atlas.QueryPosition(oldRover.Pos)
+	if obj.Type != roveapi.Object_RoverDormant {
+		oldRover.AddLogEntryf("tried to transfer to dormant rover but found no rover")
+		return "", nil
+	}
+
+	// Unmarshal the dormant rover
+	var newRover Rover
+	err := json.Unmarshal(obj.Data, &newRover)
+	if err != nil {
+		return "", err
+	}
+
+	// Add logs
+	oldRover.AddLogEntryf("transferring to dormant rover %s", newRover.Name)
+	newRover.AddLogEntryf("transferred from rover %s", oldRover.Name)
+
+	// Transfer the ownership
+	err = w.Accountant.AssignData(oldRover.Owner, "rover", newRover.Name)
+	if err != nil {
+		return "", err
+	}
+	newRover.Owner = oldRover.Owner
+	oldRover.Owner = ""
+
+	// Place the old rover in the world
+	oldRoverData, err := json.Marshal(oldRover)
+	if err != nil {
+		return "", err
+	}
+	w.Atlas.SetObject(oldRover.Pos, Object{Type: roveapi.Object_RoverDormant, Data: oldRoverData})
+
+	// Swap the rovers in the tracking
+	w.Rovers[newRover.Name] = &newRover
+	delete(w.Rovers, oldRover.Name)
+
+	// Clear the command queues for both rovers
+	delete(w.CommandQueue, oldRover.Name)
+	delete(w.CommandQueue, newRover.Name)
+
+	return newRover.Name, nil
 }
 
 // RoverToggle will toggle the sail position
@@ -352,11 +462,24 @@ func (w *World) RoverRepair(rover string) (int, error) {
 		return 0, fmt.Errorf("no rover matching id")
 	}
 
-	// Consume an inventory item to repair if possible
-	if len(r.Inventory) > 0 && r.Integrity < r.MaximumIntegrity {
-		r.Inventory = r.Inventory[:len(r.Inventory)-1]
-		r.Integrity = r.Integrity + 1
-		r.AddLogEntryf("repaired self to %d", r.Integrity)
+	// Can't repair past max
+	if r.Integrity >= r.MaximumIntegrity {
+		return r.Integrity, nil
+	}
+
+	// Find rover parts in inventory
+	for i, o := range r.Inventory {
+		if o.Type == roveapi.Object_RoverParts {
+
+			// Copy-erase from slice
+			r.Inventory[i] = r.Inventory[len(r.Inventory)-1]
+			r.Inventory = r.Inventory[:len(r.Inventory)-1]
+
+			// Repair
+			r.Integrity = r.Integrity + 1
+			r.AddLogEntryf("repaired self to %d", r.Integrity)
+			break
+		}
 	}
 
 	return r.Integrity, nil
@@ -435,21 +558,23 @@ func (w *World) Enqueue(rover string, commands ...*roveapi.Command) error {
 	for _, c := range commands {
 		switch c.Command {
 		case roveapi.CommandType_broadcast:
-			if len(c.GetBroadcast()) > 3 {
-				return fmt.Errorf("too many characters in message (limit 3): %d", len(c.GetBroadcast()))
+			if len(c.GetData()) > 3 {
+				return fmt.Errorf("too many characters in message (limit 3): %d", len(c.GetData()))
 			}
-			for _, b := range c.GetBroadcast() {
+			for _, b := range c.GetData() {
 				if b < 37 || b > 126 {
 					return fmt.Errorf("invalid message character: %c", b)
 				}
 			}
 		case roveapi.CommandType_turn:
-			if c.GetTurn() == roveapi.Bearing_BearingUnknown {
+			if c.GetBearing() == roveapi.Bearing_BearingUnknown {
 				return fmt.Errorf("turn command given unknown bearing")
 			}
 		case roveapi.CommandType_toggle:
 		case roveapi.CommandType_stash:
 		case roveapi.CommandType_repair:
+		case roveapi.CommandType_salvage:
+		case roveapi.CommandType_transfer:
 			// Nothing to verify
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
@@ -481,7 +606,10 @@ func (w *World) Tick() {
 			}
 
 			// Extract the first command in the queue
-			w.CommandQueue[rover] = cmds[1:]
+			// Only if the command queue still has entries
+			if _, ok := w.CommandQueue[rover]; ok {
+				w.CommandQueue[rover] = cmds[1:]
+			}
 
 		} else {
 			// Clean out the empty entry
@@ -569,12 +697,22 @@ func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (err error) {
 		}
 
 	case roveapi.CommandType_broadcast:
-		if err := w.RoverBroadcast(rover, c.GetBroadcast()); err != nil {
+		if err := w.RoverBroadcast(rover, c.GetData()); err != nil {
 			return err
 		}
 
 	case roveapi.CommandType_turn:
-		if _, err := w.RoverTurn(rover, c.GetTurn()); err != nil {
+		if _, err := w.RoverTurn(rover, c.GetBearing()); err != nil {
+			return err
+		}
+
+	case roveapi.CommandType_salvage:
+		if _, err := w.RoverSalvage(rover); err != nil {
+			return err
+		}
+
+	case roveapi.CommandType_transfer:
+		if _, err := w.RoverTransfer(rover); err != nil {
 			return err
 		}
 

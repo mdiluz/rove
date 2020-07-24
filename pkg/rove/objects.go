@@ -17,7 +17,6 @@ type Object struct {
 func (o *Object) IsBlocking() bool {
 	var blocking = [...]roveapi.Object{
 		roveapi.Object_RoverLive,
-		roveapi.Object_RoverDormant,
 		roveapi.Object_RockLarge,
 	}
 
@@ -33,6 +32,7 @@ func (o *Object) IsBlocking() bool {
 func (o *Object) IsStashable() bool {
 	var stashable = [...]roveapi.Object{
 		roveapi.Object_RockSmall,
+		roveapi.Object_RoverParts,
 	}
 
 	for _, t := range stashable {

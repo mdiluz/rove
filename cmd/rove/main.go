@@ -37,6 +37,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\tstash                      stores the object at the rover location in the inventory")
 	fmt.Fprintln(os.Stderr, "\trepair                     uses an inventory object to repair the rover")
 	fmt.Fprintln(os.Stderr, "\tbroadcast MSG              broadcast a simple ASCII triplet to nearby rovers")
+	fmt.Fprintln(os.Stderr, "\tsalvage                    salvages a dormant rover for parts")
 	fmt.Fprintln(os.Stderr, "\nEnvironment")
 	fmt.Fprintln(os.Stderr, "\tROVE_USER_DATA             path to user data, defaults to "+defaultDataPath)
 }
@@ -243,8 +244,8 @@ func InnerMain(command string, args ...string) error {
 				}
 				commands = append(commands,
 					&roveapi.Command{
-						Command:   roveapi.CommandType_broadcast,
-						Broadcast: []byte(args[i]),
+						Command: roveapi.CommandType_turn,
+						Bearing: b,
 					},
 				)
 			case "broadcast":
@@ -256,8 +257,8 @@ func InnerMain(command string, args ...string) error {
 				}
 				commands = append(commands,
 					&roveapi.Command{
-						Command:   roveapi.CommandType_broadcast,
-						Broadcast: []byte(args[i]),
+						Command: roveapi.CommandType_broadcast,
+						Data:    []byte(args[i]),
 					},
 				)
 			default:
