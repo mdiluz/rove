@@ -101,6 +101,8 @@ enum CommandType {
   broadcast = 5;
   // Salvages a neighboring dormant rover for parts
   salvage = 6;
+  // Transfers remote control into dormant rover
+  transfer = 7;
 }
 
 // Bearing represents a compass direction

@@ -1,6 +1,7 @@
 package rove
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -342,6 +343,53 @@ func (w *World) RoverSalvage(rover string) (roveapi.Object, error) {
 	return obj.Type, nil
 }
 
+// RoverTransfer will transfer rover control to dormant rover
+func (w *World) RoverTransfer(rover string) (string, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	oldRover, ok := w.Rovers[rover]
+	if !ok {
+		return "", fmt.Errorf("no rover matching id")
+	}
+
+	_, obj := w.Atlas.QueryPosition(oldRover.Pos)
+	if obj.Type != roveapi.Object_RoverDormant {
+		oldRover.AddLogEntryf("tried to transfer to dormant rover but found no rover")
+		return "", nil
+	}
+
+	// Unmarshal the dormant rover
+	var newRover Rover
+	err := json.Unmarshal(obj.Data, &newRover)
+	if err != nil {
+		return "", err
+	}
+
+	// Add logs
+	oldRover.AddLogEntryf("transferring to dormant rover %s", newRover.Name)
+	newRover.AddLogEntryf("transferred from rover %s", oldRover.Name)
+
+	// Marshal old rover
+	oldRoverData, err := json.Marshal(oldRover)
+	if err != nil {
+		return "", err
+	}
+
+	// Add this new rover to tracking
+	w.Rovers[newRover.Name] = &newRover
+
+	// TODO: Swap account rover to the dormant one
+
+	// Place the old rover into the world
+	w.Atlas.SetObject(oldRover.Pos, Object{Type: roveapi.Object_RoverDormant, Data: oldRoverData})
+
+	// Remove old rover from current tracking
+	delete(w.Rovers, oldRover.Name)
+
+	return newRover.Name, nil
+}
+
 // RoverToggle will toggle the sail position
 func (w *World) RoverToggle(rover string) (roveapi.SailPosition, error) {
 	w.worldMutex.Lock()
@@ -506,6 +554,7 @@ func (w *World) Enqueue(rover string, commands ...*roveapi.Command) error {
 		case roveapi.CommandType_stash:
 		case roveapi.CommandType_repair:
 		case roveapi.CommandType_salvage:
+		case roveapi.CommandType_transfer:
 			// Nothing to verify
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
@@ -636,6 +685,11 @@ func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (err error) {
 
 	case roveapi.CommandType_salvage:
 		if _, err := w.RoverSalvage(rover); err != nil {
+			return err
+		}
+
+	case roveapi.CommandType_transfer:
+		if _, err := w.RoverTransfer(rover); err != nil {
 			return err
 		}
 
