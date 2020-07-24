@@ -1,6 +1,7 @@
 package rove
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/mdiluz/rove/pkg/maths"
@@ -157,6 +158,57 @@ func TestCommand_Salvage(t *testing.T) {
 	// Check the dormant rover is gone
 	_, obj := w.Atlas.QueryPosition(info.Pos)
 	assert.Equal(t, roveapi.Object_ObjectUnknown, obj.Type)
+}
+
+func TestCommand_Transfer(t *testing.T) {
+	w := NewWorld(8)
+	acc, err := w.Accountant.RegisterAccount("tmp")
+	assert.NoError(t, err)
+	nameA, err := w.SpawnRover(acc.Name)
+	assert.NoError(t, err)
+
+	infoA, err := w.GetRover(nameA)
+	assert.NoError(t, err)
+
+	// Drop a dormant rover on the current position
+	infoB := DefaultRover()
+	infoB.Name = "abc"
+	infoB.Pos = infoA.Pos
+	data, err := json.Marshal(infoB)
+	assert.NoError(t, err)
+	w.Atlas.SetObject(infoA.Pos, Object{Type: roveapi.Object_RoverDormant, Data: data})
+
+	// Enqueue a transfer as well as a dud command
+	err = w.Enqueue(nameA,
+		&roveapi.Command{Command: roveapi.CommandType_transfer},
+		&roveapi.Command{Command: roveapi.CommandType_broadcast, Data: []byte("xyz")})
+	assert.NoError(t, err)
+	w.Tick()
+
+	// Ensure both command queues are empty
+	assert.Empty(t, w.CommandQueue[nameA])
+	assert.Empty(t, w.CommandQueue[infoB.Name])
+
+	// Verify the account now controls the new rover
+	accountRover, err := w.Accountant.GetValue(acc.Name, "rover")
+	assert.NoError(t, err)
+	assert.Equal(t, infoB.Name, accountRover)
+
+	// Verify the position now has a dormant rover
+	_, obj := w.Atlas.QueryPosition(infoA.Pos)
+	assert.Equal(t, roveapi.Object_RoverDormant, obj.Type)
+
+	// Verify the stored data matches
+	var stored Rover
+	err = json.Unmarshal(obj.Data, &stored)
+	assert.NoError(t, err)
+	assert.Equal(t, infoA.Name, stored.Name)
+
+	// Verify the new rover data matches what we put in
+	infoB2, err := w.GetRover(infoB.Name)
+	assert.NoError(t, err)
+	assert.Equal(t, infoB.Name, infoB2.Name)
+
 }
 
 func TestCommand_Invalid(t *testing.T) {

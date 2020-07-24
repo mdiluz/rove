@@ -378,27 +378,25 @@ func (w *World) RoverTransfer(rover string) (string, error) {
 	oldRover.AddLogEntryf("transferring to dormant rover %s", newRover.Name)
 	newRover.AddLogEntryf("transferred from rover %s", oldRover.Name)
 
-	// Clear the old owner
+	// Transfer the ownership
+	w.Accountant.AssignData(oldRover.Owner, "rover", newRover.Name)
+	newRover.Owner = oldRover.Owner
 	oldRover.Owner = ""
 
-	// Marshal old rover
+	// Place the old rover in the world
 	oldRoverData, err := json.Marshal(oldRover)
 	if err != nil {
 		return "", err
 	}
-
-	// Add this new rover to tracking
-	w.Rovers[newRover.Name] = &newRover
-
-	// Swap account rover to the dormant one
-	newRover.Owner = oldRover.Owner
-	w.Accountant.AssignData(oldRover.Owner, "rover", newRover.Name)
-
-	// Place the old rover into the world
 	w.Atlas.SetObject(oldRover.Pos, Object{Type: roveapi.Object_RoverDormant, Data: oldRoverData})
 
-	// Remove old rover from current tracking
+	// Swap the rovers in the tracking
+	w.Rovers[newRover.Name] = &newRover
 	delete(w.Rovers, oldRover.Name)
+
+	// Clear the command queues for both rovers
+	delete(w.CommandQueue, oldRover.Name)
+	delete(w.CommandQueue, newRover.Name)
 
 	return newRover.Name, nil
 }
@@ -599,7 +597,10 @@ func (w *World) Tick() {
 			}
 
 			// Extract the first command in the queue
-			w.CommandQueue[rover] = cmds[1:]
+			// Only if the command queue still has entries
+			if _, ok := w.CommandQueue[rover]; ok {
+				w.CommandQueue[rover] = cmds[1:]
+			}
 
 		} else {
 			// Clean out the empty entry
