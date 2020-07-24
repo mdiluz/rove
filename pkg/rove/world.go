@@ -300,6 +300,46 @@ func (w *World) RoverStash(rover string) (roveapi.Object, error) {
 	return obj.Type, nil
 }
 
+// RoverSalvage will salvage a rover for parts
+func (w *World) RoverSalvage(rover string) (roveapi.Object, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	r, ok := w.Rovers[rover]
+	if !ok {
+		return roveapi.Object_ObjectUnknown, fmt.Errorf("no rover matching id")
+	}
+
+	// Can't pick up when full
+	if len(r.Inventory) >= r.Capacity {
+		r.AddLogEntryf("tried to salvage dormant rover but inventory was full")
+		return roveapi.Object_ObjectUnknown, nil
+	}
+
+	// Ensure the rover has energy
+	if r.Charge <= 0 {
+		r.AddLogEntryf("tried to salvage dormant rover but had no charge")
+		return roveapi.Object_ObjectUnknown, nil
+	}
+	r.Charge--
+
+	_, obj := w.Atlas.QueryPosition(r.Pos)
+	if obj.Type != roveapi.Object_RoverDormant {
+		r.AddLogEntryf("tried to salvage dormant rover but found no rover to salvage")
+		return roveapi.Object_ObjectUnknown, nil
+	}
+
+	r.AddLogEntryf("salvaged dormant rover")
+	for i := 0; i < 5; i++ {
+		if len(r.Inventory) == r.Capacity {
+			break
+		}
+		r.Inventory = append(r.Inventory, Object{Type: roveapi.Object_RoverParts})
+	}
+	w.Atlas.SetObject(r.Pos, Object{Type: roveapi.Object_ObjectUnknown})
+	return obj.Type, nil
+}
+
 // RoverToggle will toggle the sail position
 func (w *World) RoverToggle(rover string) (roveapi.SailPosition, error) {
 	w.worldMutex.Lock()
@@ -463,6 +503,7 @@ func (w *World) Enqueue(rover string, commands ...*roveapi.Command) error {
 		case roveapi.CommandType_toggle:
 		case roveapi.CommandType_stash:
 		case roveapi.CommandType_repair:
+		case roveapi.CommandType_salvage:
 			// Nothing to verify
 		default:
 			return fmt.Errorf("unknown command: %s", c.Command)
@@ -588,6 +629,11 @@ func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (err error) {
 
 	case roveapi.CommandType_turn:
 		if _, err := w.RoverTurn(rover, c.GetBearing()); err != nil {
+			return err
+		}
+
+	case roveapi.CommandType_salvage:
+		if _, err := w.RoverSalvage(rover); err != nil {
 			return err
 		}
 

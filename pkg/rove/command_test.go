@@ -131,6 +131,34 @@ func TestCommand_Broadcast(t *testing.T) {
 	assert.Contains(t, info.Logs[len(info.Logs)-1].Text, "ABC")
 }
 
+func TestCommand_Salvage(t *testing.T) {
+	w := NewWorld(8)
+	name, err := w.SpawnRover()
+	assert.NoError(t, err)
+
+	info, err := w.GetRover(name)
+	assert.NoError(t, err)
+
+	w.Atlas.SetObject(info.Pos, Object{Type: roveapi.Object_RoverDormant})
+
+	// Enqueue the broadcast and tick
+	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_salvage})
+	assert.NoError(t, err)
+	w.Tick()
+
+	// Check we now have some rover parts
+	info, err = w.GetRover(name)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, info.Inventory)
+	for _, i := range info.Inventory {
+		assert.Equal(t, roveapi.Object_RoverParts, i.Type)
+	}
+
+	// Check the dormant rover is gone
+	_, obj := w.Atlas.QueryPosition(info.Pos)
+	assert.Equal(t, roveapi.Object_ObjectUnknown, obj.Type)
+}
+
 func TestCommand_Invalid(t *testing.T) {
 	w := NewWorld(8)
 	name, err := w.SpawnRover()
