@@ -352,11 +352,24 @@ func (w *World) RoverRepair(rover string) (int, error) {
 		return 0, fmt.Errorf("no rover matching id")
 	}
 
-	// Consume an inventory item to repair if possible
-	if len(r.Inventory) > 0 && r.Integrity < r.MaximumIntegrity {
-		r.Inventory = r.Inventory[:len(r.Inventory)-1]
-		r.Integrity = r.Integrity + 1
-		r.AddLogEntryf("repaired self to %d", r.Integrity)
+	// Can't repair past max
+	if r.Integrity >= r.MaximumIntegrity {
+		return r.Integrity, nil
+	}
+
+	// Find rover parts in inventory
+	for i, o := range r.Inventory {
+		if o.Type == roveapi.Object_RoverParts {
+
+			// Copy-erase from slice
+			r.Inventory[i] = r.Inventory[len(r.Inventory)-1]
+			r.Inventory = r.Inventory[:len(r.Inventory)-1]
+
+			// Repair
+			r.Integrity = r.Integrity + 1
+			r.AddLogEntryf("repaired self to %d", r.Integrity)
+			break
+		}
 	}
 
 	return r.Integrity, nil

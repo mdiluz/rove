@@ -33,6 +33,7 @@ func (o *Object) IsBlocking() bool {
 func (o *Object) IsStashable() bool {
 	var stashable = [...]roveapi.Object{
 		roveapi.Object_RockSmall,
+		roveapi.Object_RoverParts,
 	}
 
 	for _, t := range stashable {

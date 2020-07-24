@@ -248,10 +248,10 @@ func TestWorld_RoverRepair(t *testing.T) {
 	assert.NoError(t, err, "couldn't get rover info")
 
 	// Pick up something to repair with
-	world.Atlas.SetObject(pos, Object{Type: roveapi.Object_RockSmall})
+	world.Atlas.SetObject(pos, Object{Type: roveapi.Object_RoverParts})
 	o, err := world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
-	assert.Equal(t, roveapi.Object_RockSmall, o, "Failed to get correct object")
+	assert.Equal(t, roveapi.Object_RoverParts, o, "Failed to get correct object")
 
 	world.Atlas.SetObject(maths.Vector{X: 0.0, Y: 1.0}, Object{Type: roveapi.Object_RockLarge})
 
@@ -273,10 +273,10 @@ func TestWorld_RoverRepair(t *testing.T) {
 	assert.Contains(t, newinfo.Logs[len(newinfo.Logs)-1].Text, "repair", "Rover logs should contain the repair")
 
 	// Check again that it can't repair past the max
-	world.Atlas.SetObject(pos, Object{Type: roveapi.Object_RockSmall})
+	world.Atlas.SetObject(pos, Object{Type: roveapi.Object_RoverParts})
 	o, err = world.RoverStash(a)
 	assert.NoError(t, err, "Failed to stash")
-	assert.Equal(t, roveapi.Object_RockSmall, o, "Failed to get correct object")
+	assert.Equal(t, roveapi.Object_RoverParts, o, "Failed to get correct object")
 
 	err = world.ExecuteCommand(&roveapi.Command{Command: roveapi.CommandType_repair}, a)
 	assert.NoError(t, err, "Failed to repair rover")

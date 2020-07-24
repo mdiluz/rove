@@ -99,7 +99,7 @@ enum CommandType {
   repair = 4;
   // Broadcasts a message to nearby rovers (requires data)
   broadcast = 5;
-  // Salvages a neighboring dormant rover for parts (requres bearing and salvage)
+  // Salvages a neighboring dormant rover for parts
   salvage = 6;
 }
 
@@ -117,13 +117,6 @@ enum Bearing {
   NorthWest = 8;
 }
 
-enum SalvageType {
-  SalvageUnknown = 0;
-
-  // Salvage a nearby rover for parts
-  SalvageParts = 1;
-}
-
 // Command is a single command for a rover
 message Command {
   // The command type
@@ -135,9 +128,6 @@ message Command {
   // move - the bearing for the rover to turn to
   // salvage - the direction of the rover
   Bearing bearing = 3;
-
-  // salvage - the type of salvage to execute
-  SalvageType salvage = 4;
 }
 
 // CommandRequest describes a set of commands to be requested for the rover
@@ -172,6 +162,9 @@ enum Object {
 
   // RockLarge is a large blocking rock
   RockLarge = 4;
+
+  // RoverParts is one unit of rover parts, used for repairing and fixing the rover
+  RoverParts = 5;
 }
 
 enum Tile {

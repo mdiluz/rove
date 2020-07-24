@@ -99,10 +99,10 @@ func TestCommand_Repair(t *testing.T) {
 	assert.Equal(t, info.MaximumIntegrity-1, info.Integrity)
 
 	// Stash a repair object
-	w.Atlas.SetObject(info.Pos, Object{Type: roveapi.Object_RockSmall})
+	w.Atlas.SetObject(info.Pos, Object{Type: roveapi.Object_RoverParts})
 	obj, err := w.RoverStash(name)
 	assert.NoError(t, err)
-	assert.Equal(t, roveapi.Object_RockSmall, obj)
+	assert.Equal(t, roveapi.Object_RoverParts, obj)
 
 	// Enqueue the repair and tick
 	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_repair})
