@@ -385,7 +385,10 @@ func (w *World) RoverTransfer(rover string) (string, error) {
 	newRover.AddLogEntryf("transferred from rover %s", oldRover.Name)
 
 	// Transfer the ownership
-	w.Accountant.AssignData(oldRover.Owner, "rover", newRover.Name)
+	err = w.Accountant.AssignData(oldRover.Owner, "rover", newRover.Name)
+	if err != nil {
+		return "", err
+	}
 	newRover.Owner = oldRover.Owner
 	oldRover.Owner = ""
 
