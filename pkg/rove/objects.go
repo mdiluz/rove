@@ -17,7 +17,6 @@ type Object struct {
 func (o *Object) IsBlocking() bool {
 	var blocking = [...]roveapi.Object{
 		roveapi.Object_RoverLive,
-		roveapi.Object_RoverDormant,
 		roveapi.Object_RockLarge,
 	}
 
