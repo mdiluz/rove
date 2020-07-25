@@ -2,7 +2,6 @@ package rove
 
 import (
 	"log"
-	"math/rand"
 
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
@@ -108,15 +107,6 @@ func (a *chunkBasedAtlas) populate(chunk int) {
 			if obj.Type != roveapi.Object_ObjectUnknown {
 				c.Objects[j*a.ChunkSize+i] = obj
 			}
-		}
-	}
-
-	// Set up any objects
-	for i := 0; i < len(c.Tiles); i++ {
-		if rand.Intn(16) == 0 {
-			c.Objects[i] = Object{Type: roveapi.Object_RockLarge}
-		} else if rand.Intn(32) == 0 {
-			c.Objects[i] = Object{Type: roveapi.Object_RockSmall}
 		}
 	}
 
