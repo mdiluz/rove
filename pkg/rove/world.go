@@ -67,7 +67,11 @@ func NewWorld(chunkSize int) *World {
 func (w *World) SpawnRover(account string) (string, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
+	return w.spawnRover(account)
+}
 
+// spawnRover adds an rover to the game (without lock)
+func (w *World) spawnRover(account string) (string, error) {
 	// Initialise the rover
 	rover := DefaultRover()
 
@@ -176,17 +180,28 @@ func (w *World) RoverBroadcast(rover string, message []byte) (err error) {
 	return
 }
 
-// DestroyRover Removes an rover from the game
-func (w *World) DestroyRover(rover string) error {
-	w.worldMutex.Lock()
-	defer w.worldMutex.Unlock()
-
-	_, ok := w.Rovers[rover]
+// destroyRover Removes an rover from the game
+func (w *World) destroyRover(rover string) error {
+	r, ok := w.Rovers[rover]
 	if !ok {
 		return fmt.Errorf("no rover matching id")
 	}
 
+	// Remove this rover from tracked rovers
 	delete(w.Rovers, rover)
+
+	r.Owner = ""
+	r.AddLogEntryf("rover destroyed")
+
+	// Marshal the rover data
+	data, err := json.Marshal(r)
+	if err != nil {
+		return err
+	}
+
+	// Place the dormant rover down
+	w.Atlas.SetObject(r.Pos, Object{Type: roveapi.Object_RoverDormant, Data: data})
+
 	return nil
 }
 
@@ -276,9 +291,20 @@ func (w *World) TryMoveRover(rover string, b roveapi.Bearing) (maths.Vector, err
 		i.AddLogEntryf("tried to move %s to %+v", b.String(), newPos)
 		i.Integrity = i.Integrity - 1
 		i.AddLogEntryf("had a collision, new integrity %d", i.Integrity)
-		// TODO: The rover needs to be left dormant with the player
-		//if i.Integrity == 0 {
-		//}
+
+		if i.Integrity == 0 {
+			// The rover has died destroy it
+			err := w.destroyRover(rover)
+			if err != nil {
+				return maths.Vector{}, err
+			}
+
+			// Spawn a new one for this account
+			_, err = w.spawnRover(i.Owner)
+			if err != nil {
+				return maths.Vector{}, err
+			}
+		}
 	}
 
 	return i.Pos, nil
