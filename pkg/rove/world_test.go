@@ -49,7 +49,7 @@ func TestWorld_DestroyRover(t *testing.T) {
 	b, err := world.SpawnRover("")
 	assert.NoError(t, err)
 
-	err = world.destroyRover(a)
+	err = world.DestroyRover(a)
 	assert.NoError(t, err, "Error returned from rover destroy")
 
 	// Basic duplicate check
@@ -164,6 +164,9 @@ func TestWorld_RoverDamage(t *testing.T) {
 		assert.NoError(t, err, "Failed to move rover")
 		assert.Equal(t, pos, vec, "Rover managed to move into large rock")
 	}
+
+	// Tick the world to check for rover deaths
+	world.Tick()
 
 	// Rover should have been destroyed now
 	_, err = world.GetRover(a)

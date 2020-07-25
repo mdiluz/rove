@@ -63,15 +63,11 @@ func NewWorld(chunkSize int) *World {
 	}
 }
 
-// SpawnRover adds an rover to the game
+// SpawnRover adds an rover to the game (without lock)
 func (w *World) SpawnRover(account string) (string, error) {
 	w.worldMutex.Lock()
 	defer w.worldMutex.Unlock()
-	return w.spawnRover(account)
-}
 
-// spawnRover adds an rover to the game (without lock)
-func (w *World) spawnRover(account string) (string, error) {
 	// Initialise the rover
 	rover := DefaultRover()
 
@@ -180,8 +176,11 @@ func (w *World) RoverBroadcast(rover string, message []byte) (err error) {
 	return
 }
 
-// destroyRover Removes an rover from the game
-func (w *World) destroyRover(rover string) error {
+// DestroyRover Removes an rover from the game
+func (w *World) DestroyRover(rover string) error {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
 	r, ok := w.Rovers[rover]
 	if !ok {
 		return fmt.Errorf("no rover matching id")
@@ -291,20 +290,6 @@ func (w *World) TryMoveRover(rover string, b roveapi.Bearing) (maths.Vector, err
 		i.AddLogEntryf("tried to move %s to %+v", b.String(), newPos)
 		i.Integrity = i.Integrity - 1
 		i.AddLogEntryf("had a collision, new integrity %d", i.Integrity)
-
-		if i.Integrity == 0 {
-			// The rover has died destroy it
-			err := w.destroyRover(rover)
-			if err != nil {
-				return maths.Vector{}, err
-			}
-
-			// Spawn a new one for this account
-			_, err = w.spawnRover(i.Owner)
-			if err != nil {
-				return maths.Vector{}, err
-			}
-		}
 	}
 
 	return i.Pos, nil
@@ -692,6 +677,25 @@ func (w *World) Tick() {
 
 			// Reset the move ticks
 			r.MoveTicks = 0
+		}
+	}
+
+	// Check all rover integrities
+	for _, r := range w.Rovers {
+		if r.Integrity <= 0 {
+			// The rover has died destroy it
+			err := w.DestroyRover(r.Name)
+			if err != nil {
+				log.Println(err)
+				// TODO: Report this error somehow
+			}
+
+			// Spawn a new one for this account
+			_, err = w.SpawnRover(r.Owner)
+			if err != nil {
+				log.Println(err)
+				// TODO: Report this error somehow
+			}
 		}
 	}
 
