@@ -33,7 +33,7 @@ func NewNoiseWorldGen(seed int64) WorldGen {
 }
 
 const (
-	terrainNoiseScale = 6
+	terrainNoiseScale = 15
 	rockNoiseScale    = 3
 )
 
