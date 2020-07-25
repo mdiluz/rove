@@ -130,7 +130,9 @@ func TestWorld_RadarFromRover(t *testing.T) {
 
 func TestWorld_RoverDamage(t *testing.T) {
 	world := NewWorld(2)
-	a, err := world.SpawnRover("")
+	acc, err := world.Accountant.RegisterAccount("tmp")
+	assert.NoError(t, err)
+	a, err := world.SpawnRover(acc.Name)
 	assert.NoError(t, err)
 
 	pos := maths.Vector{
@@ -155,6 +157,23 @@ func TestWorld_RoverDamage(t *testing.T) {
 	assert.NoError(t, err, "couldn't get rover info")
 	assert.Equal(t, info.Integrity-1, newinfo.Integrity, "rover should have lost integrity")
 	assert.Contains(t, newinfo.Logs[len(newinfo.Logs)-1].Text, "collision", "Rover logs should contain the collision")
+
+	// Keep moving to damage the rover
+	for i := 0; i < info.Integrity-1; i++ {
+		vec, err := world.TryMoveRover(a, roveapi.Bearing_North)
+		assert.NoError(t, err, "Failed to move rover")
+		assert.Equal(t, pos, vec, "Rover managed to move into large rock")
+	}
+
+	// Tick the world to check for rover deaths
+	world.Tick()
+
+	// Rover should have been destroyed now
+	_, err = world.GetRover(a)
+	assert.Error(t, err)
+
+	_, obj := world.Atlas.QueryPosition(info.Pos)
+	assert.Equal(t, roveapi.Object_RoverDormant, obj.Type)
 }
 
 func TestWorld_Daytime(t *testing.T) {
