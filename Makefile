@@ -18,10 +18,7 @@ gen:
 	protoc --proto_path proto --go_out=plugins=grpc,paths=source_relative:proto/ proto/roveapi/roveapi.proto
 
 test:
-	@echo Unit tests
-	go test -v ./...
-
-	@echo Integration tests
+	@echo Run unit and integration tests
 	docker-compose -f docker-compose-test.yml up --build --exit-code-from=rove-tests --abort-on-container-exit rove-tests
 	docker-compose -f docker-compose-test.yml down
 	go tool cover -html=/tmp/coverage-data/c.out -o /tmp/coverage.html
