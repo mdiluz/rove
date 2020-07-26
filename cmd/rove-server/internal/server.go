@@ -11,6 +11,7 @@ import (
 	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/robfig/cron"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 const (
@@ -105,6 +106,7 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 	}
 	s.grpcServ = grpc.NewServer()
 	roveapi.RegisterRoveServer(s.grpcServ, s)
+	reflection.Register(s.grpcServ)
 
 	return nil
 }
