@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"path"
 	"sync"
 
 	"github.com/mdiluz/rove/pkg/persistence"
@@ -11,8 +13,11 @@ import (
 	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/robfig/cron"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 )
+
+var cert = os.Getenv("CERT_NAME")
 
 const (
 	// PersistentData will allow the server to load and save it's state
@@ -104,7 +109,20 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	s.grpcServ = grpc.NewServer()
+
+	// Load TLS
+	var opts []grpc.ServerOption
+	if len(os.Getenv("NO_TLS")) == 0 {
+		pem := path.Join("/etc/letsencrypt/live/", cert, "cert.pem")
+		key := path.Join("/etc/letsencrypt/live/", cert, "privkey.pem")
+		creds, err := credentials.NewServerTLSFromFile(pem, key)
+		if err != nil {
+			log.Fatalf("failed to setup TLS: %v", err)
+		}
+		opts = append(opts, grpc.Creds(creds))
+	}
+
+	s.grpcServ = grpc.NewServer(opts...)
 	roveapi.RegisterRoveServer(s.grpcServ, s)
 	reflection.Register(s.grpcServ)
 
