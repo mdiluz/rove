@@ -18,6 +18,7 @@ services:
       - TICK_RATE=3
     volumes:
       - persistent-data:/mnt/rove-server:rw
+      - /etc/letsencrypt/:/etc/letsencrypt/
     command: [ "./rove-server"]
 
   
