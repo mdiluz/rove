@@ -13,6 +13,7 @@ services:
       - DATA_PATH=/tmp/
       - WORDS_FILE=data/words_alpha.txt
       - TICK_RATE=10
+      - NO_TLS=1
     command: [ "./rove-server"]
 
   rove-tests:
