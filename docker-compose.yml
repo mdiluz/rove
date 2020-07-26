@@ -16,6 +16,7 @@ services:
       - DATA_PATH=/mnt/rove-server
       - WORDS_FILE=data/words_alpha.txt
       - TICK_RATE=3
+      - CERT_NAME=${CERT_NAME}
     volumes:
       - persistent-data:/mnt/rove-server:rw
       - /etc/letsencrypt/:/etc/letsencrypt/
