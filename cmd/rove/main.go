@@ -26,14 +26,14 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "Usage: rove ARG [OPT...]")
 	fmt.Fprintf(os.Stderr, "\n")
 	fmt.Fprintln(os.Stderr, "Arguments:")
-	fmt.Fprintln(os.Stderr, "\tversion                    outputs version")
-	fmt.Fprintln(os.Stderr, "\thelp                       outputs this usage text")
-	fmt.Fprintln(os.Stderr, "\tconfig [HOST]              outputs the local config, optionally sets host")
-	fmt.Fprintln(os.Stderr, "\tserver-status              prints the server status")
-	fmt.Fprintln(os.Stderr, "\tregister NAME              registers an account and spawns a rover")
-	fmt.Fprintln(os.Stderr, "\tradar                      prints radar data in ASCII form")
-	fmt.Fprintln(os.Stderr, "\tstatus                     gets rover status")
-	fmt.Fprintln(os.Stderr, "\tcommand [NUM] CMD [VAL...] queues commands, accepts multiple, see below")
+	fmt.Fprintln(os.Stderr, "\tversion                       outputs version")
+	fmt.Fprintln(os.Stderr, "\thelp                          outputs this usage text")
+	fmt.Fprintln(os.Stderr, "\tconfig [HOST]                 outputs the local config, optionally sets host")
+	fmt.Fprintln(os.Stderr, "\tserver-status                 prints the server status")
+	fmt.Fprintln(os.Stderr, "\tregister NAME                 registers an account and spawns a rover")
+	fmt.Fprintln(os.Stderr, "\tradar                         prints radar data in ASCII form")
+	fmt.Fprintln(os.Stderr, "\tstatus                        gets rover status")
+	fmt.Fprintln(os.Stderr, "\tcommand [REPEAT] CMD [VAL...] queues commands, accepts multiple in sequence for command values see below")
 	fmt.Fprintf(os.Stderr, "\n")
 	fmt.Fprintln(os.Stderr, "Rover commands:")
 	fmt.Fprintln(os.Stderr, "\ttoggle         toggles the current sail mode")
@@ -244,7 +244,7 @@ func InnerMain(command string, args ...string) error {
 				number = num
 				i++
 				if i >= len(args) {
-					return fmt.Errorf("must pass command after number")
+					return fmt.Errorf("must pass command after repeat number")
 				}
 			}
 
@@ -262,7 +262,7 @@ func InnerMain(command string, args ...string) error {
 					&roveapi.Command{
 						Command: roveapi.CommandType_turn,
 						Bearing: b,
-						Number:  int32(number),
+						Repeat:  int32(number),
 					},
 				)
 			case "broadcast":
@@ -276,7 +276,7 @@ func InnerMain(command string, args ...string) error {
 					&roveapi.Command{
 						Command: roveapi.CommandType_broadcast,
 						Data:    []byte(args[i]),
-						Number:  int32(number),
+						Repeat:  int32(number),
 					},
 				)
 			default:
@@ -284,7 +284,7 @@ func InnerMain(command string, args ...string) error {
 				commands = append(commands,
 					&roveapi.Command{
 						Command: roveapi.CommandType(roveapi.CommandType_value[args[i]]),
-						Number:  int32(number),
+						Repeat:  int32(number),
 					},
 				)
 			}

@@ -583,9 +583,6 @@ func (w *World) Enqueue(rover string, commands ...*roveapi.Command) error {
 				return fmt.Errorf("turn command given unknown bearing")
 			}
 		case roveapi.CommandType_wait:
-			if c.GetNumber() <= 0 {
-				return fmt.Errorf("wait command must be given positie number of ticks to wait")
-			}
 		case roveapi.CommandType_toggle:
 		case roveapi.CommandType_stash:
 		case roveapi.CommandType_repair:
@@ -717,9 +714,6 @@ func (w *World) Tick() {
 func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (done bool, err error) {
 	log.Printf("Executing command: %+v for %s\n", c.Command, rover)
 
-	// Decrement the number of the command
-	c.Number--
-
 	switch c.Command {
 	case roveapi.CommandType_toggle:
 		_, err = w.RoverToggle(rover)
@@ -741,7 +735,9 @@ func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (done bool, err
 		return true, fmt.Errorf("unknown command: %s", c.Command)
 	}
 
-	return c.Number <= 0, err
+	// Decrement the repeat number
+	c.Repeat--
+	return c.Repeat < 0, err
 }
 
 // Daytime returns if it's currently daytime

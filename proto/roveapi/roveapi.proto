@@ -126,8 +126,8 @@ message Command {
   // The command type
   CommandType command = 1;
 
-  // The number of times to execute the command (assumes 1 if not present or 0)
-  int32 number = 2;
+  // The number of times to repeat the command after the first
+  int32 repeat = 2;
 
   // broadcast - a simple message, must be composed of up to 3 printable ASCII
   // glyphs (32-126)

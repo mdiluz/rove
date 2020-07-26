@@ -60,6 +60,5 @@ func Test_InnerMain(t *testing.T) {
 	// Give it malformed commands
 	assert.Error(t, InnerMain("command", "unknown"))
 	assert.Error(t, InnerMain("command", "broadcast"))
-	assert.Error(t, InnerMain("command", "0", "wait"))
 	assert.Error(t, InnerMain("command", "1"))
 }

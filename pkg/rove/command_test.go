@@ -229,10 +229,10 @@ func TestCommand_Wait(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, roveapi.SailPosition_SolarCharging, r.SailPosition)
 
-	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_wait, Number: 5}, &roveapi.Command{Command: roveapi.CommandType_toggle})
+	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_wait, Repeat: 4}, &roveapi.Command{Command: roveapi.CommandType_toggle})
 	assert.NoError(t, err)
 
-	// Tick 5 times during the wait
+	// Tick 5 times during the wait (1 normal execute + 4)
 	for i := 0; i < 5; i++ {
 		w.Tick()
 
