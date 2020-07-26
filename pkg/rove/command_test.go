@@ -9,6 +9,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCommand_Invalid(t *testing.T) {
+	w := NewWorld(8)
+	name, err := w.SpawnRover("")
+	assert.NoError(t, err)
+
+	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_none})
+	assert.Error(t, err)
+}
+
 func TestCommand_Toggle(t *testing.T) {
 	w := NewWorld(8)
 	a, err := w.SpawnRover("")
@@ -211,11 +220,31 @@ func TestCommand_Transfer(t *testing.T) {
 
 }
 
-func TestCommand_Invalid(t *testing.T) {
+func TestCommand_Wait(t *testing.T) {
 	w := NewWorld(8)
-	name, err := w.SpawnRover("")
+	a, err := w.SpawnRover("")
 	assert.NoError(t, err)
 
-	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_none})
-	assert.Error(t, err)
+	r, err := w.GetRover(a)
+	assert.NoError(t, err)
+	assert.Equal(t, roveapi.SailPosition_SolarCharging, r.SailPosition)
+
+	err = w.Enqueue(a, &roveapi.Command{Command: roveapi.CommandType_wait, Repeat: 4}, &roveapi.Command{Command: roveapi.CommandType_toggle})
+	assert.NoError(t, err)
+
+	// Tick 5 times during the wait (1 normal execute + 4)
+	for i := 0; i < 5; i++ {
+		w.Tick()
+
+		r, err = w.GetRover(a)
+		assert.NoError(t, err)
+		assert.Equal(t, roveapi.SailPosition_SolarCharging, r.SailPosition)
+	}
+
+	// One last tick to do the toggle
+	w.Tick()
+
+	r, err = w.GetRover(a)
+	assert.NoError(t, err)
+	assert.Equal(t, roveapi.SailPosition_CatchingWind, r.SailPosition)
 }

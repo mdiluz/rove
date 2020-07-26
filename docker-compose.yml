@@ -20,17 +20,4 @@ services:
       - persistent-data:/mnt/rove-server:rw
     command: [ "./rove-server"]
 
-  rove-tests:
-    depends_on: [ rove-server ]
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: rove:latest
-    environment:
-      - ROVE_GRPC=rove-server
-    command: [ "./script/wait-for-it.sh", "rove-server:9090", "--", "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/mnt/coverage-data/c.out", "-count", "1" ]
-    volumes:
-      - /tmp/coverage-data:/mnt/coverage-data:rw
-
-
   

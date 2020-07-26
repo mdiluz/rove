@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  rove-test-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rove:latest
+    ports:
+      - "9090:9090"
+    environment:
+      - PORT=9090
+      - DATA_PATH=/tmp/
+      - WORDS_FILE=data/words_alpha.txt
+      - TICK_RATE=10
+    command: [ "./rove-server"]
+
+  rove-tests:
+    depends_on: [ rove-test-server ]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rove:latest
+    environment:
+      - ROVE_GRPC=rove-test-server
+    command: [ "./script/wait-for-it.sh", "rove-test-server:9090", "--", "go", "test", "-v", "./...", "--tags=integration", "-cover", "-coverprofile=/mnt/coverage-data/c.out", "-count", "1" ]
+    volumes:
+      - /tmp/coverage-data:/mnt/coverage-data:rw
+
+
+  

@@ -582,6 +582,7 @@ func (w *World) Enqueue(rover string, commands ...*roveapi.Command) error {
 			if c.GetBearing() == roveapi.Bearing_BearingUnknown {
 				return fmt.Errorf("turn command given unknown bearing")
 			}
+		case roveapi.CommandType_wait:
 		case roveapi.CommandType_toggle:
 		case roveapi.CommandType_stash:
 		case roveapi.CommandType_repair:
@@ -612,15 +613,16 @@ func (w *World) Tick() {
 		if len(cmds) != 0 {
 
 			// Execute the command
-			if err := w.ExecuteCommand(cmds[0], rover); err != nil {
+			if done, err := w.ExecuteCommand(cmds[0], rover); err != nil {
 				log.Println(err)
 				// TODO: Report this error somehow
-			}
 
-			// Extract the first command in the queue
-			// Only if the command queue still has entries
-			if _, ok := w.CommandQueue[rover]; ok {
-				w.CommandQueue[rover] = cmds[1:]
+			} else if done {
+				// Extract the first command in the queue
+				// Only if the command queue still has entries (the command may have modified this queue)
+				if _, ok := w.CommandQueue[rover]; ok {
+					w.CommandQueue[rover] = cmds[1:]
+				}
 			}
 
 		} else {
@@ -709,49 +711,33 @@ func (w *World) Tick() {
 }
 
 // ExecuteCommand will execute a single command
-func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (err error) {
+func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (done bool, err error) {
 	log.Printf("Executing command: %+v for %s\n", c.Command, rover)
 
 	switch c.Command {
 	case roveapi.CommandType_toggle:
-		if _, err := w.RoverToggle(rover); err != nil {
-			return err
-		}
+		_, err = w.RoverToggle(rover)
 	case roveapi.CommandType_stash:
-		if _, err := w.RoverStash(rover); err != nil {
-			return err
-		}
-
+		_, err = w.RoverStash(rover)
 	case roveapi.CommandType_repair:
-		if _, err := w.RoverRepair(rover); err != nil {
-			return err
-		}
-
+		_, err = w.RoverRepair(rover)
 	case roveapi.CommandType_broadcast:
-		if err := w.RoverBroadcast(rover, c.GetData()); err != nil {
-			return err
-		}
-
+		err = w.RoverBroadcast(rover, c.GetData())
 	case roveapi.CommandType_turn:
-		if _, err := w.RoverTurn(rover, c.GetBearing()); err != nil {
-			return err
-		}
-
+		_, err = w.RoverTurn(rover, c.GetBearing())
 	case roveapi.CommandType_salvage:
-		if _, err := w.RoverSalvage(rover); err != nil {
-			return err
-		}
-
+		_, err = w.RoverSalvage(rover)
 	case roveapi.CommandType_transfer:
-		if _, err := w.RoverTransfer(rover); err != nil {
-			return err
-		}
-
+		_, err = w.RoverTransfer(rover)
+	case roveapi.CommandType_wait:
+		// Nothing to do
 	default:
-		return fmt.Errorf("unknown command: %s", c.Command)
+		return true, fmt.Errorf("unknown command: %s", c.Command)
 	}
 
-	return
+	// Decrement the repeat number
+	c.Repeat--
+	return c.Repeat < 0, err
 }
 
 // Daytime returns if it's currently daytime
