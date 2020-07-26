@@ -103,7 +103,7 @@ enum CommandType {
   salvage = 6;
   // Transfers remote control into dormant rover
   transfer = 7;
-  // Waits for the specified number of server ticks (requires number)
+  // Waits before performing the next command
   wait = 8;
 }
 
@@ -126,15 +126,15 @@ message Command {
   // The command type
   CommandType command = 1;
 
+  // The number of times to execute the command (assumes 1 if not present or 0)
+  int32 number = 2;
+
   // broadcast - a simple message, must be composed of up to 3 printable ASCII
   // glyphs (32-126)
-  bytes data = 2;
+  bytes data = 3;
 
   // move - the bearing for the rover to turn to
-  Bearing bearing = 3;
-
-  // wait - the number of server ticks to wait
-  int32 number = 4;
+  Bearing bearing = 4;
 }
 
 // CommandRequest describes a set of commands to be requested for the rover

@@ -717,50 +717,31 @@ func (w *World) Tick() {
 func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (done bool, err error) {
 	log.Printf("Executing command: %+v for %s\n", c.Command, rover)
 
+	// Decrement the number of the command
+	c.Number--
+
 	switch c.Command {
 	case roveapi.CommandType_toggle:
-		if _, err := w.RoverToggle(rover); err != nil {
-			return true, err
-		}
+		_, err = w.RoverToggle(rover)
 	case roveapi.CommandType_stash:
-		if _, err := w.RoverStash(rover); err != nil {
-			return true, err
-		}
-
+		_, err = w.RoverStash(rover)
 	case roveapi.CommandType_repair:
-		if _, err := w.RoverRepair(rover); err != nil {
-			return true, err
-		}
-
+		_, err = w.RoverRepair(rover)
 	case roveapi.CommandType_broadcast:
-		if err := w.RoverBroadcast(rover, c.GetData()); err != nil {
-			return true, err
-		}
-
+		err = w.RoverBroadcast(rover, c.GetData())
 	case roveapi.CommandType_turn:
-		if _, err := w.RoverTurn(rover, c.GetBearing()); err != nil {
-			return true, err
-		}
-
+		_, err = w.RoverTurn(rover, c.GetBearing())
 	case roveapi.CommandType_salvage:
-		if _, err := w.RoverSalvage(rover); err != nil {
-			return true, err
-		}
-
+		_, err = w.RoverSalvage(rover)
 	case roveapi.CommandType_transfer:
-		if _, err := w.RoverTransfer(rover); err != nil {
-			return true, err
-		}
-
+		_, err = w.RoverTransfer(rover)
 	case roveapi.CommandType_wait:
-		c.Number--
-		return c.Number == 0, nil
-
+		// Nothing to do
 	default:
 		return true, fmt.Errorf("unknown command: %s", c.Command)
 	}
 
-	return
+	return c.Number <= 0, err
 }
 
 // Daytime returns if it's currently daytime
