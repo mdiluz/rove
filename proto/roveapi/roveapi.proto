@@ -103,6 +103,8 @@ enum CommandType {
   salvage = 6;
   // Transfers remote control into dormant rover
   transfer = 7;
+  // Waits for the specified number of server ticks (requires number)
+  wait = 8;
 }
 
 // Bearing represents a compass direction
@@ -124,11 +126,15 @@ message Command {
   // The command type
   CommandType command = 1;
 
-  // broadcast - a simple message, must be composed of up to 3 printable ASCII glyphs (32-126)
+  // broadcast - a simple message, must be composed of up to 3 printable ASCII
+  // glyphs (32-126)
   bytes data = 2;
 
   // move - the bearing for the rover to turn to
   Bearing bearing = 3;
+
+  // wait - the number of server ticks to wait
+  int32 number = 4;
 }
 
 // CommandRequest describes a set of commands to be requested for the rover
@@ -164,7 +170,8 @@ enum Object {
   // RockLarge is a large blocking rock
   RockLarge = 4;
 
-  // RoverParts is one unit of rover parts, used for repairing and fixing the rover
+  // RoverParts is one unit of rover parts, used for repairing and fixing the
+  // rover
   RoverParts = 5;
 }
 
