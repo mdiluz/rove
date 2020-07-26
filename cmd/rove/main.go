@@ -187,12 +187,15 @@ func InnerMain(command string, args ...string) error {
 		return fmt.Errorf("no host set in %s, set one with '%s config {HOST}'", ConfigPath(), os.Args[0])
 	}
 
-	tls := &tls.Config{
-		InsecureSkipVerify: true,
+	var opts []grpc.DialOption
+	if len(os.Getenv("NO_TLS")) == 0 {
+		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})))
+	} else {
+		opts = append(opts, grpc.WithInsecure())
 	}
 
 	// Set up the server
-	clientConn, err := grpc.Dial(fmt.Sprintf("%s:%d", config.Host, gRPCport), grpc.WithTransportCredentials(credentials.NewTLS(tls)))
+	clientConn, err := grpc.Dial(fmt.Sprintf("%s:%d", config.Host, gRPCport), opts...)
 	if err != nil {
 		return err
 	}

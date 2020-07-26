@@ -13,6 +13,7 @@ import (
 )
 
 func Test_InnerMain(t *testing.T) {
+	os.Setenv("NO_TLS", "1")
 
 	// Use temporary local user data
 	tmp, err := ioutil.TempDir(os.TempDir(), "rove-")
