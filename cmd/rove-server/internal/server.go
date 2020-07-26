@@ -113,7 +113,7 @@ func (s *Server) Initialise(fillWorld bool) (err error) {
 	// Load TLS
 	var opts []grpc.ServerOption
 	if len(os.Getenv("NO_TLS")) == 0 {
-		pem := path.Join("/etc/letsencrypt/live/", cert, "cert.pem")
+		pem := path.Join("/etc/letsencrypt/live/", cert, "fullchain.pem")
 		key := path.Join("/etc/letsencrypt/live/", cert, "privkey.pem")
 		creds, err := credentials.NewServerTLSFromFile(pem, key)
 		if err != nil {
