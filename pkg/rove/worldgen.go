@@ -1,10 +1,6 @@
 package rove
 
 import (
-	"encoding/json"
-	"log"
-	"math/rand"
-
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/ojrac/opensimplex-go"
@@ -68,42 +64,6 @@ func (g *NoiseWorldGen) GetObject(v maths.Vector) (obj Object) {
 		case p > 0.8:
 			obj.Type = roveapi.Object_RoverParts
 		}
-	}
-
-	// Very rarely spawn a dormant rover
-	if obj.Type == roveapi.Object_ObjectUnknown {
-		// TODO: Make this better, ideally with noise
-		if v.X%25 == 0 && v.Y%25 == 0 && v.X != 0 && v.Y != 0 {
-			obj.Type = roveapi.Object_RoverDormant
-		}
-	}
-
-	// Post process any spawned objects
-	switch obj.Type {
-	case roveapi.Object_RoverDormant:
-		// Create the rover
-		r := DefaultRover()
-
-		// Set the rover variables
-		r.Pos = v
-
-		// Upgrade this rover randomly
-		r.MaximumCharge += rand.Int() % 3
-		r.MaximumIntegrity += rand.Int() % 3
-		r.Capacity += rand.Int() % 3
-		r.Range += rand.Int() % 3
-
-		// For now, mark the log as corrupted
-		r.AddLogEntryf("log corrupted")
-
-		// Marshal the rover data into the object data
-		b, err := json.Marshal(r)
-		if err != nil {
-			log.Fatalf("couldn't marshal rover, should never fail: %s", err)
-		}
-
-		// Store the bytes
-		obj.Data = b
 	}
 
 	return obj
