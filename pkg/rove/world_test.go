@@ -109,15 +109,16 @@ func TestWorld_RadarFromRover(t *testing.T) {
 	world.Atlas.SetObject(maths.Vector{X: 0, Y: 0}, Object{Type: roveapi.Object_ObjectUnknown})
 	assert.NoError(t, world.WarpRover(a, maths.Vector{X: 0, Y: 0}), "Failed to warp rover")
 
+	r, err := world.GetRover(a)
+	assert.NoError(t, err)
+
 	radar, objs, err := world.RadarFromRover(a)
 	assert.NoError(t, err, "Failed to get radar from rover")
-	fullRange := 4 + 4 + 1
+	fullRange := r.Range + r.Range + 1
 	assert.Equal(t, fullRange*fullRange, len(radar), "Radar returned wrong length")
 	assert.Equal(t, fullRange*fullRange, len(objs), "Radar returned wrong length")
 
-	// Test the expected values
-	assert.Equal(t, roveapi.Object_RoverLive, objs[1+fullRange])
-	assert.Equal(t, roveapi.Object_RoverLive, objs[4+4*fullRange])
+	// TODO: Verify the other rover is on the radar
 
 	// Check the radar results are stable
 	radar1, objs1, err := world.RadarFromRover(a)

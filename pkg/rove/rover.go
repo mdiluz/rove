@@ -74,7 +74,7 @@ type Rover struct {
 // DefaultRover returns a default rover object with default settings
 func DefaultRover() *Rover {
 	return &Rover{
-		Range:            4,
+		Range:            10,
 		Integrity:        10,
 		MaximumIntegrity: 10,
 		Capacity:         10,
