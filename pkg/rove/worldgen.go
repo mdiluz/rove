@@ -61,7 +61,7 @@ func (g *NoiseWorldGen) GetObject(v maths.Vector) (obj Object) {
 		// Otherwise, try some rover parts
 		p := g.noise.Eval2(float64(v.X)/partsNoiseScale, float64(v.Y)/partsNoiseScale)
 		switch {
-		case p > 0.8:
+		case p > 0.7:
 			obj.Type = roveapi.Object_RoverParts
 		}
 	}
