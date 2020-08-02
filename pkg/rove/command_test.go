@@ -248,3 +248,58 @@ func TestCommand_Wait(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, roveapi.SailPosition_CatchingWind, r.SailPosition)
 }
+
+func TestCommand_Upgrade(t *testing.T) {
+	w := NewWorld(8)
+	name, err := w.SpawnRover("")
+	assert.NoError(t, err)
+	rover, ok := w.Rovers[name]
+	assert.True(t, ok)
+
+	// Try an invalid upgrade
+	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_upgrade})
+	assert.Error(t, err)
+
+	// Try a valid command but without the parts
+	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_upgrade, Upgrade: roveapi.RoverUpgrade_Capacity})
+	assert.NoError(t, err)
+
+	// Ensure nothing changed and we logged the attempt
+	pre := rover.Capacity
+	w.Tick()
+	assert.Equal(t, pre, rover.Capacity)
+	assert.Contains(t, rover.Logs[len(rover.Logs)-1].Text, "tried")
+
+	// One non-part item
+	rover.Inventory = []Object{
+		{
+			Type: roveapi.Object_RoverParts,
+		},
+		{
+			Type: roveapi.Object_RoverParts,
+		},
+		{
+			Type: roveapi.Object_RockSmall,
+		},
+		{
+			Type: roveapi.Object_RoverParts,
+		},
+		{
+			Type: roveapi.Object_RoverParts,
+		},
+		{
+			Type: roveapi.Object_RoverParts,
+		},
+	}
+
+	// Try a valid command again
+	err = w.Enqueue(name, &roveapi.Command{Command: roveapi.CommandType_upgrade, Upgrade: roveapi.RoverUpgrade_Capacity})
+	assert.NoError(t, err)
+
+	// Check that the capacity increases on the tick and all the parts are used
+	pre = rover.Capacity
+	w.Tick()
+	assert.Equal(t, pre+1, rover.Capacity)
+	assert.Equal(t, 1, len(rover.Inventory))
+	assert.Equal(t, roveapi.Object_RockSmall, rover.Inventory[0].Type)
+}

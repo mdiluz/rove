@@ -503,6 +503,8 @@ func (w *World) RoverUpgrade(rover string, upgrade roveapi.RoverUpgrade) (int, e
 	// Assign back the inventory
 	r.Inventory = n
 
+	r.AddLogEntryf("upgraded %s to %d", upgrade, ret)
+
 	return ret, nil
 }
 
