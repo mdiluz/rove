@@ -1,10 +1,6 @@
 package rove
 
 import (
-	"encoding/json"
-	"log"
-	"math/rand"
-
 	"github.com/mdiluz/rove/pkg/maths"
 	"github.com/mdiluz/rove/proto/roveapi"
 	"github.com/ojrac/opensimplex-go"
@@ -35,6 +31,7 @@ func NewNoiseWorldGen(seed int64) WorldGen {
 const (
 	terrainNoiseScale = 15
 	rockNoiseScale    = 3
+	partsNoiseScale   = 2
 )
 
 // GetTile returns the chosen tile at a location
@@ -52,48 +49,21 @@ func (g *NoiseWorldGen) GetTile(v maths.Vector) roveapi.Tile {
 
 // GetObject returns the chosen object at a location
 func (g *NoiseWorldGen) GetObject(v maths.Vector) (obj Object) {
-	o := g.noise.Eval2(float64(v.X)/rockNoiseScale, float64(v.Y)/rockNoiseScale)
+	r := g.noise.Eval2(float64(v.X)/rockNoiseScale, float64(v.Y)/rockNoiseScale)
 	switch {
-	case o > 0.6:
+	// Prioritise rocks
+	case r > 0.6:
 		obj.Type = roveapi.Object_RockLarge
-	case o > 0.5:
+	case r > 0.5:
 		obj.Type = roveapi.Object_RockSmall
-	}
 
-	// Very rarely spawn a dormant rover
-	if obj.Type == roveapi.Object_ObjectUnknown {
-		// TODO: Make this better, ideally with noise
-		if v.X%25 == 0 && v.Y%25 == 0 && v.X != 0 && v.Y != 0 {
-			obj.Type = roveapi.Object_RoverDormant
+	default:
+		// Otherwise, try some rover parts
+		p := g.noise.Eval2(float64(v.X)/partsNoiseScale, float64(v.Y)/partsNoiseScale)
+		switch {
+		case p > 0.7:
+			obj.Type = roveapi.Object_RoverParts
 		}
-	}
-
-	// Post process any spawned objects
-	switch obj.Type {
-	case roveapi.Object_RoverDormant:
-		// Create the rover
-		r := DefaultRover()
-
-		// Set the rover variables
-		r.Pos = v
-
-		// Upgrade this rover randomly
-		r.MaximumCharge += rand.Int() % 3
-		r.MaximumIntegrity += rand.Int() % 3
-		r.Capacity += rand.Int() % 3
-		r.Range += rand.Int() % 3
-
-		// For now, mark the log as corrupted
-		r.AddLogEntryf("log corrupted")
-
-		// Marshal the rover data into the object data
-		b, err := json.Marshal(r)
-		if err != nil {
-			log.Fatalf("couldn't marshal rover, should never fail: %s", err)
-		}
-
-		// Store the bytes
-		obj.Data = b
 	}
 
 	return obj

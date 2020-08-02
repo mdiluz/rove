@@ -89,22 +89,24 @@ message RegisterResponse {
 // CommandType defines the type of a command to give to the rover
 enum CommandType {
   none = 0;
-  // Toggles the sails, either catching the wind, or charging from the sun
-  toggle = 1;
-  // Turns the rover in the specified bearing (requires bearing)
-  turn = 2;
-  // Stashes item at current location in rover inventory
-  stash = 3;
-  // Repairs the rover using an inventory object
-  repair = 4;
-  // Broadcasts a message to nearby rovers (requires data)
-  broadcast = 5;
-  // Salvages a neighboring dormant rover for parts
-  salvage = 6;
-  // Transfers remote control into dormant rover
-  transfer = 7;
   // Waits before performing the next command
-  wait = 8;
+  wait = 1;
+  // Toggles the sails, either catching the wind, or charging from the sun
+  toggle = 2;
+  // Turns the rover in the specified bearing (requires bearing)
+  turn = 3;
+  // Stashes item at current location in rover inventory
+  stash = 4;
+  // Repairs the rover using an inventory object
+  repair = 5;
+  // Broadcasts a message to nearby rovers (requires data)
+  broadcast = 6;
+  // Salvages a neighboring dormant rover for parts
+  salvage = 7;
+  // Transfers remote control into dormant rover
+  transfer = 8;
+  // Upgrades a chosen rover specification using 5 rover parts
+  upgrade = 9;
 }
 
 // Bearing represents a compass direction
@@ -121,6 +123,15 @@ enum Bearing {
   NorthWest = 8;
 }
 
+// Describes the type of upgrade
+enum RoverUpgrade {
+  RoverUpgradeUnknown = 0;
+  Range = 1;
+  Capacity = 2;
+  MaximumIntegrity = 3;
+  MaximumCharge = 4;
+}
+
 // Command is a single command for a rover
 message Command {
   // The command type
@@ -135,6 +146,9 @@ message Command {
 
   // move - the bearing for the rover to turn to
   Bearing bearing = 4;
+
+  // upgrade - the upgrade to apply to the rover
+  RoverUpgrade upgrade = 5;
 }
 
 // CommandRequest describes a set of commands to be requested for the rover

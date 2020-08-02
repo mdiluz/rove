@@ -35,7 +35,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\tregister NAME                 registers an account and spawns a rover")
 	fmt.Fprintln(os.Stderr, "\tradar                         prints radar data in ASCII form")
 	fmt.Fprintln(os.Stderr, "\tstatus                        gets rover status")
-	fmt.Fprintln(os.Stderr, "\tcommand [REPEAT] CMD [VAL...] queues commands, accepts multiple in sequence for command values see below")
+	fmt.Fprintln(os.Stderr, "\tcommand CMD [VAL...] [REPEAT] sets the command queue, accepts multiple in sequence")
 	fmt.Fprintf(os.Stderr, "\n")
 	fmt.Fprintln(os.Stderr, "Rover commands:")
 	fmt.Fprintln(os.Stderr, "\ttoggle         toggles the current sail mode")
@@ -44,6 +44,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\tbroadcast MSG  broadcast a simple ASCII triplet to nearby rovers")
 	fmt.Fprintln(os.Stderr, "\tsalvage        salvages a dormant rover for parts")
 	fmt.Fprintln(os.Stderr, "\ttransfer       transfer's control into a dormant rover")
+	fmt.Fprintln(os.Stderr, "\tupgrade SPEC   spends rover parts to upgrade one rover spec (capacity, range, integrity, charge")
 	fmt.Fprintln(os.Stderr, "\twait           waits before performing the next command")
 	fmt.Fprintf(os.Stderr, "\n")
 	fmt.Fprintln(os.Stderr, "Environment")
@@ -247,16 +248,8 @@ func InnerMain(command string, args ...string) error {
 		// Iterate through each command
 		var commands []*roveapi.Command
 		for i := 0; i < len(args); i++ {
-			number := 0
-			num, err := strconv.Atoi(args[i])
-			if err == nil {
-				number = num
-				i++
-				if i >= len(args) {
-					return fmt.Errorf("must pass command after repeat number")
-				}
-			}
 
+			var cmd *roveapi.Command
 			switch args[i] {
 			case "turn":
 				i++
@@ -267,13 +260,10 @@ func InnerMain(command string, args ...string) error {
 				if b == roveapi.Bearing_BearingUnknown {
 					return fmt.Errorf("turn command must be given a valid bearing %s", args[i])
 				}
-				commands = append(commands,
-					&roveapi.Command{
-						Command: roveapi.CommandType_turn,
-						Bearing: b,
-						Repeat:  int32(number),
-					},
-				)
+				cmd = &roveapi.Command{
+					Command: roveapi.CommandType_turn,
+					Bearing: b,
+				}
 			case "broadcast":
 				i++
 				if len(args) == i {
@@ -281,22 +271,51 @@ func InnerMain(command string, args ...string) error {
 				} else if len(args[i]) > 3 {
 					return fmt.Errorf("broadcast command must be given ASCII triplet of 3 or less: %s", args[i])
 				}
-				commands = append(commands,
-					&roveapi.Command{
-						Command: roveapi.CommandType_broadcast,
-						Data:    []byte(args[i]),
-						Repeat:  int32(number),
-					},
-				)
+				cmd = &roveapi.Command{
+					Command: roveapi.CommandType_broadcast,
+					Data:    []byte(args[i]),
+				}
+			case "upgrade":
+				i++
+				if len(args) == i {
+					return fmt.Errorf("upgrade command must be passed a spec to upgrade")
+				}
+				var u roveapi.RoverUpgrade
+				switch args[i] {
+				case "capacity":
+					u = roveapi.RoverUpgrade_Capacity
+				case "range":
+					u = roveapi.RoverUpgrade_Range
+				case "integrity":
+					u = roveapi.RoverUpgrade_MaximumIntegrity
+				case "charge":
+					u = roveapi.RoverUpgrade_MaximumCharge
+				default:
+					return fmt.Errorf("upgrade command must be passed a known upgrade spec")
+				}
+				cmd = &roveapi.Command{
+					Command: roveapi.CommandType_upgrade,
+					Upgrade: u,
+				}
 			default:
 				// By default just use the command literally
-				commands = append(commands,
-					&roveapi.Command{
-						Command: roveapi.CommandType(roveapi.CommandType_value[args[i]]),
-						Repeat:  int32(number),
-					},
-				)
+				cmd = &roveapi.Command{
+					Command: roveapi.CommandType(roveapi.CommandType_value[args[i]]),
+				}
 			}
+
+			// Try and convert the next command to a number
+			number := 0
+			if len(args) > i+1 {
+				num, err := strconv.Atoi(args[i+1])
+				if err == nil {
+					number = num
+					i++
+				}
+			}
+			cmd.Repeat = int32(number)
+
+			commands = append(commands, cmd)
 		}
 
 		_, err := client.Command(ctx, &roveapi.CommandRequest{

@@ -25,6 +25,9 @@ const (
 	// GlyphRoverDormant represents a dormant rover
 	GlyphRoverDormant = Glyph('r')
 
+	// GlyphRoverParts represents spare rover parts
+	GlyphRoverParts = Glyph('*')
+
 	// GlyphRockSmall is a small stashable rock
 	GlyphRockSmall = Glyph('o')
 
@@ -58,6 +61,8 @@ func ObjectGlyph(o roveapi.Object) Glyph {
 		return GlyphRoverDormant
 	case roveapi.Object_RockLarge:
 		return GlyphRockLarge
+	case roveapi.Object_RoverParts:
+		return GlyphRoverParts
 	}
 
 	log.Fatalf("Unknown object type: %c", o)

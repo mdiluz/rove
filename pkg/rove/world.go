@@ -15,6 +15,9 @@ import (
 const (
 	// ticksPerNormalMove defines the number of ticks it should take for a "normal" speed move
 	ticksPerNormalMove = 4
+
+	// upgradeCost is the cost in rover parts needed to upgrade a rover specification
+	upgradeCost = 5
 )
 
 // CommandStream is a list of commands to execute in order
@@ -446,6 +449,65 @@ func (w *World) RoverToggle(rover string) (roveapi.SailPosition, error) {
 	return r.SailPosition, nil
 }
 
+// RoverUpgrade will try to upgrade the rover
+func (w *World) RoverUpgrade(rover string, upgrade roveapi.RoverUpgrade) (int, error) {
+	w.worldMutex.Lock()
+	defer w.worldMutex.Unlock()
+
+	r, ok := w.Rovers[rover]
+	if !ok {
+		return 0, fmt.Errorf("no rover matching id")
+	}
+
+	cost := upgradeCost
+	num := 0
+	for i := range r.Inventory {
+		if r.Inventory[i].Type == roveapi.Object_RoverParts {
+			num++
+		}
+	}
+
+	if num < cost {
+		r.AddLogEntryf("tried to upgrade but lacked rover parts")
+		return 0, nil
+	}
+
+	// Apply the upgrade
+	var ret int
+	switch upgrade {
+	case roveapi.RoverUpgrade_Capacity:
+		r.Capacity++
+		ret = r.Capacity
+	case roveapi.RoverUpgrade_Range:
+		r.Range++
+		ret = r.Range
+	case roveapi.RoverUpgrade_MaximumCharge:
+		r.MaximumCharge++
+		ret = r.MaximumCharge
+	case roveapi.RoverUpgrade_MaximumIntegrity:
+		r.MaximumIntegrity++
+		ret = r.MaximumIntegrity
+	default:
+		return 0, fmt.Errorf("unknown upgrade: %s", upgrade)
+	}
+
+	// Remove the cost in rover parts
+	var n []Object
+	for _, o := range r.Inventory {
+		if o.Type == roveapi.Object_RoverParts && cost > 0 {
+			cost--
+		} else {
+			n = append(n, o)
+		}
+	}
+	// Assign back the inventory
+	r.Inventory = n
+
+	r.AddLogEntryf("upgraded %s to %d", upgrade, ret)
+
+	return ret, nil
+}
+
 // RoverTurn will turn the rover
 func (w *World) RoverTurn(rover string, bearing roveapi.Bearing) (roveapi.Bearing, error) {
 	w.worldMutex.Lock()
@@ -581,6 +643,10 @@ func (w *World) Enqueue(rover string, commands ...*roveapi.Command) error {
 		case roveapi.CommandType_turn:
 			if c.GetBearing() == roveapi.Bearing_BearingUnknown {
 				return fmt.Errorf("turn command given unknown bearing")
+			}
+		case roveapi.CommandType_upgrade:
+			if c.GetUpgrade() == roveapi.RoverUpgrade_RoverUpgradeUnknown {
+				return fmt.Errorf("upgrade command given unknown upgrade")
 			}
 		case roveapi.CommandType_wait:
 		case roveapi.CommandType_toggle:
@@ -729,6 +795,8 @@ func (w *World) ExecuteCommand(c *roveapi.Command, rover string) (done bool, err
 		_, err = w.RoverSalvage(rover)
 	case roveapi.CommandType_transfer:
 		_, err = w.RoverTransfer(rover)
+	case roveapi.CommandType_upgrade:
+		_, err = w.RoverUpgrade(rover, c.GetUpgrade())
 	case roveapi.CommandType_wait:
 		// Nothing to do
 	default:
