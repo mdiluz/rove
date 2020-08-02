@@ -44,6 +44,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "\tbroadcast MSG  broadcast a simple ASCII triplet to nearby rovers")
 	fmt.Fprintln(os.Stderr, "\tsalvage        salvages a dormant rover for parts")
 	fmt.Fprintln(os.Stderr, "\ttransfer       transfer's control into a dormant rover")
+	fmt.Fprintln(os.Stderr, "\tupgrade SPEC   spends rover parts to upgrade one rover spec (capacity, range, integrity, charge")
 	fmt.Fprintln(os.Stderr, "\twait           waits before performing the next command")
 	fmt.Fprintf(os.Stderr, "\n")
 	fmt.Fprintln(os.Stderr, "Environment")
@@ -273,6 +274,28 @@ func InnerMain(command string, args ...string) error {
 				cmd = &roveapi.Command{
 					Command: roveapi.CommandType_broadcast,
 					Data:    []byte(args[i]),
+				}
+			case "upgrade":
+				i++
+				if len(args) == i {
+					return fmt.Errorf("upgrade command must be passed a spec to upgrade")
+				}
+				var u roveapi.RoverUpgrade
+				switch args[i] {
+				case "capacity":
+					u = roveapi.RoverUpgrade_Capacity
+				case "range":
+					u = roveapi.RoverUpgrade_Range
+				case "integrity":
+					u = roveapi.RoverUpgrade_MaximumIntegrity
+				case "charge":
+					u = roveapi.RoverUpgrade_MaximumCharge
+				default:
+					return fmt.Errorf("upgrade command must be passed a known upgrade spec")
+				}
+				cmd = &roveapi.Command{
+					Command: roveapi.CommandType_upgrade,
+					Upgrade: u,
 				}
 			default:
 				// By default just use the command literally
